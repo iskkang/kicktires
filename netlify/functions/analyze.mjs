@@ -271,6 +271,77 @@ function normalizeLiveAnalysis(raw) {
   };
 }
 
+function completeLiveAnalysis(raw, evidence) {
+  const analysis = normalizeLiveAnalysis(raw);
+  const nhtsa = evidence?.nhtsa || {};
+  const complaintTotal = numeric(nhtsa.complaintTotal, 0, 1_000_000) ?? 0;
+  const recallTotal = numeric(nhtsa.recallTotal, 0, 100_000) ?? 0;
+  const crashes = numeric(nhtsa.crashes, 0, 1_000_000) ?? 0;
+  const fires = numeric(nhtsa.fires, 0, 1_000_000) ?? 0;
+
+  if (!analysis.deal.reason) {
+    analysis.deal.reason = "The federal record is enough to require an independent inspection before money changes hands.";
+  }
+  if (!analysis.vline) analysis.vline = "The sticker is only the first bill.";
+  if (!analysis.vsub) {
+    analysis.vsub = `Federal records list ${complaintTotal} complaints, ${recallTotal} recall campaigns, `
+      + `${crashes} reported crashes and ${fires} reported fires for this model year. `
+      + "Those records identify where to inspect; they do not diagnose this individual car.";
+  }
+
+  const usedTitles = new Set(analysis.risks.map(item => norm(item.t)));
+  for (const item of asItems(nhtsa.topComponents)) {
+    if (analysis.risks.length >= 2) break;
+    const component = clipped(item?.component, 120);
+    const count = numeric(item?.count, 0, 1_000_000);
+    if (!component || count == null || usedTitles.has(norm(component))) continue;
+    analysis.risks.push({
+      s: analysis.risks.length ? "warn" : "ser",
+      lbl: analysis.risks.length ? "WATCH" : "COMMON",
+      t: component,
+      c: "Get a shop quote",
+      cl: "depends on the fault",
+      b: `${count} NHTSA complaints are grouped under ${component}. `
+        + "That is a screening signal, not a diagnosis of this car.",
+      e: [
+        ["v", "NHTSA", `${count} supplied federal complaints are grouped under ${component}.`],
+        ["o", "OUR TAKE", "Have an independent shop inspect this system before purchase."]
+      ]
+    });
+    usedTitles.add(norm(component));
+  }
+
+  if (analysis.risks.length < 2 && recallTotal > 0) {
+    analysis.risks.push({
+      s: "warn", lbl: "WATCH", t: "Recall campaign status",
+      c: "Check the VIN", cl: "remedy status varies",
+      b: `${recallTotal} NHTSA recall campaigns cover this model year. `
+        + "The VIN decides whether this specific car still needs a remedy.",
+      e: [["v", "NHTSA", `${recallTotal} supplied federal recall campaigns cover this model year.`]]
+    });
+  }
+  if (analysis.risks.length < 2) {
+    analysis.risks.push({
+      s: "warn", lbl: "WATCH", t: "Pre-purchase inspection",
+      c: "Inspection first", cl: "price depends on shop",
+      b: "Federal complaint records are screening data, not a diagnosis. The actual car still needs a lift and a full-module scan.",
+      e: [["o", "OUR TAKE", "Do not buy it from a parking-lot test drive alone."]]
+    });
+  }
+
+  const defaults = [
+    { lead: "Run the VIN.", detail: "Confirm whether every applicable safety recall has been remedied." },
+    { lead: "Scan every module.", detail: "Stored and pending codes can expose intermittent faults before a warning light returns." },
+    { lead: "Put it on a lift.", detail: "Leaks, impact damage and worn suspension parts do not appear in federal counts." }
+  ];
+  const usedLeads = new Set(analysis.chk.map(item => norm(item.lead)));
+  for (const item of defaults) {
+    if (analysis.chk.length >= 3) break;
+    if (!usedLeads.has(norm(item.lead))) analysis.chk.push(item);
+  }
+  return analysis;
+}
+
 function reviewedAnalysis(profile, raw) {
   return {
     deal: normalizeDeal(raw?.deal),
@@ -724,7 +795,7 @@ export default async (request) => {
       await writeCache(factsStore, vehicleKey, evidence);
     }
 
-    let rawAnalysis;
+    let rawAnalysis = {};
     try {
       rawAnalysis = asJson(await callModel(ANALYZE_LIVE, JSON.stringify({
         vehicle: car,
@@ -732,12 +803,8 @@ export default async (request) => {
       }), 1300, 0.15));
     } catch (error) {
       console.error("live analysis failed", error?.message || "unknown");
-      return json({ error: "analysis_failed", car }, 502);
     }
-    analysis = normalizeLiveAnalysis(rawAnalysis);
-    if (!analysis.vline || !analysis.vsub || analysis.risks.length < 2) {
-      return json({ error: "analysis_invalid", car }, 502);
-    }
+    analysis = completeLiveAnalysis(rawAnalysis, evidence);
     facts = factsSummary(evidence.nhtsa, "live_nhtsa", evidence.epa);
     tco = tcoFrom(null, analysis, evidence.epa);
   }
@@ -769,5 +836,6 @@ export const __test = {
   isPrivateAddress,
   normalizeCar,
   normalizeChecklist,
+  completeLiveAnalysis,
   normalizeLiveAnalysis
 };

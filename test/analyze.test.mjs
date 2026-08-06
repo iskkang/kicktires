@@ -40,6 +40,33 @@ test("normalizes model output into text-only checklist fields", () => {
   assert.equal(analysis.chk[0].detail, "Use a lift.");
 });
 
+test("completes a partial live response from supplied federal facts", () => {
+  const analysis = __test.completeLiveAnalysis({
+    deal: { grade: "inspect", label: "Inspection first" },
+    estimates: { annualInsurance: 1700, annualRepairs: 850 }
+  }, {
+    nhtsa: {
+      complaintTotal: 137,
+      recallTotal: 4,
+      crashes: 6,
+      fires: 1,
+      topComponents: [
+        { component: "STEERING", count: 31 },
+        { component: "ELECTRICAL SYSTEM", count: 22 }
+      ],
+      recalls: []
+    },
+    epa: { kind: "liquid", mpg: 33, fuel: "regular" }
+  });
+
+  assert.equal(analysis.risks.length, 2);
+  assert.equal(analysis.chk.length, 3);
+  assert.match(analysis.vsub, /137 complaints/);
+  assert.match(analysis.vsub, /4 recall campaigns/);
+  assert.equal(analysis.risks[0].e[0][0], "v");
+  assert.equal(analysis.estimates.annualRepairs, 850);
+});
+
 test("uses the reviewed database before NHTSA and assesses the actual listing", async () => {
   const originalFetch = globalThis.fetch;
   const old = {
