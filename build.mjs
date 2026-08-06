@@ -5,6 +5,8 @@ import path from "node:path";
 
 const SITE = "https://kicktires.netlify.app";   // ← change to your domain
 const NAME = "KickTires";
+// Google Search Console — file verification. Keep this forever once verified.
+const GOOGLE_VERIFY = "googlee9c6c5390d444c3c";
 // Leave empty to disable ads entirely. Set to "ca-pub-XXXXXXXXXXXXXXXX" once approved.
 const ADSENSE = process.env.ADSENSE_CLIENT || "";
 const D = JSON.parse(fs.readFileSync("data.json", "utf8"));
@@ -279,6 +281,10 @@ write(`${OUT}/sitemap.xml`,
 `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` +
 urls.map(([u,p])=>`  <url><loc>${u}</loc><lastmod>${TODAY}</lastmod><priority>${p}</priority></url>`).join("\n") +
 `\n</urlset>\n`);
+// Search Console ownership file + anything you drop in ./static
+if (GOOGLE_VERIFY) write(`${OUT}/${GOOGLE_VERIFY}.html`, `google-site-verification: ${GOOGLE_VERIFY}.html`);
+if (fs.existsSync("static")) fs.cpSync("static", OUT, { recursive: true });
+
 write(`${OUT}/robots.txt`, `User-agent: *\nAllow: /\n\nSitemap: ${SITE}/sitemap.xml\n`);
 write(`${OUT}/_headers`, `/*\n  X-Content-Type-Options: nosniff\n  Referrer-Policy: strict-origin-when-cross-origin\n`);
 
