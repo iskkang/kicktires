@@ -1,0 +1,549 @@
+{
+ "alt": {
+  "real": true,
+  "name": "2019 Nissan Altima 2.5 SV",
+  "specs": [
+   "2.5L 4-cyl · CVT",
+   "149,000 mi",
+   "Dealer · Columbus, OH",
+   "Listed $8,999"
+  ],
+  "delta": "−$90",
+  "dclass": "fair",
+  "dlabel": "vs. mileage-adjusted market",
+  "vline": "Everyone avoids this car for the wrong reason.",
+  "vsub": "The Altima's CVT reputation is real — it just belongs to the previous generation. We read all 226 NHTSA complaints filed against the 2019: roughly five mention the transmission at all. Fifty-two are electrical. Forty-eight are the engine. You've been worrying about the wrong thing, and the actual problems are still sitting right here.",
+  "lo": 4900,
+  "hi": 12200,
+  "price": 8999,
+  "median": 9247,
+  "markPos": 56,
+  "medPos": 60,
+  "dist": [
+   0,
+   5,
+   11,
+   29,
+   31,
+   33,
+   34,
+   39,
+   40,
+   40,
+   43,
+   45,
+   47,
+   50,
+   51,
+   56,
+   56,
+   57,
+   58,
+   58,
+   60,
+   60,
+   60,
+   62,
+   63,
+   65,
+   65,
+   65,
+   68,
+   69,
+   69,
+   78,
+   80,
+   81,
+   82,
+   85,
+   88,
+   89,
+   89,
+   96,
+   97,
+   100
+  ],
+  "tco": {
+   "ins": 1700,
+   "mpg": 30,
+   "fuel": "regular",
+   "repair": 1150
+  },
+  "risks": [
+   {
+    "s": "crit",
+    "lbl": "MAJOR",
+    "t": "Engine — overheating, coolant, metal in the oil",
+    "c": "$1,200–4,500",
+    "cl": "48 complaints",
+    "b": "The second-largest complaint category and by far the most expensive one. Owners report overheating with hot air from the vents, EGR cooler and valve failures, cracked heads, and — in more than one filing — metal found in the oil pan.",
+    "e": [
+     [
+      "v",
+      "NHTSA",
+      "48 engine complaints on the 2019 model year, plus 18 more filed under engine cooling."
+     ],
+     [
+      "v",
+      "NHTSA",
+      "Recurring fault codes across filings: P0404 and P0101 (EGR and mass airflow), P0087 (fuel rail pressure)."
+     ],
+     [
+      "o",
+      "OUR TAKE",
+      "At 149,000 miles, a cold-start coolant check and an oil inspection tell you more than the entire test drive will. Metal in the oil ends the conversation."
+     ]
+    ]
+   },
+   {
+    "s": "ser",
+    "lbl": "COMMON",
+    "t": "Electrical — the most complained-about thing on this car",
+    "c": "$250–900",
+    "cl": "52 complaints",
+    "b": "Door lock actuators are the standout: owners report all four failing, leaving doors that won't lock or unlock by key or remote. Add repeat battery drain and an infotainment head unit that changes stations and volume on its own.",
+    "e": [
+     [
+      "v",
+      "NHTSA",
+      "52 electrical complaints — the largest single category for this model year."
+     ],
+     [
+      "o",
+      "OUR TAKE",
+      "None of this strands you. All of it is the kind of annoyance that makes people sell the car two years early, which is probably why this one is for sale."
+     ]
+    ]
+   },
+   {
+    "s": "warn",
+    "lbl": "WATCH",
+    "t": "Seven open recalls — check them, they're free",
+    "c": "$0",
+    "cl": "if unrepaired",
+    "b": "Including a fuel pump lock ring that can disengage on 2.5L front-drive cars (19V316000) and a fuel tube retainer clip (18V922000) — both fuel-leak fire risks. Also tires, brake light switch, and two separate backup camera campaigns.",
+    "e": [
+     [
+      "v",
+      "NHTSA",
+      "Seven recall campaigns cover this model year. Recall 25V437000 (engine bearing failure and fire risk) applies to the 2.0L VC-Turbo only — not this 2.5L car."
+     ],
+     [
+      "o",
+      "OUR TAKE",
+      "Run the VIN through NHTSA before you go look at it. Unrepaired recalls are free to fix and give you something concrete to hold over the seller."
+     ]
+    ]
+   }
+  ],
+  "chk": [
+   "<b>Check the oil before you check anything else.</b> Metal content shows up in NHTSA filings on this engine. Pull the dipstick yourself, in daylight.",
+   "<b>Run the VIN for open recalls first.</b> Seven campaigns cover this year, two of them fuel-leak fire risks. It's free, it takes a minute, and it's leverage.",
+   "<b>Lock and unlock every door, twice.</b> The single most-reported failure on this car, and the one the seller definitely knows about.",
+   "<b>Decide your walk-away number before you go.</b> The real question isn't whether $8,999 is cheap. It's whether losing $8,999 would ruin your year."
+  ],
+  "meta": {
+   "slug": "2019-nissan-altima-problems",
+   "y": 2019,
+   "mk": "Nissan",
+   "md": "Altima",
+   "q": "2019 Nissan Altima problems",
+   "title": "2019 Nissan Altima Problems: What 226 NHTSA Complaints Actually Say",
+   "desc": "Everyone blames the CVT. We read all 226 federal complaints filed against the 2019 Altima — about five mention the transmission. Here is what actually goes wrong, what it costs, and what to check before you buy.",
+   "nhtsa": 226,
+   "recalls": 7
+  }
+ },
+ "f150": {
+  "real": true,
+  "name": "2018 Ford F-150 XLT SuperCrew 3.5 EcoBoost",
+  "specs": [
+   "3.5L V6 turbo",
+   "81,700 mi",
+   "Franchise dealer · Dallas, TX",
+   "Listed $24,800"
+  ],
+  "delta": "−$400",
+  "dclass": "fair",
+  "dlabel": "vs. market",
+  "vline": "It's the transmission. Not the engine everyone warns you about.",
+  "vsub": "Every forum tells you to listen for cam phaser rattle on these. We pulled the NHTSA complaints for the 2018: seven of nine are the 10-speed transmission. One is the cam phasers. The internet has you checking the wrong thing in the driveway.",
+  "lo": 20900,
+  "hi": 31200,
+  "price": 24800,
+  "median": 25200,
+  "dist": [
+   12,
+   18,
+   23,
+   28,
+   32,
+   36,
+   39,
+   42,
+   45,
+   47,
+   49,
+   51,
+   53,
+   55,
+   57,
+   60,
+   63,
+   66,
+   70,
+   74,
+   79,
+   85,
+   91
+  ],
+  "tco": {
+   "ins": 1620,
+   "mpg": 19,
+   "fuel": "regular",
+   "repair": 850
+  },
+  "risks": [
+   {
+    "s": "crit",
+    "lbl": "MAJOR",
+    "t": "10R80 transmission — CDF clutch sleeve defect",
+    "c": "$2,200–4,800",
+    "cl": "7 of 9 complaints",
+    "b": "Owners describe violent shifting, RPM flaring, harsh unexpected downshifts at speed, and slipping. Filings repeatedly name the 10R80 CDF clutch-cylinder sleeve defect, which affects 2017–2022 trucks. Corrected parts reportedly weren't in Ford's supply until 2023.",
+    "e": [
+     [
+      "v",
+      "NHTSA",
+      "7 of 9 complaints for this model year are filed under Power Train, all describing the same shifting behaviour."
+     ],
+     [
+      "s",
+      "OWNERS",
+      "The 10R80 sleeve defect is documented across owner communities as a 2017–2022 issue rather than a one-off."
+     ],
+     [
+      "o",
+      "OUR TAKE",
+      "This is the test drive. Not the cold start. If it flares or slams on a downshift once, it will do it again, and the repair is real money."
+     ]
+    ]
+   },
+   {
+    "s": "ser",
+    "lbl": "COMMON",
+    "t": "Cam phaser rattle — real, but not the headline",
+    "c": "$1,800–3,200",
+    "cl": "1 complaint",
+    "b": "A few seconds of rattle on a cold start. Well documented on these EcoBoost V6s and worth checking, but in the federal complaint data for this year it's a footnote next to the transmission.",
+    "e": [
+     [
+      "v",
+      "NHTSA",
+      "One engine complaint for this model year mentions cam phaser work, and it's about a leaking repair rather than the original fault."
+     ],
+     [
+      "s",
+      "OWNERS",
+      "Ford revised the design; trucks repaired with updated parts generally stay fixed."
+     ],
+     [
+      "o",
+      "OUR TAKE",
+      "Still check it. Just don't let a clean cold start convince you the truck is fine — that's not where this one goes wrong."
+     ]
+    ]
+   },
+   {
+    "s": "warn",
+    "lbl": "WATCH",
+    "t": "What it did for a living",
+    "c": "Condition",
+    "cl": "go look",
+    "b": "81,000 miles of towing and 81,000 miles of commuting are not the same vehicle. The hitch, rear suspension and brakes will tell you which one this is.",
+    "e": [
+     [
+      "o",
+      "OUR TAKE",
+      "A chewed-up hitch ball on a low-mileage truck says more than any history report."
+     ]
+    ]
+   }
+  ],
+  "chk": [
+   "<b>Drive it 30 minutes in mixed traffic and force downshifts.</b> This is the whole inspection. The 10-speed misbehaves under load and deceleration, not on a smooth highway cruise.",
+   "<b>Ask whether the transmission has been touched.</b> Parts corrected for the sleeve defect only reached dealers around 2023 — anything repaired before that may be back.",
+   "<b>Still start it stone cold and listen.</b> Cam phasers are a smaller risk here, but it's five seconds of your time.",
+   "<b>Get under the back of it.</b> Hitch, wiring and rear brakes tell you how this truck actually lived."
+  ],
+  "meta": {
+   "slug": "2018-ford-f150-problems",
+   "y": 2018,
+   "mk": "Ford",
+   "md": "F-150",
+   "q": "2018 Ford F-150 problems",
+   "title": "2018 Ford F-150 Problems: It Is the Transmission, Not the Cam Phasers",
+   "desc": "Seven of nine NHTSA complaints against the 2018 F-150 are the 10R80 ten-speed transmission. One is cam phasers. Here is what to actually test on the drive, and what the repair costs.",
+   "nhtsa": 9,
+   "recalls": 0
+  }
+ },
+ "rav": {
+  "real": true,
+  "name": "2020 Toyota RAV4 XLE AWD",
+  "specs": [
+   "2.5L 4-cyl",
+   "53,900 mi",
+   "Franchise dealer · Denver, CO",
+   "Listed $25,400"
+  ],
+  "delta": "+$1,100",
+  "dclass": "good",
+  "dlabel": "vs. market",
+  "vline": "Still the smart buy. Just not the flawless one people assume.",
+  "vsub": "627 complaints on the 2020, and the top category isn't the engine — it's the body. Liftgate hinges crack. There's a coolant bypass valve that goes around 60,000 to 100,000 miles and dealers charge $800–1,300 to fix. And an airbag sensor recall. It's still the best car on this page. Go in with your eyes open, not closed.",
+  "lo": 21400,
+  "hi": 28600,
+  "price": 25400,
+  "median": 24300,
+  "dist": [
+   10,
+   16,
+   22,
+   27,
+   31,
+   35,
+   38,
+   41,
+   44,
+   47,
+   49,
+   51,
+   53,
+   55,
+   57,
+   59,
+   62,
+   65,
+   68,
+   72,
+   77,
+   83,
+   90
+  ],
+  "tco": {
+   "ins": 1480,
+   "mpg": 29,
+   "fuel": "regular",
+   "repair": 420
+  },
+  "risks": [
+   {
+    "s": "ser",
+    "lbl": "COMMON",
+    "t": "Coolant bypass valve — the bill nobody warns you about",
+    "c": "$800–1,300",
+    "cl": "60k–100k mi",
+    "b": "A failing valve leaks coolant into electrical connectors and triggers an engine warning. It lands squarely in the mileage window this car is heading into, and owners report dealers charging full price for what many of them consider a design fault.",
+    "e": [
+     [
+      "v",
+      "NHTSA",
+      "61 engine complaints on the 2020, with this valve the recurring theme."
+     ],
+     [
+      "o",
+      "OUR TAKE",
+      "At 53,900 miles you are just short of the window. Price this in as a near-certain future bill rather than a maybe."
+     ]
+    ]
+   },
+   {
+    "s": "ser",
+    "lbl": "COMMON",
+    "t": "Liftgate hinges crack — and it's the #1 complaint",
+    "c": "$400–1,100",
+    "cl": "89 complaints",
+    "b": "The largest single complaint category on this car is Structure, and it's almost entirely the rear hatch. Owners report hinges cracking, mounting points bending or fracturing, and hatches that no longer close properly.",
+    "e": [
+     [
+      "v",
+      "NHTSA",
+      "89 structure complaints — more than engine, airbags or electrical."
+     ],
+     [
+      "o",
+      "OUR TAKE",
+      "Open and close the tailgate a dozen times and look hard at the hinges. It's the easiest thing on this list to check and nobody does it."
+     ]
+    ]
+   },
+   {
+    "s": "warn",
+    "lbl": "WATCH",
+    "t": "Airbag sensor recall 23V865000",
+    "c": "$0",
+    "cl": "parts backlog",
+    "b": "An occupant classification sensor defect that can stop the passenger airbag deploying in a crash. Owners have reported long waits for remedy parts. Six recalls total cover this model year.",
+    "e": [
+     [
+      "v",
+      "NHTSA",
+      "Recall 23V865000 — occupant classification sensor. Five other campaigns cover fuel pump, frontal airbags, cooling, power steering and a front lower control arm."
+     ],
+     [
+      "o",
+      "OUR TAKE",
+      "Check the VIN and ask the dealer to confirm completion in writing. A recall you can't get fixed is still a recall."
+     ]
+    ]
+   }
+  ],
+  "chk": [
+   "<b>Work the tailgate a dozen times and inspect the hinges.</b> The most-complained-about thing on this car, and a two-minute check almost nobody performs.",
+   "<b>Run the VIN for all six recalls.</b> Get written confirmation each is closed, especially the airbag sensor campaign.",
+   "<b>Budget $1,000 for the coolant valve.</b> This car is right at the edge of the window. It's not a reason to walk — it's a reason to negotiate.",
+   "<b>Don't haggle yourself out of it.</b> These sell fast and near asking for a reason. Losing this car over $500 would be the actual mistake."
+  ],
+  "meta": {
+   "slug": "2020-toyota-rav4-problems",
+   "y": 2020,
+   "mk": "Toyota",
+   "md": "RAV4",
+   "q": "2020 Toyota RAV4 problems",
+   "title": "2020 Toyota RAV4 Problems: 627 Complaints, and the Top One Is the Tailgate",
+   "desc": "The most-reported problem on the 2020 RAV4 is not the engine — it is cracked liftgate hinges. Plus a coolant valve that costs $800 to $1,300 and an airbag recall. Still a smart buy, with your eyes open.",
+   "nhtsa": 627,
+   "recalls": 6
+  }
+ },
+ "x5": {
+  "real": true,
+  "name": "2017 BMW X5 xDrive35i",
+  "specs": [
+   "3.0L turbo inline-6",
+   "89,200 mi",
+   "Independent dealer · Atlanta, GA",
+   "Listed $17,200"
+  ],
+  "delta": "−$2,600",
+  "dclass": "under",
+  "dlabel": "vs. market",
+  "vline": "You can afford this car. You cannot afford this car.",
+  "vsub": "Nothing here is unusual for a nine-year-old German SUV. But the most-complained-about item isn't the one the forums obsess over — it's the high-pressure fuel pump, and owners report it failing under 60,000 miles and leaving them stopped in traffic without warning. The $17,200 is the cover charge, not the bill.",
+  "lo": 15100,
+  "hi": 24300,
+  "price": 17200,
+  "median": 19800,
+  "dist": [
+   13,
+   19,
+   24,
+   29,
+   33,
+   37,
+   40,
+   43,
+   46,
+   48,
+   50,
+   52,
+   54,
+   57,
+   59,
+   62,
+   65,
+   68,
+   72,
+   76,
+   81,
+   87,
+   93
+  ],
+  "tco": {
+   "ins": 2340,
+   "mpg": 20,
+   "fuel": "premium",
+   "repair": 2450
+  },
+  "risks": [
+   {
+    "s": "crit",
+    "lbl": "MAJOR",
+    "t": "High-pressure fuel pump — sudden stall, no warning",
+    "c": "$1,400–2,600",
+    "cl": "16 complaints",
+    "b": "The single largest complaint category on this car. Owners describe abrupt power loss and stalling in traffic, with the whole high-pressure fuel system replaced. One filing documents two separate failures, at 39,066 and 57,376 miles.",
+    "e": [
+     [
+      "v",
+      "NHTSA",
+      "16 fuel and propulsion complaints on the 2017 X5 — more than any other category."
+     ],
+     [
+      "o",
+      "OUR TAKE",
+      "This is the one to actually worry about, and it's not what you'll read on the forums. Losing power in a live traffic lane is a different category of problem from a gasket weeping oil."
+     ]
+    ]
+   },
+   {
+    "s": "ser",
+    "lbl": "COMMON",
+    "t": "Cooling system — water pump, fan, overheating",
+    "c": "$1,100–2,000",
+    "cl": "13 complaints",
+    "b": "Owners report overheating with a cluster of warning lights, and water pump failure around 62,000 miles. Radiator fan assembly faults appear repeatedly, including connector corrosion from liquid exposure.",
+    "e": [
+     [
+      "v",
+      "NHTSA",
+      "13 complaints under engine and engine cooling for this model year."
+     ],
+     [
+      "o",
+      "OUR TAKE",
+      "No record of the pump being replaced by 89,000 miles means treat it as a bill you've already run up and simply haven't been handed."
+     ]
+    ]
+   },
+   {
+    "s": "ser",
+    "lbl": "COMMON",
+    "t": "Oil leaks — real, but forum-grade not federal-grade",
+    "c": "$1,200–2,400",
+    "cl": "owner reports",
+    "b": "Valve cover and filter housing gaskets harden with heat and this engine is the age where both give up. Consistently reported by owners — though notably it barely registers in federal complaint data, because a slow leak isn't a safety issue.",
+    "e": [
+     [
+      "s",
+      "OWNERS",
+      "One of the most consistently discussed items on this engine at this age and mileage."
+     ],
+     [
+      "o",
+      "OUR TAKE",
+      "We're labelling this owner-reported rather than NHTSA-verified on purpose. It's still very likely — but you should know which of these claims we can actually prove."
+     ]
+    ]
+   }
+  ],
+  "chk": [
+   "<b>Ask directly whether the high-pressure fuel pump has been replaced.</b> It's the top complaint category and owners report failures well under 60,000 miles. This one can strand you.",
+   "<b>Use a BMW specialist, not the shop down the road.</b> $200 here is the best money in this entire transaction.",
+   "<b>Ask for water pump and thermostat records.</b> No paperwork at 89,000 miles means assume it's due and price it in.",
+   "<b>Answer this honestly before you go:</b> could you absorb a surprise $2,500 twice in the first year? If not, walk. There's no price that fixes this."
+  ],
+  "meta": {
+   "slug": "2017-bmw-x5-problems",
+   "y": 2017,
+   "mk": "BMW",
+   "md": "X5",
+   "q": "2017 BMW X5 problems",
+   "title": "2017 BMW X5 Problems: The Fuel Pump Nobody Warns You About",
+   "desc": "Forums obsess over oil leaks. The top NHTSA complaint category on the 2017 X5 is the high-pressure fuel pump, with owners reporting sudden stalls under 60,000 miles. Full cost of ownership breakdown.",
+   "nhtsa": 73,
+   "recalls": 0
+  }
+ }
+}
