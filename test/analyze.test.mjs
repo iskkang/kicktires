@@ -65,6 +65,16 @@ test("completes a partial live response from supplied federal facts", () => {
   assert.match(analysis.vsub, /4 recall campaigns/);
   assert.equal(analysis.risks[0].e[0][0], "v");
   assert.equal(analysis.estimates.annualRepairs, 850);
+
+  const baseline = __test.completeLiveAnalysis({}, {
+    nhtsa: {
+      complaintTotal: 137, recallTotal: 4, crashes: 6, fires: 1,
+      topComponents: [{ component: "STEERING", count: 31 }], recalls: []
+    },
+    epa: { kind: "liquid", mpg: 33, fuel: "regular" }
+  }, { year: 2021, make: "honda", model: "civic", price: 17500 });
+  assert.ok(baseline.estimates.annualInsurance >= 900);
+  assert.ok(baseline.estimates.annualRepairs >= 500);
 });
 
 test("uses the reviewed database before NHTSA and assesses the actual listing", async () => {

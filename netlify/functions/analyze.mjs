@@ -15,6 +15,7 @@ import DB from "../../data.json" with { type: "json" };
 
 const ANALYSIS_CACHE_DAYS = 30;
 const FACT_CACHE_DAYS = 7;
+const ANALYSIS_VERSION = "2026-08-07.2";
 const MAX_LISTING_BYTES = 1_500_000;
 const CURRENT_YEAR = new Date().getUTCFullYear();
 const PROFILES = Object.values(DB);
@@ -271,7 +272,7 @@ function normalizeLiveAnalysis(raw) {
   };
 }
 
-function completeLiveAnalysis(raw, evidence) {
+function completeLiveAnalysis(raw, evidence, car = {}) {
   const analysis = normalizeLiveAnalysis(raw);
   const nhtsa = evidence?.nhtsa || {};
   const complaintTotal = numeric(nhtsa.complaintTotal, 0, 1_000_000) ?? 0;
@@ -338,6 +339,25 @@ function completeLiveAnalysis(raw, evidence) {
   for (const item of defaults) {
     if (analysis.chk.length >= 3) break;
     if (!usedLeads.has(norm(item.lead))) analysis.chk.push(item);
+  }
+
+  const premiumMakes = new Set([
+    "acura", "alfaromeo", "audi", "bmw", "cadillac", "genesis", "infiniti",
+    "jaguar", "landrover", "lexus", "lincoln", "maserati", "mercedesbenz",
+    "porsche", "tesla", "volvo"
+  ]);
+  const premium = premiumMakes.has(norm(car.make));
+  const age = Math.max(0, CURRENT_YEAR - (numeric(car.year, 1981, CURRENT_YEAR + 2) || CURRENT_YEAR));
+  const price = numeric(car.price, 100, 2_000_000) || 20_000;
+  const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+  if (analysis.estimates.annualInsurance == null) {
+    const estimate = price * (premium ? 0.105 : 0.085);
+    analysis.estimates.annualInsurance = Math.round(clamp(estimate, 900, 4_200) / 50) * 50;
+  }
+  if (analysis.estimates.annualRepairs == null) {
+    const electricFactor = evidence?.epa?.kind === "electric" ? 0.85 : 1;
+    const estimate = (650 + Math.min(age, 20) * 50) * (premium ? 1.55 : 1) * electricFactor;
+    analysis.estimates.annualRepairs = Math.round(clamp(estimate, 500, 2_500) / 50) * 50;
   }
   return analysis;
 }
@@ -745,6 +765,7 @@ export default async (request) => {
 
   const profile = findProfile(car);
   const listingFingerprint = hash(JSON.stringify({
+    analysisVersion: ANALYSIS_VERSION,
     year: car.year, make: car.make, model: car.model, trim: car.trim,
     mileage: car.mileage, price: car.price, seller: car.seller, notes: car.notes,
     profile: profile ? hash(JSON.stringify(profile)) : null
@@ -804,7 +825,7 @@ export default async (request) => {
     } catch (error) {
       console.error("live analysis failed", error?.message || "unknown");
     }
-    analysis = completeLiveAnalysis(rawAnalysis, evidence);
+    analysis = completeLiveAnalysis(rawAnalysis, evidence, car);
     facts = factsSummary(evidence.nhtsa, "live_nhtsa", evidence.epa);
     tco = tcoFrom(null, analysis, evidence.epa);
   }
