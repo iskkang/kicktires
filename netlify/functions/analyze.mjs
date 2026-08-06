@@ -153,7 +153,8 @@ Return ONLY JSON:
 }
 
 Rules:
-- 2-4 risks and 3-4 checklist items.
+- 2-3 risks and exactly 3 checklist items.
+- Keep each risk body to 1-2 short sentences and include no more than two evidence rows.
 - NHTSA evidence tags are only for supplied federal data. OUR TAKE is judgment.
 - Do not use an OWNERS tag: no owner-forum evidence was supplied.
 - Repair ranges and annual cost fields are estimates, not federal facts. Keep them
@@ -291,7 +292,7 @@ async function callModel(system, user, maxTokens = 2400, temperature = 0.2) {
     if (!process.env.ANTHROPIC_API_KEY) throw new Error("missing_key");
     const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
-      signal: AbortSignal.timeout(20_000),
+      signal: AbortSignal.timeout(24_000),
       headers: {
         "Content-Type": "application/json",
         "x-api-key": process.env.ANTHROPIC_API_KEY,
@@ -313,7 +314,7 @@ async function callModel(system, user, maxTokens = 2400, temperature = 0.2) {
   if (!process.env.DEEPSEEK_API_KEY) throw new Error("missing_key");
   const response = await fetch("https://api.deepseek.com/chat/completions", {
     method: "POST",
-    signal: AbortSignal.timeout(20_000),
+    signal: AbortSignal.timeout(24_000),
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${process.env.DEEPSEEK_API_KEY}`
@@ -575,6 +576,30 @@ function factsSummary(facts, source, epa = null) {
   };
 }
 
+// Keep the model prompt small enough to finish inside a synchronous function while
+// preserving every count it is allowed to cite. Full records remain in the facts cache;
+// the model sees the highest-signal components, one example each, and up to 12 recalls.
+function liveModelEvidence(evidence) {
+  const nhtsa = evidence?.nhtsa || {};
+  return {
+    nhtsa: {
+      source: nhtsa.source,
+      retrievedAt: nhtsa.retrievedAt,
+      complaintTotal: nhtsa.complaintTotal,
+      recallTotal: nhtsa.recallTotal,
+      crashes: nhtsa.crashes,
+      fires: nhtsa.fires,
+      topComponents: asItems(nhtsa.topComponents).slice(0, 6).map(item => ({
+        component: item.component,
+        count: item.count,
+        examples: asItems(item.examples).slice(0, 1)
+      })),
+      recalls: asItems(nhtsa.recalls).slice(0, 12)
+    },
+    epa: evidence?.epa || null
+  };
+}
+
 function tcoFrom(profile, analysis, epa) {
   if (profile?.tco) {
     return {
@@ -703,10 +728,10 @@ export default async (request) => {
     try {
       rawAnalysis = asJson(await callModel(ANALYZE_LIVE, JSON.stringify({
         vehicle: car,
-        nhtsa: evidence.nhtsa,
-        epa: evidence.epa
-      }, null, 1), 2600, 0.2));
-    } catch {
+        ...liveModelEvidence(evidence)
+      }), 1300, 0.15));
+    } catch (error) {
+      console.error("live analysis failed", error?.message || "unknown");
       return json({ error: "analysis_failed", car }, 502);
     }
     analysis = normalizeLiveAnalysis(rawAnalysis);
