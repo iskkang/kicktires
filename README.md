@@ -1,68 +1,67 @@
-# WhyThisPrice — static site
+# KickTires
 
-Every page is generated from `data.json`. No framework, no runtime, no database.
+KickTires is a buyer-side used-car analyzer for the US market. A visitor pastes a
+listing URL or its text. The server identifies the exact vehicle, loads reviewed
+KickTires data when available, otherwise retrieves current NHTSA complaint and
+recall records plus EPA fuel-economy data, and asks the configured model for a
+listing-specific ownership-risk verdict.
 
-## Deploy to Netlify
+The language model does not retrieve or invent federal counts. The function
+retrieves the evidence first and supplies it as fixed input.
 
-**Fastest (no git):**
-1. `node build.mjs`
-2. Drag the `dist/` folder onto https://app.netlify.com/drop
+## Architecture
 
-**Proper (auto-rebuild on push):**
-1. Push this folder to a GitHub repo
-2. Netlify → Add new site → Import from Git → pick the repo
-3. Netlify reads `netlify.toml`, so build command and publish dir are already set
+- `build.mjs` generates the static site in `dist/` from `data.json`.
+- `data.json` contains reviewed model profiles used by SEO pages and live analysis.
+- `netlify/functions/analyze.mjs` handles listing extraction and live analysis.
+- Netlify Blobs stores derived analyses for 30 days and vehicle evidence for 7 days.
+- Pasted listing text is not stored in the cache.
 
-## Before you deploy
+The live request flow is:
 
-Open `build.mjs` and change `SITE` to your real domain. It feeds canonical
-tags, Open Graph URLs and `sitemap.xml`, and Google will treat those as
-wrong if the domain doesn't match.
+1. Fetch a public listing URL safely, or use pasted listing text.
+2. Extract year, make, model, price, mileage and seller disclosures.
+3. Match the reviewed database.
+4. If unmatched, retrieve NHTSA and EPA records.
+5. Generate an ownership-risk verdict for that specific listing.
+6. Calculate a five-year estimate from the actual asking price when enough data exists.
 
-## After you deploy
+This is not a live market-comparable price appraisal. The verdict answers whether
+the listing looks like an ownership-cost trap at the stated price and mileage.
 
-1. Google Search Console → add property → verify by DNS
-2. Submit `https://yourdomain/sitemap.xml`
-3. Bing Webmaster Tools → import from Search Console (one click)
-4. Expect nothing for 2–6 weeks. New domains sit in a sandbox.
+## Local checks
 
-## Adding a model
+```sh
+npm install
+npm test
+npm run build
+npx netlify-cli build --offline
+```
 
-Append to `data.json` following the existing shape, then rebuild.
-Required: `meta.slug`, `meta.title`, `meta.desc`, `meta.nhtsa`.
+## Netlify deployment
 
-Pull the complaint and recall counts from:
-- `https://api.nhtsa.gov/complaints/complaintsByVehicle?make=X&model=Y&modelYear=Z`
-- `https://api.nhtsa.gov/recalls/recallsByVehicle?make=X&model=Y&modelYear=Z`
+The repository is connected to Netlify. `netlify.toml` runs `node build.mjs`,
+publishes `dist/`, bundles the analysis function, and applies a per-IP rate limit.
 
-Model names must match NHTSA's exactly — `f-150` works, `f150` returns a 400.
+Set these environment variables in Netlify:
 
-## API keys — where they actually go
+| Key | Required | Purpose |
+|---|---:|---|
+| `PROVIDER` | yes | `deepseek` or `claude`; production normally uses `deepseek` |
+| `DEEPSEEK_API_KEY` | for DeepSeek | Server-side API key |
+| `DEEPSEEK_MODEL` | recommended | The production DeepSeek V4 model alias |
+| `ANTHROPIC_API_KEY` | for Claude | Optional alternate provider key |
+| `ANTHROPIC_MODEL` | optional | Alternate Claude model |
+| `ADSENSE_CLIENT` | optional | Enables AdSense after approval |
 
-The site itself uses no AI. It is static HTML. Keys are needed in two places,
-and **neither of them is the browser**:
+Never place keys in `build.mjs`, `style.css`, `data.json`, or `dist/`.
 
-### 1. Runtime — parsing a pasted listing
-`netlify/functions/analyze.mjs` runs on Netlify's servers, not in the visitor's
-browser. Set the key in **Netlify → Site configuration → Environment variables**:
+## Adding a reviewed model
 
-| Key | Value |
-|---|---|
-| `PROVIDER` | `deepseek` |
-| `DEEPSEEK_API_KEY` | your key |
-| `DEEPSEEK_MODEL` | the V4 alias you want (Flash for this job) |
+Add an entry to `data.json` with `meta`, risks, inspection items and reviewed cost
+inputs, then run the checks above. NHTSA vehicle model names must match the federal
+API. A reviewed page is a trusted cache, not a gate: unreviewed models still use the
+live NHTSA path.
 
-Then redeploy. Until you do, the paste box still works — it falls back to
-matching against models already on the site.
-
-**Never** put a key in `build.mjs`, in `style.css`, or anywhere under `dist/`.
-Anything in `dist/` is public. View-source reveals it and bots scrape leaked
-keys within hours.
-
-### 2. Build time — writing new model pages
-That script runs on your laptop, not on Netlify. Copy `.env.example` to `.env`,
-put the key there, and make sure `.env` is in `.gitignore`.
-
-Use the cheaper model for parsing and the better model for writing pages —
-and use a *different provider* to verify what was written. Checking a model's
-output with the same model does not catch its own blind spots.
+Before changing domains, update `SITE` in `build.mjs`; it controls canonical URLs,
+Open Graph URLs, `robots.txt`, and `sitemap.xml`.

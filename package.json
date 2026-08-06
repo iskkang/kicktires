@@ -3,10 +3,16 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Static site: what a used car actually costs, checked against NHTSA records.",
+  "description": "Buyer-side used-car risk analysis grounded in NHTSA and EPA records.",
   "scripts": {
     "build": "node build.mjs",
-    "dev": "node build.mjs && python3 -m http.server 8080 --directory dist"
+    "dev": "node build.mjs && python3 -m http.server 8080 --directory dist",
+    "test": "node --test"
   },
-  "engines": { "node": ">=20" }
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@netlify/blobs": "^10.7.12"
+  }
 }

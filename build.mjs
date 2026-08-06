@@ -14,7 +14,9 @@ const OUT = "dist";
 const TODAY = process.env.BUILD_DATE || new Date().toISOString().slice(0, 10);
 
 const css = fs.readFileSync("style.css", "utf8");
-const esc = s => String(s).replace(/&(?!\w+;)/g, "&amp;").replace(/</g, "&lt;");
+const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;")
+  .replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+const safeBold = s => esc(s).replace(/&lt;b&gt;/gi, "<b>").replace(/&lt;\/b&gt;/gi, "</b>");
 const money = n => "$" + Math.round(n).toLocaleString("en-US");
 
 const STATES = {
@@ -50,7 +52,7 @@ function head({title,desc,url,jsonld}){
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%233987e5'/><rect x='8' y='11' width='16' height='3' rx='1.5' fill='%230a0b0d'/><rect x='8' y='18' width='16' height='3' rx='1.5' fill='%230a0b0d'/></svg>">
 <style>${css}</style>
 ${ADSENSE ? `<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE}" crossorigin="anonymous"></script>` : ""}
-${jsonld ? `<script type="application/ld+json">${JSON.stringify(jsonld)}</script>` : ""}
+${jsonld ? `<script type="application/ld+json">${JSON.stringify(jsonld).replace(/</g, "\\u003c")}</script>` : ""}
 </head><body>
 <nav><div class="navin">
   <a class="logo" href="/"><i></i>${NAME}</a>
@@ -73,12 +75,13 @@ const adUnit = slot => ADSENSE ? `
 /* ── model page ────────────────────────────────────────────────── */
 function modelPage(key, d){
   const m = d.meta, url = `${SITE}/cars/${m.slug}/`;
-  const T = tco(d, STATES.OH);
+  const T = d.tco && typeof d.price === "number" ? tco(d, STATES.OH) : null;
+  const hasListing = typeof d.price === "number";
   const risks = d.risks.map(r=>`
-    <article class="risk s-${r.s}">
-      <div class="sevwrap"><div class="sevbar"></div><div class="sevtxt">${r.lbl}</div></div>
+    <article class="risk s-${["crit","ser","warn"].includes(r.s) ? r.s : "warn"}">
+      <div class="sevwrap"><div class="sevbar"></div><div class="sevtxt">${esc(r.lbl)}</div></div>
       <div><h3 class="rtitle">${esc(r.t)}</h3><p class="rbody">${esc(r.b)}</p>
-      ${r.e.map(([t,tag,txt])=>`<div class="ev"><div class="evtag e-${t}">${tag}</div><p class="evtxt">${esc(txt)}</p></div>`).join("")}</div>
+      ${r.e.map(([t,tag,txt])=>`<div class="ev"><div class="evtag e-${["v","s","o"].includes(t) ? t : "o"}">${esc(tag)}</div><p class="evtxt">${esc(txt)}</p></div>`).join("")}</div>
       <div class="cost"><span class="cnum">${esc(r.c)}</span><div class="micro clbl">${esc(r.cl)}</div></div>
     </article>`).join("");
 
@@ -105,7 +108,7 @@ function modelPage(key, d){
   <p class="lede">${esc(d.vsub)}</p>
 
   <section class="panel">
-    <div class="phead"><div><p class="micro">Example listing</p>
+    <div class="phead"><div><p class="micro">${hasListing ? "Example listing" : "What we checked"}</p>
       <p class="rtitle" style="margin:6px 0 0;font-size:17px">${esc(d.name)}</p></div></div>
     <div class="pbody"><div class="specs">${d.specs.map(s=>`<span class="spec">${esc(s)}</span>`).join("")}</div></div>
   </section>
@@ -120,8 +123,8 @@ function modelPage(key, d){
     </div>
   </section>
 
-  <h2>What five years of ownership actually costs</h2>
-  <p class="sub">Based on the example listing above, in Ohio. Insurance and tax vary by state by more than most buyers expect.</p>
+  ${!T ? "" : `<h2>What five years of ownership actually costs</h2>
+  <p class="sub">${hasListing ? "Based on the example listing above, in Ohio." : "For a typical example of this model, in Ohio."} Insurance and tax vary by state by more than most buyers expect.</p>
   <section class="panel"><div class="pbody">
     <div class="tcohero">
       <div><span class="micro">Sticker price</span><span class="tbig muted">${money(d.price)}</span></div>
@@ -130,11 +133,11 @@ function modelPage(key, d){
     </div>
     <div class="bar">${T.rows.map(r=>`<div class="seg ${r[3]}" style="width:${(r[1]/T.total*100).toFixed(2)}%"></div>`).join("")}</div>
     <div class="tlines">${T.rows.map(r=>`<div class="tline"><span class="tdot ${r[3]}"></span><span class="tname">${r[0]}</span><span class="tnote">${esc(r[2])}</span><span class="tval">${money(r[1])}</span></div>`).join("")}</div>
-  </div></section>
+  </div></section>`}
 
   <h2>Take this to the inspection</h2>
   <section class="panel"><div class="pbody">
-    ${d.chk.map(c=>`<div class="chk"><div class="cbox"></div><p>${c}</p></div>`).join("")}
+    ${d.chk.map(c=>`<div class="chk"><div class="cbox"></div><p>${safeBold(c)}</p></div>`).join("")}
   </div></section>
 
   <section class="oath">
@@ -152,8 +155,7 @@ function modelPage(key, d){
 
 /* ── home ──────────────────────────────────────────────────────── */
 function home(){
-  const jsonld = {"@context":"https://schema.org","@type":"WebSite",name:NAME,url:SITE+"/",
-    potentialAction:{"@type":"SearchAction",target:SITE+"/cars/?q={search_term_string}","query-input":"required name=search_term_string"}};
+  const jsonld = {"@context":"https://schema.org","@type":"WebSite",name:NAME,url:SITE+"/"};
   return head({title:`${NAME} — every cheap used car is cheap for a reason`,
     desc:"Paste any used car listing. We tell you what actually goes wrong with that model according to federal complaint records, what it costs when it breaks, and what five years of ownership really adds up to. We take no money from sellers.",
     url:SITE+"/", jsonld}) + `
@@ -165,10 +167,12 @@ function home(){
     <form class="paste" onsubmit="route(event);return false">
       <textarea id="inp" placeholder="Paste a listing URL — or if it's Facebook Marketplace, paste the listing text instead."></textarea>
       <div class="pfoot"><span class="srcs">Cars.com · Autotrader · CarGurus · Craigslist · dealer sites · pasted text</span>
-      <button class="btn" type="submit">Check this car</button></div>
+      <button class="btn" id="analyzeBtn" type="submit">Check this car</button></div>
     </form>
-    <p id="hint" class="hint"></p>
+    <p id="hint" class="hint" aria-live="polite"></p>
   </div></section>
+
+  <div id="live" aria-live="polite"></div>
 
   ${adUnit("1111111111")}
 
@@ -178,43 +182,172 @@ function home(){
     `<a class="card" href="/cars/${o.meta.slug}/"><span class="micro">${o.meta.nhtsa} complaints checked</span><span class="cardt">${o.meta.y} ${o.meta.mk} ${o.meta.md}</span><span class="cardd">${esc(o.vline)}</span></a>`).join("")}</div>
 </main>
 <script>
-const IDX = ${JSON.stringify(Object.values(D).map(o=>({s:o.meta.slug,y:o.meta.y,mk:o.meta.mk.toLowerCase(),md:o.meta.md.toLowerCase().replace(/[^a-z0-9]/g,"")})))};
-const hint = m => document.getElementById("hint").textContent = m;
-const match = (y,mk,md) => IDX.find(v => String(v.y)===String(y) && v.mk===String(mk||"").toLowerCase()
-  && String(md||"").toLowerCase().replace(/[^a-z0-9]/g,"")===v.md);
+const STATES = ${JSON.stringify(STATES)};
+const ENERGY = {regular:3.20,premium:4.05,diesel:3.85,electric:0.16};
+const MILES = 12000, YEARS = 5;
+const $ = id => document.getElementById(id);
+const hint = message => { $("hint").textContent = message; };
+const html = value => String(value == null ? "" : value).replace(/&/g,"&amp;")
+  .replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+const dollars = value => "$" + Math.round(Number(value)).toLocaleString("en-US");
+const validClass = (value, allowed, fallback) => allowed.includes(value) ? value : fallback;
 
-function localGuess(t){
-  const s = t.toLowerCase().replace(/[^a-z0-9 ]/g," ");
-  return IDX.find(v => s.includes(String(v.y)) && s.includes(v.mk) && s.replace(/ /g,"").includes(v.md));
+function totalCost(tco, price, stateCode){
+  const state = STATES[stateCode] || STATES.OH;
+  if (!tco || !Number.isFinite(price) || price <= 0) return null;
+  const salesTax = price * state.tax;
+  const insurance = Number(tco.ins || 0) * state.ins * YEARS;
+  const registration = state.reg * YEARS;
+  let propertyTax = 0, value = price;
+  for (let year = 0; year < YEARS; year++) { propertyTax += value * state.prop; value *= 0.85; }
+  let fuel = 0, efficiencyNote = "";
+  if (tco.fuel === "electric" && Number(tco.kwhPer100) > 0) {
+    fuel = MILES * YEARS / 100 * Number(tco.kwhPer100) * ENERGY.electric;
+    efficiencyNote = Number(tco.kwhPer100).toFixed(1) + " kWh/100 mi";
+  } else if (Number(tco.mpg) > 0) {
+    fuel = MILES * YEARS / Number(tco.mpg) * (ENERGY[tco.fuel] || ENERGY.regular);
+    efficiencyNote = Number(tco.mpg) + " mpg";
+  }
+  const repairs = Number(tco.repair || 0) * YEARS;
+  const rows = [
+    ["Purchase price",price,"one-time","b-1"],
+    ["Sales tax",salesTax,(state.tax*100).toFixed(2)+"% in "+state.n,"b-2"],
+    ["Insurance",insurance,"5-year estimate","b-3"],
+    ["Registration",registration+propertyTax,state.prop?"includes estimated property tax":"5 years","b-4"],
+    ["Fuel / energy",fuel,MILES.toLocaleString()+" mi/yr · "+efficiencyNote,"b-5"],
+    ["Likely repairs",repairs,"5-year estimate","b-6"]
+  ];
+  return {rows:rows,total:rows.reduce((sum,row)=>sum+row[1],0)};
 }
-async function route(e){
-  e.preventDefault();
-  const text = document.getElementById("inp").value.trim();
+
+function tcoRows(tco, car, stateCode){
+  const result = totalCost(tco, Number(car.price), stateCode);
+  if (!result) return '<p class="lede">The listing did not provide enough sourced cost data for a five-year total.</p>';
+  return '<div class="tcohero">' +
+    '<div><span class="micro">Asking price</span><span class="tbig muted">'+dollars(car.price)+'</span></div>'+
+    '<span class="arrow">&rarr;</span>'+
+    '<div><span class="micro">Five-year estimate</span><span class="tbig">'+dollars(result.total)+'</span></div></div>'+
+    '<div class="bar">'+result.rows.map(function(row){return '<div class="seg '+row[3]+'" style="width:'+
+      (row[1]/result.total*100).toFixed(2)+'%"></div>';}).join("")+'</div>'+
+    '<div class="tlines">'+result.rows.map(function(row){return '<div class="tline"><span class="tdot '+row[3]+
+      '"></span><span class="tname">'+html(row[0])+'</span><span class="tnote">'+html(row[2])+
+      '</span><span class="tval">'+dollars(row[1])+'</span></div>';}).join("")+'</div>'+
+    '<p class="tfoot">Not a quote. Taxes, insurance and repairs vary by location, driver and vehicle condition. '+
+      html(tco.source || "KickTires estimate")+'.</p>';
+}
+
+function render(output){
+  const analysis = output.analysis || {}, car = output.car || {}, facts = output.facts || {};
+  const title = [car.year,car.make,car.model,car.trim].filter(Boolean).join(" ");
+  const chips = [
+    facts.complaintTotal != null ? Number(facts.complaintTotal).toLocaleString()+" NHTSA complaints" : null,
+    facts.recallTotal != null ? Number(facts.recallTotal).toLocaleString()+" recall campaigns" : null,
+    facts.crashes ? Number(facts.crashes).toLocaleString()+" crash reports" : null,
+    car.mileage != null ? Number(car.mileage).toLocaleString()+" mi" : null,
+    car.price != null ? dollars(car.price) : null
+  ].filter(Boolean);
+  const deal = analysis.deal || {};
+  const grade = validClass(deal.grade,["walk","caution","inspect","reasonable"],"inspect");
+
+  const risks = (analysis.risks||[]).map(function(risk){
+    const severity = validClass(risk.s,["crit","ser","warn"],"warn");
+    const evidence = (risk.e||[]).map(function(row){
+      const type = validClass(row[0],["v","s","o"],"o");
+      return '<div class="ev"><div class="evtag e-'+type+'">'+html(row[1])+'</div><p class="evtxt">'+
+        html(row[2])+'</p></div>';
+    }).join("");
+    return '<article class="risk s-'+severity+'"><div class="sevwrap"><div class="sevbar"></div>'+
+      '<div class="sevtxt">'+html(risk.lbl)+'</div></div><div><h3 class="rtitle">'+html(risk.t)+'</h3>'+
+      '<p class="rbody">'+html(risk.b)+'</p>'+evidence+'</div><div class="cost"><span class="cnum">'+
+      html(risk.c)+'</span><div class="micro clbl">'+html(risk.cl)+'</div></div></article>';
+  }).join("");
+
+  const checklist = (analysis.chk||[]).map(function(item){
+    return '<div class="chk"><div class="cbox"></div><p><b>'+html(item.lead)+'</b>'+
+      (item.detail ? ' '+html(item.detail) : '')+'</p></div>';
+  }).join("");
+  const source = facts.source === "reviewed_db" ? "Reviewed KickTires profile" : "NHTSA records pulled live";
+  const profileLink = output.profile ? '<p class="profilelink"><a href="'+html(output.profile)+
+    '">Open the reviewed model page &rarr;</a></p>' : '';
+  const stateOptions = Object.entries(STATES).map(function(entry){
+    return '<option value="'+html(entry[0])+'"'+(entry[0]==="OH"?' selected':'')+'>'+html(entry[1].n)+'</option>';
+  }).join("");
+
+  $("live").innerHTML =
+    '<section class="deal deal-'+grade+'"><p class="micro">Buyer verdict · ownership risk</p>'+
+      '<div class="dealrow"><span class="dealbadge">'+html(deal.label || "Inspection first")+'</span>'+
+      '<p>'+html(deal.reason || "The evidence is not strong enough to skip an inspection.")+'</p></div></section>'+
+    '<section class="panel"><div class="carid"><p class="micro">'+html(source)+'</p><p class="cname">'+html(title)+'</p>'+
+      '<div class="specs">'+chips.map(function(chip){return '<span class="spec">'+html(chip)+'</span>';}).join("")+'</div>'+
+      '<p class="verdict-lead liveverdict">'+html(analysis.vline)+'</p><p class="lede liveline">'+html(analysis.vsub)+'</p>'+
+      profileLink+'</div></section>'+
+    '<h2>What actually goes wrong</h2><p class="sub">Ranked by what it can do to your wallet and safety.</p>'+
+    '<section class="panel">'+risks+'<div class="legend">'+
+      '<div class="lg"><div class="evtag e-v">NHTSA</div><p>Consumer reports and recall records filed in the federal database. Reports are not proof of a defect.</p></div>'+
+      '<div class="lg"><div class="evtag e-s">OWNERS</div><p>Used only when a reviewed profile contains a checked owner source.</p></div>'+
+      '<div class="lg"><div class="evtag e-o">OUR TAKE</div><p>Our judgment and cost estimates — the part that can be wrong.</p></div></div></section>'+
+    (output.tco ? '<h2>What five years of ownership may cost</h2><div class="tcoheading"><p class="sub">Uses the asking price, 12,000 miles a year and the selected state.</p>'+
+      '<label class="statepick">State <select id="statePick">'+stateOptions+'</select></label></div>'+
+      '<section class="panel"><div class="pbody" id="tcoBody"></div></section>' : '')+
+    '<h2>Take this to the inspection</h2><section class="panel"><div class="pbody">'+checklist+'</div></section>';
+
+  if (output.tco) {
+    const update = function(){ $("tcoBody").innerHTML = tcoRows(output.tco,car,$("statePick").value); };
+    $("statePick").addEventListener("change",update); update();
+  }
+  $("live").scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+function setBusy(busy){
+  const button = $("analyzeBtn");
+  button.disabled = busy;
+  button.textContent = busy ? "Checking…" : "Check this car";
+}
+
+async function route(event){
+  event.preventDefault();
+  const text = $("inp").value.trim();
   if (!text) return false;
-
-  const local = localGuess(text);           // instant, works with no backend
-  if (local) { location.href = "/cars/" + local.s + "/"; return false; }
-
-  hint("Reading the listing…");
+  $("live").innerHTML = "";
+  setBusy(true);
+  hint("Reading the listing and pulling its federal records…");
   try {
-    const r = await fetch("/api/analyze", {
+    const response = await fetch("/api/analyze", {
       method:"POST", headers:{"Content-Type":"application/json"},
-      body: JSON.stringify({ text })
+      body: JSON.stringify({text:text})
     });
-    if (r.ok) {
-      const { car } = await r.json();
-      const hit = car && match(car.year, car.make, car.model);
-      if (hit) { location.href = "/cars/" + hit.s + "/"; return false; }
-      if (car && car.year && car.make) {
-        hint("We haven't covered the " + car.year + " " + car.make + " " + (car.model||"") +
-             " yet. We add models in order of how often they're searched.");
-        return false;
-      }
+    if (response.status === 429) {
+      hint("Too many checks from this connection. Try again in a minute."); return false;
     }
-  } catch (err) { /* fall through */ }
-
-  hint("We haven't covered that model yet — browse what we have below.");
-  return false;
+    const output = await response.json().catch(function(){return {};});
+    if (output.analysis) { hint(""); render(output); return false; }
+    if (output.error === "fetch_failed") {
+      hint("That site blocked our reader. Copy the listing text — year, mileage, price and seller description — and paste it instead.");
+      return false;
+    }
+    if (output.error === "no_records") {
+      hint("We identified the vehicle, but found no matching federal complaint or recall records. We will not invent an answer.");
+      return false;
+    }
+    if (output.error === "records_unavailable") {
+      hint("The federal data service did not respond. Try this check again in a moment.");
+      return false;
+    }
+    if (output.error === "no_vehicle") {
+      hint("We could not identify the exact year, make and model. Paste the listing text with all three.");
+      return false;
+    }
+    if (output.error === "missing_key") {
+      hint("The analysis service is not configured."); return false;
+    }
+    hint("We could not finish that analysis. Try pasting the listing text instead of the link.");
+    return false;
+  } catch (error) {
+    hint("Could not reach the analysis service. Try again in a moment.");
+    return false;
+  } finally {
+    setBusy(false);
+  }
 }
 </script>` + foot;
 }
@@ -240,7 +373,7 @@ function privacyPage(){
   <h1>Privacy &amp; cookies</h1>
   <p class="lede">Short version: we don't ask who you are, we don't have accounts, and we don't sell anything about you.</p>
   <h2>What we collect</h2>
-  <p class="lede">Aggregate page analytics only — which pages get visited and roughly where from. No names, no accounts, no email addresses. Anything you paste into the box is used to work out which car you mean and is not stored against you.</p>
+  <p class="lede">Aggregate page analytics only — which pages get visited and roughly where from. No names, no accounts, no email addresses. Listing text or page content you submit is sent to our configured AI provider to identify the vehicle and produce the analysis. We cache only the derived vehicle analysis and source summaries, not the pasted listing text.</p>
   <h2>Advertising</h2>
   <p class="lede">${ADSENSE ? "This site shows ads served by Google AdSense. Google and its partners may use cookies to serve ads based on your prior visits to this and other websites. You can opt out of personalised advertising at <a href='https://www.google.com/settings/ads'>Google Ads Settings</a>, or opt out of third-party vendor cookies at <a href='https://www.aboutads.info'>aboutads.info</a>." : "This site currently shows no advertising."}</p>
   <h2>What we never do</h2>
