@@ -193,8 +193,12 @@ const track = (name, params) => {
   if (typeof window.gtag === "function") window.gtag("event", name, params || {});
 };
 const fail = (code, message) => {
+  stopLoading();
   track("listing_analysis_failed", {error_code:code});
-  hint(message);
+  hint("");
+  $("live").innerHTML = '<section class="analysis-state analysis-error" role="alert">'+
+    '<p class="micro">Analysis stopped</p><h2>We could not finish this check.</h2><p>'+html(message)+'</p></section>';
+  $("live").scrollIntoView({behavior:"smooth",block:"start"});
   return false;
 };
 
@@ -244,6 +248,7 @@ function tcoRows(tco, car, stateCode){
 
 function render(output){
   const analysis = output.analysis || {}, car = output.car || {}, facts = output.facts || {};
+  const limitations = output.limitations || {};
   const title = [car.year,car.make,car.model,car.trim].filter(Boolean).join(" ");
   const chips = [
     facts.complaintTotal != null ? Number(facts.complaintTotal).toLocaleString()+" NHTSA complaints" : null,
@@ -275,11 +280,20 @@ function render(output){
   const source = facts.source === "reviewed_db" ? "Reviewed KickTires profile" : "NHTSA records pulled live";
   const profileLink = output.profile ? '<p class="profilelink"><a href="'+html(output.profile)+
     '">Open the reviewed model page &rarr;</a></p>' : '';
+  const missing = Array.isArray(limitations.missing) ? limitations.missing : [];
+  const missingLabel = missing.join(" and ");
+  const limitationCard = missing.length ? '<section class="analysis-state listing-limit" role="note">'+
+    '<p class="micro">Missing listing data</p><h2>'+html(missingLabel.charAt(0).toUpperCase()+missingLabel.slice(1))+
+    (missing.length === 1 ? ' is' : ' are')+' missing.</h2><p>We can screen the model-year federal records below, but '+
+    'we cannot judge whether this specific listing is a good transaction. '+html(limitations.message || "Add the missing data and run the check again.")+'</p></section>' : '';
+  const stateMatch = String(car.location || "").match(/,\s*([A-Z]{2})(?:\s+\d{5})?\b/);
+  const defaultState = stateMatch && STATES[stateMatch[1]] ? stateMatch[1] : "OH";
   const stateOptions = Object.entries(STATES).map(function(entry){
-    return '<option value="'+html(entry[0])+'"'+(entry[0]==="OH"?' selected':'')+'>'+html(entry[1].n)+'</option>';
+    return '<option value="'+html(entry[0])+'"'+(entry[0]===defaultState?' selected':'')+'>'+html(entry[1].n)+'</option>';
   }).join("");
 
   $("live").innerHTML =
+    limitationCard+
     '<section class="deal deal-'+grade+'"><p class="micro">Buyer verdict · ownership risk</p>'+
       '<div class="dealrow"><span class="dealbadge">'+html(deal.label || "Inspection first")+'</span>'+
       '<p>'+html(deal.reason || "The evidence is not strong enough to skip an inspection.")+'</p></div></section>'+
@@ -292,7 +306,9 @@ function render(output){
       '<div class="lg"><div class="evtag e-v">NHTSA</div><p>Consumer reports and recall records filed in the federal database. Reports are not proof of a defect.</p></div>'+
       '<div class="lg"><div class="evtag e-s">OWNERS</div><p>Used only when a reviewed profile contains a checked owner source.</p></div>'+
       '<div class="lg"><div class="evtag e-o">OUR TAKE</div><p>Our judgment and cost estimates — the part that can be wrong.</p></div></div></section>'+
-    (output.tco ? '<h2>What five years of ownership may cost</h2><div class="tcoheading"><p class="sub">Uses the asking price, 12,000 miles a year and the selected state.</p>'+
+    (output.tco ? '<h2>What five years of ownership may cost</h2><div class="tcoheading"><p class="sub">'+
+      (missing.includes("mileage") ? 'Current mileage is missing, so repairs are only a generic model-year estimate. ' : '')+
+      'Uses the asking price, 12,000 miles a year and the selected state.</p>'+
       '<label class="statepick">State <select id="statePick">'+stateOptions+'</select></label></div>'+
       '<section class="panel"><div class="pbody" id="tcoBody"></div></section>' : '')+
     '<h2>Take this to the inspection</h2><section class="panel"><div class="pbody">'+checklist+'</div></section>';
@@ -310,14 +326,62 @@ function setBusy(busy){
   button.textContent = busy ? "Checking…" : "Check this car";
 }
 
+const LOADING_STAGES = [
+  {after:0, title:"Reading the listing", detail:"Finding the exact year, make, model, price and mileage."},
+  {after:5, title:"Matching the exact vehicle", detail:"Separating the model from the trim and seller language."},
+  {after:11, title:"Pulling federal safety records", detail:"Checking live NHTSA complaints and recall campaigns."},
+  {after:21, title:"Building your buyer verdict", detail:"Ranking ownership risks and estimating five-year costs."},
+  {after:36, title:"Still working on this one", detail:"Live sources and AI can take close to a minute. The check is still running."}
+];
+let loadingTimer = null;
+let loadingStartedAt = 0;
+
+function updateLoading(){
+  const elapsed = Math.max(0,Math.floor((Date.now()-loadingStartedAt)/1000));
+  const stage = LOADING_STAGES.reduce(function(active,item){
+    return elapsed >= item.after ? item : active;
+  },LOADING_STAGES[0]);
+  const title = $("loadingTitle"), detail = $("loadingDetail"), clock = $("loadingClock");
+  if (!title || !detail || !clock) return;
+  if (title.textContent !== stage.title) title.textContent = stage.title;
+  if (detail.textContent !== stage.detail) detail.textContent = stage.detail;
+  clock.textContent = elapsed + "s elapsed";
+}
+
+function startLoading(){
+  stopLoading();
+  loadingStartedAt = Date.now();
+  $("live").setAttribute("aria-busy","true");
+  $("live").innerHTML = '<section class="analysis-state analysis-loading" role="status">'+
+    '<div class="loading-mark" aria-hidden="true"><span></span></div>'+
+    '<div class="loading-copy"><div class="loading-top"><p class="micro">Live vehicle analysis</p>'+
+    '<span id="loadingClock" class="loading-clock" aria-hidden="true">0s elapsed</span></div>'+
+    '<h2 id="loadingTitle">Reading the listing</h2>'+
+    '<p id="loadingDetail">Finding the exact year, make, model, price and mileage.</p>'+
+    '<div class="loading-track" aria-hidden="true"><span></span></div>'+
+    '<p class="loading-note">Most checks finish in 20–40 seconds. Keep this tab open.</p></div></section>';
+  updateLoading();
+  loadingTimer = window.setInterval(updateLoading,1000);
+  window.requestAnimationFrame(function(){
+    $("live").scrollIntoView({behavior:"smooth",block:"start"});
+  });
+}
+
+function stopLoading(){
+  if (loadingTimer != null) window.clearInterval(loadingTimer);
+  loadingTimer = null;
+  const live = $("live");
+  if (live) live.setAttribute("aria-busy","false");
+}
+
 async function route(event){
   event.preventDefault();
   const text = $("inp").value.trim();
   if (!text) return false;
   track("listing_check_started");
-  $("live").innerHTML = "";
   setBusy(true);
-  hint("Reading the listing and pulling its federal records…");
+  hint("");
+  startLoading();
   try {
     const response = await fetch("/api/analyze", {
       method:"POST", headers:{"Content-Type":"application/json"},
@@ -328,12 +392,13 @@ async function route(event){
     }
     const output = await response.json().catch(function(){return {};});
     if (output.analysis) {
+      stopLoading();
       track("listing_analysis_completed", {
         evidence_source:output.facts && output.facts.source || "unknown",
         deal_grade:output.analysis.deal && output.analysis.deal.grade || "unknown",
         cache_status:output.cached ? "hit" : "miss"
       });
-      hint(""); render(output); return false;
+      render(output); return false;
     }
     if (output.error === "fetch_failed") {
       return fail("fetch_failed", "That site blocked our reader. Copy the listing text — year, mileage, price and seller description — and paste it instead.");
@@ -354,6 +419,7 @@ async function route(event){
   } catch (error) {
     return fail("network_error", "Could not reach the analysis service. Try again in a moment.");
   } finally {
+    stopLoading();
     setBusy(false);
   }
 }

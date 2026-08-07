@@ -15,7 +15,7 @@ import DB from "../../data.json" with { type: "json" };
 
 const ANALYSIS_CACHE_DAYS = 30;
 const FACT_CACHE_DAYS = 7;
-const ANALYSIS_VERSION = "2026-08-07.2";
+const ANALYSIS_VERSION = "2026-08-07.3";
 const MAX_LISTING_BYTES = 1_500_000;
 const CURRENT_YEAR = new Date().getUTCFullYear();
 const PROFILES = Object.values(DB);
@@ -50,6 +50,37 @@ const MODEL_ALIAS = {
   sierra: "sierra 1500",
   silverado: "silverado 1500"
 };
+
+// Clear pasted listing headers should not spend a model call just to read
+// "2025 Cadillac XT6". Ambiguous text still goes through the configured model.
+const FAST_MAKES = [
+  ["alfa romeo", "alfa romeo"], ["aston martin", "aston martin"],
+  ["land rover", "land rover"], ["mercedes-benz", "mercedes-benz"],
+  ["mercedes benz", "mercedes-benz"], ["rolls-royce", "rolls-royce"],
+  ["rolls royce", "rolls-royce"], ["acura", "acura"], ["audi", "audi"],
+  ["bentley", "bentley"], ["bmw", "bmw"], ["buick", "buick"],
+  ["cadillac", "cadillac"], ["chevrolet", "chevrolet"], ["chevy", "chevrolet"],
+  ["chrysler", "chrysler"], ["dodge", "dodge"], ["fiat", "fiat"],
+  ["ford", "ford"], ["genesis", "genesis"], ["gmc", "gmc"],
+  ["honda", "honda"], ["hyundai", "hyundai"], ["infiniti", "infiniti"],
+  ["jaguar", "jaguar"], ["jeep", "jeep"], ["kia", "kia"],
+  ["lamborghini", "lamborghini"], ["lexus", "lexus"], ["lincoln", "lincoln"],
+  ["lucid", "lucid"], ["maserati", "maserati"], ["mazda", "mazda"],
+  ["mclaren", "mclaren"], ["mercedes", "mercedes-benz"], ["mercury", "mercury"],
+  ["mini", "mini"], ["mitsubishi", "mitsubishi"], ["nissan", "nissan"],
+  ["polestar", "polestar"], ["pontiac", "pontiac"], ["porsche", "porsche"],
+  ["ram", "ram"], ["rivian", "rivian"], ["saab", "saab"], ["saturn", "saturn"],
+  ["scion", "scion"], ["subaru", "subaru"], ["suzuki", "suzuki"],
+  ["tesla", "tesla"], ["toyota", "toyota"], ["volkswagen", "volkswagen"],
+  ["volvo", "volvo"], ["vw", "volkswagen"]
+];
+
+const FAST_MODEL_PHRASES = [
+  "grand cherokee l", "grand cherokee", "grand wagoneer", "range rover sport",
+  "range rover velar", "range rover evoque", "range rover", "model 3", "model y",
+  "santa fe", "santa cruz", "corolla cross", "prius prime", "rogue sport",
+  "bronco sport", "mustang mach-e", "bolt ev", "silverado 1500", "sierra 1500"
+];
 
 // NHTSA's `components` field uses commas both inside a component name and between
 // components. Splitting on every comma turns "FUEL SYSTEM, GASOLINE" into two fake
@@ -182,6 +213,7 @@ const median = values => {
   return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
 };
 const numeric = (value, min, max) => {
+  if (value == null || (typeof value === "string" && !value.trim())) return null;
   const n = Number(value);
   return Number.isFinite(n) && n >= min && n <= max ? Math.round(n) : null;
 };
@@ -201,6 +233,52 @@ function normalizeCar(raw) {
     seller: ["dealer", "private"].includes(raw?.seller) ? raw.seller : null,
     notes: asItems(raw?.notes).map(v => clipped(v, 220)).filter(Boolean).slice(0, 10)
   };
+}
+
+function parseObviousPastedListing(input) {
+  const source = String(input || "");
+  const lines = source.split(/\r?\n/).map(line => clipped(line, 260)).filter(Boolean);
+
+  for (const line of lines.slice(0, 12)) {
+    const yearMatch = line.match(/\b(19[89]\d|20\d{2})\b/);
+    if (!yearMatch) continue;
+    const afterYear = line.slice(yearMatch.index + yearMatch[0].length)
+      .replace(/^[\s:|,;\-–—]+/, "").trim();
+    const lowerAfterYear = afterYear.toLowerCase();
+    const makeEntry = FAST_MAKES.find(([label]) => lowerAfterYear === label
+      || lowerAfterYear.startsWith(label + " "));
+    if (!makeEntry) continue;
+
+    const [makeLabel, make] = makeEntry;
+    const afterMake = afterYear.slice(makeLabel.length).replace(/^[\s:|,;\-–—]+/, "").trim();
+    const lowerAfterMake = afterMake.toLowerCase();
+    const phrase = FAST_MODEL_PHRASES.find(value => lowerAfterMake === value
+      || lowerAfterMake.startsWith(value + " "));
+    const token = afterMake.match(/^([a-z0-9]+(?:[-/][a-z0-9]+)*)\b/i)?.[1] || "";
+    const model = phrase || (/\d|-/.test(token) ? token : "");
+    if (!model) continue;
+
+    const trim = afterMake.slice(model.length).replace(/^[\s:|,;\-–—]+/, "").trim() || null;
+    const priceMatch = source.match(/(?:\$\s*|USD\s*)(\d{1,3}(?:,\d{3})+|\d{3,7})(?:\.\d{2})?/i);
+    const mileageMatch = source.match(/\b(\d{1,3}(?:,\d{3})+|\d{1,6})\s*(?:miles?|mi)\b/i);
+    const location = lines.find(value => /^[A-Za-z .'-]+,\s*[A-Z]{2}(?:\s+\d{5})?$/.test(value)) || null;
+    const notes = [];
+    if (/\bas[ -]?is\b/i.test(source)) notes.push("as is");
+    if (/\b(?:salvage|rebuilt) title\b/i.test(source)) notes.push("title issue disclosed");
+    if (/\baccident(?:s| history)?\b/i.test(source)) notes.push("accident mentioned");
+    if (/\bwarning light\b/i.test(source)) notes.push("warning light mentioned");
+
+    return normalizeCar({
+      year: yearMatch[1], make, model, trim,
+      mileage: mileageMatch?.[1]?.replace(/,/g, "") || null,
+      price: priceMatch?.[1]?.replace(/,/g, "") || null,
+      location,
+      seller: /\b(?:certified|dealer|dealership)\b/i.test(source) ? "dealer"
+        : /\b(?:private seller|for sale by owner)\b/i.test(source) ? "private" : null,
+      notes
+    });
+  }
+  return null;
 }
 
 function findProfile(car) {
@@ -373,6 +451,27 @@ function reviewedAnalysis(profile, raw) {
       annualInsurance: numeric(profile.tco?.ins, 300, 12_000),
       annualRepairs: numeric(profile.tco?.repair, 0, 15_000)
     }
+  };
+}
+
+function applyListingLimitations(analysis, car) {
+  const missing = [];
+  if (car?.mileage == null) missing.push("mileage");
+  if (car?.price == null) missing.push("asking price");
+  const canJudgeListing = missing.length === 0;
+  if (!canJudgeListing) {
+    const list = missing.length === 2 ? `${missing[0]} and ${missing[1]}` : missing[0];
+    analysis.deal = {
+      grade: "inspect",
+      label: "Not enough info",
+      reason: `The listing is missing ${list}. We can screen model-year risk, but cannot judge this specific deal.`
+    };
+  }
+  return {
+    canJudgeListing,
+    missing,
+    message: canJudgeListing ? null
+      : `Add ${missing.join(" and ")} and run the check again for a listing-specific verdict.`
   };
 }
 
@@ -755,11 +854,13 @@ export default async (request) => {
   const extractionInput = page
     ? `LISTING URL: ${listingUrl}\n\n${page}${leftover ? `\n\nPASTED CONTEXT:\n${leftover}` : ""}`
     : input;
-  let car;
-  try {
-    car = normalizeCar(asJson(await callModel(EXTRACT, extractionInput, 700, 0)));
-  } catch (error) {
-    return json({ error: error.message === "missing_key" ? "missing_key" : "extract_failed" }, 502);
+  let car = page ? null : parseObviousPastedListing(input);
+  if (!car) {
+    try {
+      car = normalizeCar(asJson(await callModel(EXTRACT, extractionInput, 700, 0)));
+    } catch (error) {
+      return json({ error: error.message === "missing_key" ? "missing_key" : "extract_failed" }, 502);
+    }
   }
   if (!car.year || !car.make || !car.model) return json({ error: "no_vehicle", car }, 200);
 
@@ -830,7 +931,9 @@ export default async (request) => {
     tco = tcoFrom(null, analysis, evidence.epa);
   }
 
-  const result = { analysis, facts, tco, profile: profile ? `/cars/${profile.meta.slug}/` : null };
+  const limitations = applyListingLimitations(analysis, car);
+  const result = { analysis, facts, tco, limitations,
+    profile: profile ? `/cars/${profile.meta.slug}/` : null };
   await writeCache(analysisStore, listingFingerprint, result);
   return json({ ...result, car, cached: false }, 200, { "Cache-Control": "no-store" });
 };
@@ -851,6 +954,7 @@ export const config = {
 };
 
 export const __test = {
+  applyListingLimitations,
   findProfile,
   getEpaFacts,
   getNhtsaFacts,
@@ -858,5 +962,6 @@ export const __test = {
   normalizeCar,
   normalizeChecklist,
   completeLiveAnalysis,
-  normalizeLiveAnalysis
+  normalizeLiveAnalysis,
+  parseObviousPastedListing
 };

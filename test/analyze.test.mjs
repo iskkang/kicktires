@@ -11,6 +11,39 @@ test("matches reviewed profiles and rejects incomplete vehicle identities", () =
   assert.equal(car.mileage, 88000);
   assert.equal(__test.findProfile(car)?.meta.slug, "2019-nissan-altima-problems");
   assert.equal(__test.normalizeCar({ year: 1700, make: "Honda" }).year, null);
+  assert.equal(__test.normalizeCar({ year: 2023, make: "Tesla", model: "Model Y", mileage: null }).mileage, null);
+});
+
+test("fast-parses clear pasted listing headers without inventing missing mileage", () => {
+  const cadillac = __test.parseObviousPastedListing(`Certified 2025 Cadillac XT6 Premium Luxury AWD/4WD
+w/ Platinum Package
+Bradenton, FL
+$52,988`);
+  assert.deepEqual(
+    { year: cadillac.year, make: cadillac.make, model: cadillac.model, price: cadillac.price,
+      mileage: cadillac.mileage, location: cadillac.location, seller: cadillac.seller },
+    { year: 2025, make: "cadillac", model: "xt6", price: 52988,
+      mileage: null, location: "Bradenton, FL", seller: "dealer" }
+  );
+
+  const tesla = __test.parseObviousPastedListing(`Used 2023 Tesla Model Y Performance AWD/4WD
+Sterling, VA
+$24,986`);
+  assert.equal(tesla.model, "modely");
+  assert.equal(tesla.mileage, null);
+  assert.equal(tesla.location, "Sterling, VA");
+});
+
+test("downgrades a listing verdict when price or mileage is missing", () => {
+  const analysis = { deal: { grade: "reasonable", label: "Looks reasonable", reason: "Complete." } };
+  const limitations = __test.applyListingLimitations(analysis, {
+    year: 2023, make: "tesla", model: "modely", price: 24986, mileage: null
+  });
+  assert.equal(limitations.canJudgeListing, false);
+  assert.deepEqual(limitations.missing, ["mileage"]);
+  assert.equal(analysis.deal.grade, "inspect");
+  assert.equal(analysis.deal.label, "Not enough info");
+  assert.match(analysis.deal.reason, /cannot judge this specific deal/);
 });
 
 test("blocks private network targets", () => {

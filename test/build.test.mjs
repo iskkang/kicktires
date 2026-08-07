@@ -34,6 +34,11 @@ test("build emits GA4 and AdSense with privacy-safe analysis events", () => {
   assert.match(home, /listing_check_started/);
   assert.match(home, /listing_analysis_completed/);
   assert.match(home, /listing_analysis_failed/);
+  assert.match(home, /Live vehicle analysis/);
+  assert.match(home, /Most checks finish in 20–40 seconds/);
+  assert.match(home, /Still working on this one/);
+  assert.match(home, /Missing listing data/);
+  assert.match(home, /const defaultState = stateMatch/);
   assert.doesNotMatch(home, /listing_text|seller_notes/);
   assert.doesNotMatch(home, /data-ad-slot|0000000000|1111111111/);
 
