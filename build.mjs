@@ -7,6 +7,9 @@ const SITE = "https://kicktires.netlify.app";   // ← change to your domain
 const NAME = "KickTires";
 // Google Search Console — file verification. Keep this forever once verified.
 const GOOGLE_VERIFY = "googlee9c6c5390d444c3c";
+// Public GA4 measurement ID. Netlify may override it for another deployment.
+const GA_MEASUREMENT_ID = (process.env.GA_MEASUREMENT_ID || "G-5NSV1Y7TSJ").trim();
+if (!/^G-[A-Z0-9]+$/i.test(GA_MEASUREMENT_ID)) throw new Error("invalid GA_MEASUREMENT_ID");
 // Leave empty to disable ads entirely. Set to "ca-pub-XXXXXXXXXXXXXXXX" once approved.
 const ADSENSE = process.env.ADSENSE_CLIENT || "";
 const D = JSON.parse(fs.readFileSync("data.json", "utf8"));
@@ -50,6 +53,8 @@ function head({title,desc,url,jsonld}){
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="${esc(title)}"><meta name="twitter:description" content="${esc(desc)}">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%233987e5'/><rect x='8' y='11' width='16' height='3' rx='1.5' fill='%230a0b0d'/><rect x='8' y='18' width='16' height='3' rx='1.5' fill='%230a0b0d'/></svg>">
+<script async src="https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","${GA_MEASUREMENT_ID}");</script>
 <style>${css}</style>
 ${ADSENSE ? `<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE}" crossorigin="anonymous"></script>` : ""}
 ${jsonld ? `<script type="application/ld+json">${JSON.stringify(jsonld).replace(/</g, "\\u003c")}</script>` : ""}
@@ -191,6 +196,14 @@ const html = value => String(value == null ? "" : value).replace(/&/g,"&amp;")
   .replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
 const dollars = value => "$" + Math.round(Number(value)).toLocaleString("en-US");
 const validClass = (value, allowed, fallback) => allowed.includes(value) ? value : fallback;
+const track = (name, params) => {
+  if (typeof window.gtag === "function") window.gtag("event", name, params || {});
+};
+const fail = (code, message) => {
+  track("listing_analysis_failed", {error_code:code});
+  hint(message);
+  return false;
+};
 
 function totalCost(tco, price, stateCode){
   const state = STATES[stateCode] || STATES.OH;
@@ -308,6 +321,7 @@ async function route(event){
   event.preventDefault();
   const text = $("inp").value.trim();
   if (!text) return false;
+  track("listing_check_started");
   $("live").innerHTML = "";
   setBusy(true);
   hint("Reading the listing and pulling its federal records…");
@@ -317,34 +331,35 @@ async function route(event){
       body: JSON.stringify({text:text})
     });
     if (response.status === 429) {
-      hint("Too many checks from this connection. Try again in a minute."); return false;
+      return fail("rate_limited", "Too many checks from this connection. Try again in a minute.");
     }
     const output = await response.json().catch(function(){return {};});
-    if (output.analysis) { hint(""); render(output); return false; }
+    if (output.analysis) {
+      track("listing_analysis_completed", {
+        evidence_source:output.facts && output.facts.source || "unknown",
+        deal_grade:output.analysis.deal && output.analysis.deal.grade || "unknown",
+        cache_status:output.cached ? "hit" : "miss"
+      });
+      hint(""); render(output); return false;
+    }
     if (output.error === "fetch_failed") {
-      hint("That site blocked our reader. Copy the listing text — year, mileage, price and seller description — and paste it instead.");
-      return false;
+      return fail("fetch_failed", "That site blocked our reader. Copy the listing text — year, mileage, price and seller description — and paste it instead.");
     }
     if (output.error === "no_records") {
-      hint("We identified the vehicle, but found no matching federal complaint or recall records. We will not invent an answer.");
-      return false;
+      return fail("no_records", "We identified the vehicle, but found no matching federal complaint or recall records. We will not invent an answer.");
     }
     if (output.error === "records_unavailable") {
-      hint("The federal data service did not respond. Try this check again in a moment.");
-      return false;
+      return fail("records_unavailable", "The federal data service did not respond. Try this check again in a moment.");
     }
     if (output.error === "no_vehicle") {
-      hint("We could not identify the exact year, make and model. Paste the listing text with all three.");
-      return false;
+      return fail("no_vehicle", "We could not identify the exact year, make and model. Paste the listing text with all three.");
     }
     if (output.error === "missing_key") {
-      hint("The analysis service is not configured."); return false;
+      return fail("missing_key", "The analysis service is not configured.");
     }
-    hint("We could not finish that analysis. Try pasting the listing text instead of the link.");
-    return false;
+    return fail(output.error || "unknown", "We could not finish that analysis. Try pasting the listing text instead of the link.");
   } catch (error) {
-    hint("Could not reach the analysis service. Try again in a moment.");
-    return false;
+    return fail("network_error", "Could not reach the analysis service. Try again in a moment.");
   } finally {
     setBusy(false);
   }
@@ -373,7 +388,7 @@ function privacyPage(){
   <h1>Privacy &amp; cookies</h1>
   <p class="lede">Short version: we don't ask who you are, we don't have accounts, and we don't sell anything about you.</p>
   <h2>What we collect</h2>
-  <p class="lede">Aggregate page analytics only — which pages get visited and roughly where from. No names, no accounts, no email addresses. Listing text or page content you submit is sent to our configured AI provider to identify the vehicle and produce the analysis. We cache only the derived vehicle analysis and source summaries, not the pasted listing text.</p>
+  <p class="lede">Google Analytics 4 records page views, browser and device signals, approximate region, and three product events: an analysis started, completed, or failed. We do not send the listing text, pasted listing URL, price, mileage, location, or seller notes to Analytics. No names, accounts, or email addresses are collected. Listing text or page content you submit is sent to our configured AI provider to identify the vehicle and produce the analysis. We cache only the derived vehicle analysis and source summaries, not the pasted listing text.</p>
   <h2>Advertising</h2>
   <p class="lede">${ADSENSE ? "This site shows ads served by Google AdSense. Google and its partners may use cookies to serve ads based on your prior visits to this and other websites. You can opt out of personalised advertising at <a href='https://www.google.com/settings/ads'>Google Ads Settings</a>, or opt out of third-party vendor cookies at <a href='https://www.aboutads.info'>aboutads.info</a>." : "This site currently shows no advertising."}</p>
   <h2>What we never do</h2>

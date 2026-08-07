@@ -52,6 +52,7 @@ Set these environment variables in Netlify:
 | `DEEPSEEK_MODEL` | recommended | The production DeepSeek V4 model alias |
 | `ANTHROPIC_API_KEY` | for Claude | Optional alternate provider key |
 | `ANTHROPIC_MODEL` | optional | Alternate Claude model |
+| `GA_MEASUREMENT_ID` | optional | Overrides the production GA4 ID (`G-5NSV1Y7TSJ`) |
 | `ADSENSE_CLIENT` | optional | Enables AdSense after approval |
 
 Never place keys in `build.mjs`, `style.css`, `data.json`, or `dist/`.
