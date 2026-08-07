@@ -286,7 +286,7 @@ function render(output){
     '<p class="micro">Missing listing data</p><h2>'+html(missingLabel.charAt(0).toUpperCase()+missingLabel.slice(1))+
     (missing.length === 1 ? ' is' : ' are')+' missing.</h2><p>We can screen the model-year federal records below, but '+
     'we cannot judge whether this specific listing is a good transaction. '+html(limitations.message || "Add the missing data and run the check again.")+'</p></section>' : '';
-  const stateMatch = String(car.location || "").match(/,\s*([A-Z]{2})(?:\s+\d{5})?\b/);
+  const stateMatch = String(car.location || "").match(/,\\s*([A-Z]{2})(?:\\s+\\d{5})?\\b/);
   const defaultState = stateMatch && STATES[stateMatch[1]] ? stateMatch[1] : "OH";
   const stateOptions = Object.entries(STATES).map(function(entry){
     return '<option value="'+html(entry[0])+'"'+(entry[0]===defaultState?' selected':'')+'>'+html(entry[1].n)+'</option>';

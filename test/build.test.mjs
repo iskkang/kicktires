@@ -39,6 +39,7 @@ test("build emits GA4 and AdSense with privacy-safe analysis events", () => {
   assert.match(home, /Still working on this one/);
   assert.match(home, /Missing listing data/);
   assert.match(home, /const defaultState = stateMatch/);
+  assert.ok(home.includes('match(/,\\s*([A-Z]{2})(?:\\s+\\d{5})?\\b/)'));
   assert.doesNotMatch(home, /listing_text|seller_notes/);
   assert.doesNotMatch(home, /data-ad-slot|0000000000|1111111111/);
 
