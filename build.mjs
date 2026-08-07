@@ -157,13 +157,13 @@ function modelPage(key, d){
 function home(){
   const jsonld = {"@context":"https://schema.org","@type":"WebSite",name:NAME,url:SITE+"/"};
   return head({title:`${NAME} — every cheap used car is cheap for a reason`,
-    desc:"Paste any used car listing. We tell you what actually goes wrong with that model according to federal complaint records, what it costs when it breaks, and what five years of ownership really adds up to. We take no money from sellers.",
+    desc:"Paste any used car listing. We compare the asking price with similar active listings, check federal complaint records, and estimate five-year ownership cost. We take no money from sellers.",
     url:SITE+"/", jsonld}) + `
 <main class="shell">
   <section class="hero"><div class="inner">
     <p class="micro">Independent · never paid by sellers</p>
     <h1 class="big">Every cheap car is cheap<br><em>for a reason.</em></h1>
-    <p class="lede">Paste any used listing. We'll tell you what's wrong with it, what it costs when it breaks, and whether you're about to make a mistake.</p>
+    <p class="lede">Paste any used listing. We'll compare its price with similar cars, check what breaks, and tell you whether the seller wins or you do.</p>
     <form class="paste" onsubmit="route(event);return false">
       <textarea id="inp" placeholder="Paste a listing URL — or if it's Facebook Marketplace, paste the listing text instead."></textarea>
       <div class="pfoot"><span class="srcs">Cars.com · Autotrader · CarGurus · Craigslist · dealer sites · pasted text</span>
@@ -246,16 +246,53 @@ function tcoRows(tco, car, stateCode){
       html(tco.source || "KickTires estimate")+'.</p>';
 }
 
+function marketCard(market){
+  if (!market || market.status === "missing_input") return "";
+  if (market.status !== "ready") {
+    const count = Number(market.sampleSize || 0);
+    const title = market.status === "not_configured" ? "Ownership risk only."
+      : market.status === "insufficient" ? "Not enough close listings."
+      : "The live market source did not answer.";
+    const detail = market.status === "insufficient"
+      ? (count ? "We found "+count+" close active listings, but need at least 8 before grading the price. " : "")+
+        "We will not turn a thin sample into a smart-buy verdict."
+      : html(market.message || "No live price comparison is available for this check.");
+    return '<section class="analysis-state market-limit" role="note"><p class="micro">Market verdict unavailable</p>'+
+      '<h2>'+html(title)+'</h2><p>'+detail+'</p></section>';
+  }
+
+  const delta = Number(market.deltaPercent || 0);
+  const deltaClass = delta > 7 ? "market-high" : delta < -7 ? "market-low" : "market-even";
+  const deltaText = Math.abs(delta) < 0.05 ? "at the market median"
+    : Math.abs(delta).toFixed(1)+"% "+(delta > 0 ? "above" : "below")+" median";
+  const range = Number.isFinite(Number(market.percentile25)) && Number.isFinite(Number(market.percentile75))
+    ? dollars(market.percentile25)+"–"+dollars(market.percentile75) : "Not available";
+  const seller = market.sellerType === "private-party" ? "private-party" : "dealer";
+  const retrieved = market.retrievedAt ? new Date(market.retrievedAt).toLocaleDateString("en-US",{
+    month:"short",day:"numeric",year:"numeric",timeZone:"UTC"}) : "today";
+  return '<section class="panel live-market"><div class="market-head"><div><p class="micro">Live market comparison</p>'+
+    '<h2>'+dollars(market.askingPrice)+' asking <span>vs '+dollars(market.medianPrice)+' median</span></h2></div>'+
+    '<span class="market-delta '+deltaClass+'">'+html(deltaText)+'</span></div>'+
+    '<div class="market-stats">'+
+      '<div><span class="micro">Close matches</span><b>'+Number(market.sampleSize).toLocaleString()+" active "+html(seller)+' listings</b></div>'+
+      '<div><span class="micro">Middle 50%</span><b>'+html(range)+'</b></div>'+
+      '<div><span class="micro">Mileage band</span><b>'+Number(market.mileageLow).toLocaleString()+"–"+Number(market.mileageHigh).toLocaleString()+' mi</b></div>'+
+      '<div><span class="micro">Market</span><b>'+html(market.scope)+'</b></div>'+
+    '</div><p class="market-note">'+html(market.match)+'. Asking-price comparison from '+html(market.source)+
+      ', retrieved '+html(retrieved)+'. Active asking prices are not completed sale prices.</p></section>';
+}
+
 function render(output){
   const analysis = output.analysis || {}, car = output.car || {}, facts = output.facts || {};
-  const limitations = output.limitations || {};
+  const limitations = output.limitations || {}, market = output.market || {};
   const title = [car.year,car.make,car.model,car.trim].filter(Boolean).join(" ");
   const chips = [
     facts.complaintTotal != null ? Number(facts.complaintTotal).toLocaleString()+" NHTSA complaints" : null,
     facts.recallTotal != null ? Number(facts.recallTotal).toLocaleString()+" recall campaigns" : null,
     facts.crashes ? Number(facts.crashes).toLocaleString()+" crash reports" : null,
     car.mileage != null ? Number(car.mileage).toLocaleString()+" mi" : null,
-    car.price != null ? dollars(car.price) : null
+    car.price != null ? dollars(car.price) : null,
+    car.certified ? "Certified pre-owned" : null
   ].filter(Boolean);
   const deal = analysis.deal || {};
   const grade = validClass(deal.grade,["walk","caution","inspect","reasonable"],"inspect");
@@ -291,12 +328,14 @@ function render(output){
   const stateOptions = Object.entries(STATES).map(function(entry){
     return '<option value="'+html(entry[0])+'"'+(entry[0]===defaultState?' selected':'')+'>'+html(entry[1].n)+'</option>';
   }).join("");
+  const verdictScope = market.status === "ready" ? "price + ownership risk" : "ownership risk only";
 
   $("live").innerHTML =
     limitationCard+
-    '<section class="deal deal-'+grade+'"><p class="micro">Buyer verdict · ownership risk</p>'+
+    '<section class="deal deal-'+grade+'"><p class="micro">Buyer verdict · '+html(verdictScope)+'</p>'+
       '<div class="dealrow"><span class="dealbadge">'+html(deal.label || "Inspection first")+'</span>'+
       '<p>'+html(deal.reason || "The evidence is not strong enough to skip an inspection.")+'</p></div></section>'+
+    marketCard(market)+
     '<section class="panel"><div class="carid"><p class="micro">'+html(source)+'</p><p class="cname">'+html(title)+'</p>'+
       '<div class="specs">'+chips.map(function(chip){return '<span class="spec">'+html(chip)+'</span>';}).join("")+'</div>'+
       '<p class="verdict-lead liveverdict">'+html(analysis.vline)+'</p><p class="lede liveline">'+html(analysis.vsub)+'</p>'+
@@ -329,9 +368,10 @@ function setBusy(busy){
 const LOADING_STAGES = [
   {after:0, title:"Reading the listing", detail:"Finding the exact year, make, model, price and mileage."},
   {after:5, title:"Matching the exact vehicle", detail:"Separating the model from the trim and seller language."},
-  {after:11, title:"Pulling federal safety records", detail:"Checking live NHTSA complaints and recall campaigns."},
-  {after:21, title:"Building your buyer verdict", detail:"Ranking ownership risks and estimating five-year costs."},
-  {after:36, title:"Still working on this one", detail:"Live sources and AI can take close to a minute. The check is still running."}
+  {after:10, title:"Checking comparable listings", detail:"Comparing price and mileage with close active market listings."},
+  {after:16, title:"Pulling federal safety records", detail:"Checking live NHTSA complaints and recall campaigns."},
+  {after:25, title:"Building your buyer verdict", detail:"Combining market price, ownership risk and five-year cost."},
+  {after:40, title:"Still working on this one", detail:"Live sources and AI can take close to a minute. The check is still running."}
 ];
 let loadingTimer = null;
 let loadingStartedAt = 0;
@@ -396,6 +436,7 @@ async function route(event){
       track("listing_analysis_completed", {
         evidence_source:output.facts && output.facts.source || "unknown",
         deal_grade:output.analysis.deal && output.analysis.deal.grade || "unknown",
+        market_status:output.market && output.market.status || "unknown",
         cache_status:output.cached ? "hit" : "miss"
       });
       render(output); return false;

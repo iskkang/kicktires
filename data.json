@@ -545,5 +545,414 @@
    "nhtsa": 73,
    "recalls": 0
   }
+ },
+ "civic_2019": {
+  "real": true,
+  "name": "2019 Honda Civic",
+  "specs": [
+   "348 NHTSA complaints",
+   "Steering is the #1 category",
+   "Fuel pump recall"
+  ],
+  "vline": "Nobody warns you about the steering. They should.",
+  "vsub": "348 complaints filed against the 2019 Civic, and the largest category by a distance is steering — 97 of them. Owners describe a wheel that sticks and refuses to self-centre at highway speed. Second is the fuel system at 78, most of it the recalled fuel pump. Neither is what the internet tells you to check.",
+  "tco": {
+   "ins": 1560,
+   "mpg": 33,
+   "fuel": "regular",
+   "repair": 420
+  },
+  "risks": [
+   {
+    "s": "ser",
+    "lbl": "COMMON",
+    "t": "Sticky steering that won't self-centre",
+    "c": "$400–1,900",
+    "cl": "97 complaints",
+    "b": "By far the most-reported problem on this car. Owners describe the wheel catching or feeling notchy during small corrections at speed, then not returning to centre on its own. It makes lane-keeping tiring and it does not fix itself.",
+    "e": [
+     [
+      "v",
+      "NHTSA",
+      "97 steering complaints — the single largest category for this model year."
+     ],
+     [
+      "v",
+      "NHTSA",
+      "Filings describe needing constant two-handed correction and overcorrecting on the highway."
+     ],
+     [
+      "o",
+      "OUR TAKE",
+      "Drive it on a real road at 60 mph, not around the block. This is invisible in a parking lot and obvious in a lane."
+     ]
+    ]
+   },
+   {
+    "s": "crit",
+    "lbl": "MAJOR",
+    "t": "Fuel pump failure — stalls without warning",
+    "c": "$0 if recalled",
+    "cl": "78 complaints",
+    "b": "Low-density impellers in the fuel pump can deform and kill the pump. Cars stall in traffic. There is a recall, but owners have reported waiting months for parts.",
+    "e": [
+     [
+      "v",
+      "NHTSA",
+      "78 fuel and propulsion complaints, second only to steering."
+     ],
+     [
+      "v",
+      "NHTSA",
+      "Filings state the impeller was improperly moulded and can render the pump inoperative over time."
+     ],
+     [
+      "o",
+      "OUR TAKE",
+      "Run the VIN before you go. If the recall is open and unrepaired, that is a stall risk you are inheriting, not a discount."
+     ]
+    ]
+   },
+   {
+    "s": "warn",
+    "lbl": "WATCH",
+    "t": "Sunroof glass shattering on its own",
+    "c": "$700–1,400",
+    "cl": "reported, uncommon",
+    "b": "A handful of filings describe the sunroof spontaneously shattering with no impact during normal driving. Rare, but it is in the federal record rather than just forum folklore.",
+    "e": [
+     [
+      "v",
+      "NHTSA",
+      "Reported under the Unknown or Other category alongside AC compressor failures."
+     ],
+     [
+      "o",
+      "OUR TAKE",
+      "Not a reason to walk. Worth knowing it is real if it happens to you."
+     ]
+    ]
+   }
+  ],
+  "chk": [
+   "<b>Drive it at highway speed for at least 15 minutes.</b> The steering complaint is the number one issue on this car and it does not show up below 40 mph.",
+   "<b>Run the VIN for the fuel pump recall.</b> Free to fix, and an open one means the car can stall in traffic.",
+   "<b>Make small steering corrections and let go.</b> The wheel should return to centre by itself. If you have to bring it back, that is the fault owners are describing.",
+   "<b>Ask whether the steering has already been serviced.</b> Some cars were addressed under warranty. Paperwork here is worth money."
+  ],
+  "meta": {
+   "slug": "2019-honda-civic-problems",
+   "y": 2019,
+   "mk": "Honda",
+   "md": "Civic",
+   "q": "2019 Honda Civic problems",
+   "title": "2019 Honda Civic Problems: Steering, Not the Engine",
+   "desc": "348 federal complaints on the 2019 Civic and the biggest cluster is steering — 97 filings about a wheel that sticks and won't self-centre. Plus a fuel pump recall. What to test and what it costs.",
+   "nhtsa": 348,
+   "recalls": 0
+  }
+ },
+ "camry_2018": {
+  "real": true,
+  "name": "2018 Toyota Camry",
+  "specs": [
+   "726 NHTSA complaints",
+   "289 are the transmission",
+   "8-speed automatic"
+  ],
+  "vline": "The most reliable car in America has a transmission problem.",
+  "vsub": "726 complaints on the 2018 Camry, and 289 of them — nearly two in five — are the powertrain. Owners describe harsh shifting, RPM flaring to 4,000 between gears, and in several filings burnt fluid with clutch material in it. This is the car everyone buys because nothing goes wrong with it. Something goes wrong with this one.",
+  "tco": {
+   "ins": 1520,
+   "mpg": 32,
+   "fuel": "regular",
+   "repair": 640
+  },
+  "risks": [
+   {
+    "s": "crit",
+    "lbl": "MAJOR",
+    "t": "8-speed transmission — flaring, jerking, rebuilds",
+    "c": "$2,400–5,200",
+    "cl": "289 complaints",
+    "b": "The dominant complaint on this car and it is not close. Filings describe jerking and sputtering with loss of acceleration at highway speed, harsh engagement after the revs flare, and complete rebuilds. One filing reports burnt fluid carrying clutch pack material at 53,000 miles.",
+    "e": [
+     [
+      "v",
+      "NHTSA",
+      "289 power train complaints out of 726 total — 40% of everything filed against this model year."
+     ],
+     [
+      "v",
+      "NHTSA",
+      "Filings describe RPM flare to 4,000 between gears before hard engagement."
+     ],
+     [
+      "o",
+      "OUR TAKE",
+      "This is the entire inspection. A Camry that shifts cleanly through traffic is the car you wanted. One that flares is a five-figure car with a four-figure repair waiting."
+     ]
+    ]
+   },
+   {
+    "s": "ser",
+    "lbl": "COMMON",
+    "t": "Brake pedal going hard, low-pressure warnings",
+    "c": "$900–2,200",
+    "cl": "42 complaints",
+    "b": "Owners report the pedal suddenly becoming hard to press while driving, and a “brake pressure low” warning, with brake pump and booster replacement as the fix.",
+    "e": [
+     [
+      "v",
+      "NHTSA",
+      "42 hydraulic service brake complaints for this model year."
+     ],
+     [
+      "o",
+      "OUR TAKE",
+      "Rare compared to the transmission, but this one is a safety item rather than an annoyance. Ask directly whether the booster has been touched."
+     ]
+    ]
+   },
+   {
+    "s": "warn",
+    "lbl": "WATCH",
+    "t": "Steering stiffening and not returning to centre",
+    "c": "$400–1,500",
+    "cl": "23 complaints",
+    "b": "A smaller cluster describing steering that catches and is hard to bring back to centre, most noticeable at lower speeds.",
+    "e": [
+     [
+      "v",
+      "NHTSA",
+      "23 steering complaints filed for the 2018 model year."
+     ],
+     [
+      "o",
+      "OUR TAKE",
+      "Worth two minutes in a parking lot. Not worth walking away over on its own."
+     ]
+    ]
+   }
+  ],
+  "chk": [
+   "<b>Drive it 30 minutes in stop-and-go traffic.</b> The transmission is 40% of every complaint on this car and it misbehaves under load and light throttle, not on a smooth highway.",
+   "<b>Watch the tachometer between gears.</b> Revs climbing before the gear engages is the exact fault owners describe. Once is enough to know.",
+   "<b>Ask for transmission service records.</b> Fluid changed on schedule matters here more than it does on most Toyotas.",
+   "<b>Press the brake pedal firmly at a stop before you drive off.</b> Owners report it going hard without warning. It should feel consistent."
+  ],
+  "meta": {
+   "slug": "2018-toyota-camry-problems",
+   "y": 2018,
+   "mk": "Toyota",
+   "md": "Camry",
+   "q": "2018 Toyota Camry problems",
+   "title": "2018 Toyota Camry Problems: 289 of 726 Complaints Are the Transmission",
+   "desc": "The 2018 Camry has 726 federal complaints and 40% of them are the 8-speed transmission — RPM flare, harsh engagement, rebuilds. What to drive for and what a repair costs.",
+   "nhtsa": 726,
+   "recalls": 0
+  }
+ },
+ "crv_2019": {
+  "real": true,
+  "name": "2019 Honda CR-V",
+  "specs": [
+   "1,074 NHTSA complaints",
+   "Steering leads at 128",
+   "Fuel pump stalls"
+  ],
+  "vline": "1,074 complaints. America's favourite SUV has a bad year.",
+  "vsub": "This is one of the most-complained-about vehicles of its generation, and the pattern mirrors the Civic it shares parts with: 128 steering filings about a wheel that sticks and won't self-centre, and 89 fuel system filings including pumps that quit in traffic. Popular does not mean problem-free — it means more owners filing.",
+  "tco": {
+   "ins": 1490,
+   "mpg": 30,
+   "fuel": "regular",
+   "repair": 520
+  },
+  "risks": [
+   {
+    "s": "crit",
+    "lbl": "MAJOR",
+    "t": "Fuel pump failure — stalling in traffic",
+    "c": "$0 if recalled",
+    "cl": "89 complaints",
+    "b": "Owners report the car stalling outright and having to roll out of an intersection. Filings describe confirmed pump failure at independent shops. There is recall coverage, so the VIN check is the whole game here.",
+    "e": [
+     [
+      "v",
+      "NHTSA",
+      "89 fuel and propulsion complaints on this model year."
+     ],
+     [
+      "v",
+      "NHTSA",
+      "One filing describes stalling in an intersection and rolling the car clear of traffic."
+     ],
+     [
+      "o",
+      "OUR TAKE",
+      "An unrepaired recall on a car that stalls is not a bargaining chip, it is a reason to make them fix it before you take delivery."
+     ]
+    ]
+   },
+   {
+    "s": "ser",
+    "lbl": "COMMON",
+    "t": "Steering sticks and won't return to centre",
+    "c": "$400–1,900",
+    "cl": "128 complaints",
+    "b": "The single largest category. Owners describe notchiness on small corrections and a wheel that has to be manually brought back to centre. Same complaint pattern as the Civic of the same year.",
+    "e": [
+     [
+      "v",
+      "NHTSA",
+      "128 steering complaints — more than any other component on this vehicle."
+     ],
+     [
+      "o",
+      "OUR TAKE",
+      "Test it on a highway, not a test loop. It is the most common thing wrong with this car and the easiest to miss."
+     ]
+    ]
+   },
+   {
+    "s": "warn",
+    "lbl": "WATCH",
+    "t": "Collision avoidance false alarms",
+    "c": "$0–900",
+    "cl": "31 complaints",
+    "b": "Filings describe the forward collision system braking or warning with nothing there. Annoying rather than dangerous, but it wears on you daily.",
+    "e": [
+     [
+      "v",
+      "NHTSA",
+      "31 forward collision avoidance complaints for this model year."
+     ],
+     [
+      "o",
+      "OUR TAKE",
+      "Ask the seller directly. Owners who have it usually volunteer it, because it is impossible to ignore."
+     ]
+    ]
+   }
+  ],
+  "chk": [
+   "<b>Run the VIN for the fuel pump recall first.</b> Cars stalling in intersections is in the federal record. If it is open, make them complete it before money changes hands.",
+   "<b>Fifteen minutes at highway speed, hands light on the wheel.</b> The steering fault is the top complaint and only shows up above about 40 mph.",
+   "<b>Ask whether the collision system has ever braked for nothing.</b> 31 owners filed about it. The seller will know.",
+   "<b>Don't read the complaint count as a verdict.</b> This is a best-seller, so more owners file. Compare the pattern, not the total."
+  ],
+  "meta": {
+   "slug": "2019-honda-cr-v-problems",
+   "y": 2019,
+   "mk": "Honda",
+   "md": "CR-V",
+   "q": "2019 Honda CR-V problems",
+   "title": "2019 Honda CR-V Problems: 1,074 Complaints, Led by Steering and Fuel Pumps",
+   "desc": "The 2019 CR-V has 1,074 federal complaints — 128 about steering that sticks, 89 about fuel pumps that stall the car. What to test drive for and which recall to check.",
+   "nhtsa": 1074,
+   "recalls": 0
+  }
+ },
+ "grandcherokee_2017": {
+  "real": true,
+  "name": "2017 Jeep Grand Cherokee",
+  "specs": [
+   "361 NHTSA complaints",
+   "Powertrain 89 · Engine 78",
+   "Metal in the engine"
+  ],
+  "vline": "Two expensive systems, and both of them are in the top two.",
+  "vsub": "361 complaints, and the top two categories are the two that cost the most to fix: 89 powertrain and 78 engine. Owners describe transfer cases failing, and camshafts destroyed with metal circulating through the engine at 90,000 miles. This is not a car where the common problems are cheap ones.",
+  "tco": {
+   "ins": 1780,
+   "mpg": 21,
+   "fuel": "regular",
+   "repair": 1850
+  },
+  "risks": [
+   {
+    "s": "crit",
+    "lbl": "MAJOR",
+    "t": "Camshaft failure with metal through the engine",
+    "c": "$4,500–9,000",
+    "cl": "78 complaints",
+    "b": "Filings describe a ticking noise that turns out to be destroyed camshafts, with metal debris distributed through the rest of the engine. One owner reports it at 90,881 miles. Another describes an oil cooler failure cascading into head gaskets and then a whole engine at 103,000.",
+    "e": [
+     [
+      "v",
+      "NHTSA",
+      "78 engine complaints on this model year, second only to powertrain."
+     ],
+     [
+      "v",
+      "NHTSA",
+      "Filings quote camshafts destroyed with metal throughout the engine at just over 90,000 miles."
+     ],
+     [
+      "o",
+      "OUR TAKE",
+      "A ticking noise on this engine is not a tappet you live with. Walk unless a specialist has been inside it and says otherwise."
+     ]
+    ]
+   },
+   {
+    "s": "crit",
+    "lbl": "MAJOR",
+    "t": "Transfer case and driveline failure",
+    "c": "$2,800–5,500",
+    "cl": "89 complaints",
+    "b": "The largest category. Owners report a flashing Service 4WD warning at speed followed by transfer case replacement, and in one filing a loud bang and grinding from a stop, after which the vehicle shifted itself to neutral and would not move.",
+    "e": [
+     [
+      "v",
+      "NHTSA",
+      "89 power train complaints — the top category for this model year."
+     ],
+     [
+      "o",
+      "OUR TAKE",
+      "Drive it in 4WD, and drive it from a dead stop under load. Both failures in the filings show up exactly there."
+     ]
+    ]
+   },
+   {
+    "s": "ser",
+    "lbl": "COMMON",
+    "t": "Electrical gremlins",
+    "c": "$300–1,600",
+    "cl": "35 complaints",
+    "b": "A steady stream of electrical filings on top of the mechanical ones. Individually small, collectively the reason a lot of these get sold.",
+    "e": [
+     [
+      "v",
+      "NHTSA",
+      "35 electrical system complaints for this model year."
+     ],
+     [
+      "o",
+      "OUR TAKE",
+      "Sit in it and press every button before you drive it. Ten minutes now saves a year of small annoyances."
+     ]
+    ]
+   }
+  ],
+  "chk": [
+   "<b>Start it cold and listen for ticking.</b> On this engine that noise is in 78 federal filings and it ends in a four-figure bill or a new engine.",
+   "<b>Get an oil analysis, or at minimum look at the oil.</b> Owners found metal circulating before the engine let go. It is the only early warning.",
+   "<b>Engage 4WD and drive from a dead stop under load.</b> Transfer case failures in the filings appear exactly under those conditions.",
+   "<b>Budget for this car, not just buy it.</b> The two most common problems here are both four-figure repairs. That has to be in your number before you offer."
+  ],
+  "meta": {
+   "slug": "2017-jeep-grand-cherokee-problems",
+   "y": 2017,
+   "mk": "Jeep",
+   "md": "Grand Cherokee",
+   "q": "2017 Jeep Grand Cherokee problems",
+   "title": "2017 Jeep Grand Cherokee Problems: The Two Most Common Are Also the Most Expensive",
+   "desc": "361 federal complaints on the 2017 Grand Cherokee. 89 powertrain, 78 engine — destroyed camshafts, metal through the engine, transfer case failures. What to check before you buy.",
+   "nhtsa": 361,
+   "recalls": 0
+  }
  }
 }

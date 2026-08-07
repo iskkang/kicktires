@@ -25,13 +25,16 @@ $52,988`);
     { year: 2025, make: "cadillac", model: "xt6", price: 52988,
       mileage: null, location: "Bradenton, FL", seller: "dealer" }
   );
+  assert.equal(cadillac.certified, true);
 
   const tesla = __test.parseObviousPastedListing(`Used 2023 Tesla Model Y Performance AWD/4WD
 Sterling, VA
-$24,986`);
+$24,986
+VIN 7SAYGDEF5PF123456`);
   assert.equal(tesla.model, "modely");
   assert.equal(tesla.mileage, null);
   assert.equal(tesla.location, "Sterling, VA");
+  assert.equal(tesla.vin, "7SAYGDEF5PF123456");
 });
 
 test("downgrades a listing verdict when price or mileage is missing", () => {
@@ -44,6 +47,80 @@ test("downgrades a listing verdict when price or mileage is missing", () => {
   assert.equal(analysis.deal.grade, "inspect");
   assert.equal(analysis.deal.label, "Not enough info");
   assert.match(analysis.deal.reason, /cannot judge this specific deal/);
+});
+
+test("combines fixed market statistics with ownership risk deterministically", () => {
+  const analysis = {
+    deal: { grade: "inspect", label: "Inspection first", reason: "Check it." }
+  };
+  __test.applyMarketVerdict(analysis, { notes: [] }, {
+    status: "ready", sampleSize: 24, sellerType: "dealer",
+    deltaAmount: -2500, deltaPercent: -10
+  });
+  assert.equal(analysis.ownershipDeal.grade, "inspect");
+  assert.equal(analysis.deal.grade, "reasonable");
+  assert.equal(analysis.deal.label, "Smart buy candidate");
+  assert.match(analysis.deal.reason, /24 comparable active dealer listings/);
+
+  __test.applyMarketVerdict(analysis, { notes: [] }, {
+    status: "ready", sampleSize: 30, sellerType: "dealer",
+    deltaAmount: 5000, deltaPercent: 18
+  });
+  assert.equal(analysis.deal.grade, "walk");
+  assert.equal(analysis.deal.label, "Bad deal");
+});
+
+test("summarizes comparable-listing statistics without model-generated numbers", () => {
+  const market = __test.summarizeMarketResponse({
+    num_found: 17,
+    stats: {
+      price: { count: 17, median: 25000, percentiles: { "25.0": 23500, "75.0": 26900 } },
+      miles: { median: 30000 }
+    }
+  }, { state: "VA", trim: "Performance" }, { price: 24986, mileage: 28000 }, [18000, 38000]);
+  assert.equal(market.status, "ready");
+  assert.equal(market.sampleSize, 17);
+  assert.equal(market.medianPrice, 25000);
+  assert.equal(market.deltaAmount, -14);
+  assert.equal(market.scope, "VA statewide");
+  assert.equal(market.matchLevel, "trim");
+});
+
+test("queries close MarketCheck listings and broadens only when the trim sample is thin", async () => {
+  const originalFetch = globalThis.fetch;
+  const oldKey = process.env.MARKETCHECK_API_KEY;
+  process.env.MARKETCHECK_API_KEY = "market-test-key";
+  const urls = [];
+  globalThis.fetch = async url => {
+    const parsed = new URL(String(url));
+    urls.push(parsed);
+    const exactTrim = parsed.searchParams.has("trim");
+    const count = exactTrim ? 3 : 14;
+    return Response.json({ num_found: count, stats: {
+      price: { count, median: exactTrim ? 27000 : 25500,
+        percentiles: { "25.0": 24000, "75.0": 27000 } },
+      miles: { count, median: 30000 }
+    } });
+  };
+  try {
+    const market = await __test.getMarketComparison({
+      year: 2023, make: "tesla", model: "modely", trim: "Performance AWD/4WD",
+      mileage: 28000, price: 24986, location: "Sterling, VA", seller: "dealer"
+    });
+    assert.equal(market.status, "ready");
+    assert.equal(market.sampleSize, 14);
+    assert.equal(market.matchLevel, "model");
+    assert.equal(urls.length, 2);
+    assert.equal(urls[0].searchParams.get("trim"), "Performance");
+    assert.equal(urls[0].searchParams.get("state"), "VA");
+    assert.equal(urls[0].searchParams.get("model"), "model y");
+    assert.equal(urls[0].searchParams.get("api_key"), "market-test-key");
+    assert.equal(urls[1].searchParams.has("trim"), false);
+  } finally {
+    globalThis.fetch = originalFetch;
+    if (oldKey == null) delete process.env.MARKETCHECK_API_KEY;
+    else process.env.MARKETCHECK_API_KEY = oldKey;
+  }
 });
 
 test("blocks private network targets", () => {
@@ -115,19 +192,29 @@ test("uses the reviewed database before NHTSA and assesses the actual listing", 
   const old = {
     provider: process.env.PROVIDER,
     key: process.env.DEEPSEEK_API_KEY,
-    model: process.env.DEEPSEEK_MODEL
+    model: process.env.DEEPSEEK_MODEL,
+    marketKey: process.env.MARKETCHECK_API_KEY
   };
   process.env.PROVIDER = "deepseek";
   process.env.DEEPSEEK_API_KEY = "test-key";
   process.env.DEEPSEEK_MODEL = "test-model";
+  process.env.MARKETCHECK_API_KEY = "test-market-key";
   let modelCalls = 0;
   let nhtsaCalls = 0;
+  let marketCalls = 0;
 
   globalThis.fetch = async (url, options = {}) => {
     const target = String(url);
     if (target.includes("api.nhtsa.gov")) {
       nhtsaCalls++;
       throw new Error("reviewed profiles must not call NHTSA");
+    }
+    if (target.startsWith("https://api.marketcheck.com/")) {
+      marketCalls++;
+      return Response.json({ num_found: 20, stats: {
+        price: { count: 20, median: 9000, percentiles: { "25.0": 8200, "75.0": 9800 } },
+        miles: { count: 20, median: 90000 }
+      } });
     }
     if (target === "https://api.deepseek.com/chat/completions") {
       modelCalls++;
@@ -158,22 +245,29 @@ test("uses the reviewed database before NHTSA and assesses the actual listing", 
     assert.equal(output.profile, "/cars/2019-nissan-altima-problems/");
     assert.equal(output.car.price, 7900);
     assert.equal(output.analysis.deal.grade, "caution");
+    assert.equal(output.analysis.ownershipDeal.grade, "caution");
+    assert.equal(output.market.status, "ready");
+    assert.equal(output.market.medianPrice, 9000);
     assert.equal(output.tco.mpg, 30);
     assert.equal(modelCalls, 2);
+    assert.equal(marketCalls, 1);
     assert.equal(nhtsaCalls, 0);
   } finally {
     globalThis.fetch = originalFetch;
     if (old.provider == null) delete process.env.PROVIDER; else process.env.PROVIDER = old.provider;
     if (old.key == null) delete process.env.DEEPSEEK_API_KEY; else process.env.DEEPSEEK_API_KEY = old.key;
     if (old.model == null) delete process.env.DEEPSEEK_MODEL; else process.env.DEEPSEEK_MODEL = old.model;
+    if (old.marketKey == null) delete process.env.MARKETCHECK_API_KEY; else process.env.MARKETCHECK_API_KEY = old.marketKey;
   }
 });
 
 test("retrieves NHTSA and EPA evidence for an unreviewed model", async () => {
   const originalFetch = globalThis.fetch;
-  const old = { provider: process.env.PROVIDER, key: process.env.DEEPSEEK_API_KEY };
+  const old = { provider: process.env.PROVIDER, key: process.env.DEEPSEEK_API_KEY,
+    marketKey: process.env.MARKETCHECK_API_KEY };
   process.env.PROVIDER = "deepseek";
   process.env.DEEPSEEK_API_KEY = "test-key";
+  delete process.env.MARKETCHECK_API_KEY;
   let modelCalls = 0;
 
   globalThis.fetch = async (url, options = {}) => {
@@ -238,10 +332,13 @@ test("retrieves NHTSA and EPA evidence for an unreviewed model", async () => {
     assert.equal(output.facts.crashes, 1);
     assert.equal(output.tco.mpg, 31);
     assert.equal(output.analysis.risks[1].e[0][0], "o");
+    assert.equal(output.market.status, "not_configured");
+    assert.equal(output.analysis.deal.label, "Risk check only");
     assert.equal(modelCalls, 2);
   } finally {
     globalThis.fetch = originalFetch;
     if (old.provider == null) delete process.env.PROVIDER; else process.env.PROVIDER = old.provider;
     if (old.key == null) delete process.env.DEEPSEEK_API_KEY; else process.env.DEEPSEEK_API_KEY = old.key;
+    if (old.marketKey == null) delete process.env.MARKETCHECK_API_KEY; else process.env.MARKETCHECK_API_KEY = old.marketKey;
   }
 });

@@ -20,7 +20,11 @@ test("build emits GA4 and AdSense with privacy-safe analysis events", () => {
 
   const pages = [
     "index.html", "cars/index.html", "about/index.html", "privacy/index.html",
-    "cars/2019-nissan-altima-problems/index.html"
+    "cars/2019-nissan-altima-problems/index.html",
+    "cars/2018-toyota-camry-problems/index.html",
+    "cars/2019-honda-civic-problems/index.html",
+    "cars/2019-honda-cr-v-problems/index.html",
+    "cars/2017-jeep-grand-cherokee-problems/index.html"
   ];
   for (const page of pages) {
     const html = fs.readFileSync(path.join(ROOT, "dist", page), "utf8");
@@ -37,6 +41,9 @@ test("build emits GA4 and AdSense with privacy-safe analysis events", () => {
   assert.match(home, /Live vehicle analysis/);
   assert.match(home, /Most checks finish in 20–40 seconds/);
   assert.match(home, /Still working on this one/);
+  assert.match(home, /Checking comparable listings/);
+  assert.match(home, /Live market comparison/);
+  assert.match(home, /Market verdict unavailable/);
   assert.match(home, /Missing listing data/);
   assert.match(home, /const defaultState = stateMatch/);
   assert.ok(home.includes('match(/,\\s*([A-Z]{2})(?:\\s+\\d{5})?\\b/)'));
