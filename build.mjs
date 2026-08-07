@@ -1,4 +1,4 @@
-// build.mjs — generates the whole static site from data.json
+// build.mjs — generates the static site from editorial and federal snapshot data
 // run: node build.mjs   → writes ./dist
 import fs from "node:fs";
 import path from "node:path";
@@ -14,7 +14,21 @@ if (!/^G-[A-Z0-9]+$/i.test(GA_MEASUREMENT_ID)) throw new Error("invalid GA_MEASU
 const ADSENSE = (process.env.ADSENSE_CLIENT || "ca-pub-3682195653529318").trim();
 if (!/^ca-pub-\d{16}$/.test(ADSENSE)) throw new Error("invalid ADSENSE_CLIENT");
 const ADSENSE_PUBLISHER = ADSENSE.replace(/^ca-/, "");
-const D = JSON.parse(fs.readFileSync("data.json", "utf8"));
+const EDITORIAL = JSON.parse(fs.readFileSync("data.json", "utf8"));
+const GENERATED = JSON.parse(fs.readFileSync("generated.json", "utf8"));
+// A current federal snapshot replaces an older editorial page with the same slug.
+// The editorial source stays in the repository; it is never silently rewritten.
+const profileIdentity = profile => `${profile.meta.y}|${profile.meta.mk}|${profile.meta.md}`
+  .toLowerCase().replace(/[^a-z0-9|]/g, "");
+const mergedProfiles = new Map();
+for (const profile of [...Object.values(EDITORIAL), ...Object.values(GENERATED)]) {
+  mergedProfiles.set(profileIdentity(profile), profile);
+}
+const D = Object.fromEntries([...mergedProfiles.values()].map(profile=>[profile.meta.slug,profile])
+  .sort((a, b) => (a[1].meta.priority ?? 999) - (b[1].meta.priority ?? 999)
+    || a[1].meta.mk.localeCompare(b[1].meta.mk)
+    || a[1].meta.md.localeCompare(b[1].meta.md)
+    || b[1].meta.y - a[1].meta.y));
 const OUT = "dist";
 const TODAY = process.env.BUILD_DATE || new Date().toISOString().slice(0, 10);
 
@@ -23,6 +37,48 @@ const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;")
   .replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 const safeBold = s => esc(s).replace(/&lt;b&gt;/gi, "<b>").replace(/&lt;\/b&gt;/gi, "</b>");
 const money = n => "$" + Math.round(n).toLocaleString("en-US");
+const shortDesc = value => {
+  const source = String(value || "").replace(/\s+/g," ").trim();
+  if (source.length <= 160) return source;
+  return source.slice(0,157).replace(/\s+\S*$/,"").replace(/[.,;:!?-]+$/,"") + "…";
+};
+const dateLabel = value => new Date(value).toLocaleDateString("en-US", {
+  month:"short", day:"numeric", year:"numeric", timeZone:"UTC"
+});
+
+function validateProfiles(profiles){
+  const slugs = new Set(), titles = new Set(), queries = new Set();
+  for (const d of profiles) {
+    const m = d.meta || {};
+    if (!m.slug || slugs.has(m.slug)) throw new Error(`duplicate or missing slug: ${m.slug}`);
+    if (!m.title || titles.has(m.title)) throw new Error(`duplicate or missing title: ${m.title}`);
+    if (!m.q || queries.has(m.q)) throw new Error(`duplicate or missing query: ${m.q}`);
+    if (!Array.isArray(d.risks) || d.risks.length < 2) throw new Error(`too few risks: ${m.slug}`);
+    if (!Array.isArray(d.chk) || d.chk.length < 3) throw new Error(`too few checks: ${m.slug}`);
+    if (d.generated) {
+      if (!d.federal || d.federal.complaintTotal !== m.nhtsa
+        || d.federal.recallTotal !== m.recalls) throw new Error(`federal totals mismatch: ${m.slug}`);
+      if (!d.federal.retrievedAt || !d.quality?.factsFingerprint) {
+        throw new Error(`missing provenance: ${m.slug}`);
+      }
+      if (d.risks.some(risk => risk.e?.some(row => row[0] === "s"))) {
+        throw new Error(`unverified owner evidence: ${m.slug}`);
+      }
+    }
+    slugs.add(m.slug); titles.add(m.title); queries.add(m.q);
+  }
+}
+validateProfiles(Object.values(D));
+const FEATURED = (() => {
+  const groups = new Map();
+  for (const profile of Object.values(D)) {
+    const group = `${profile.meta.mk}|${profile.meta.md}`;
+    const current = groups.get(group);
+    const distance = Math.abs(profile.meta.y - 2020);
+    if (!current || distance < Math.abs(current.meta.y - 2020)) groups.set(group, profile);
+  }
+  return [...groups.values()].sort((a,b)=>(a.meta.priority??999)-(b.meta.priority??999)).slice(0,10);
+})();
 
 const STATES = {
   OH:{n:"Ohio",tax:.0575,ins:.78,reg:85,prop:0}, CA:{n:"California",tax:.0825,ins:1.15,reg:290,prop:0},
@@ -44,16 +100,17 @@ function tco(d, s){
 
 /* ── shared chrome ─────────────────────────────────────────────── */
 function head({title,desc,url,jsonld}){
+  const metaDesc = shortDesc(desc);
   return `<!DOCTYPE html><html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${esc(title)}</title>
-<meta name="description" content="${esc(desc)}">
+<meta name="description" content="${esc(metaDesc)}">
 <link rel="canonical" href="${url}">
 <meta property="og:type" content="article"><meta property="og:title" content="${esc(title)}">
-<meta property="og:description" content="${esc(desc)}"><meta property="og:url" content="${url}">
+<meta property="og:description" content="${esc(metaDesc)}"><meta property="og:url" content="${url}">
 <meta property="og:site_name" content="${NAME}">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="${esc(title)}"><meta name="twitter:description" content="${esc(desc)}">
+<meta name="twitter:title" content="${esc(title)}"><meta name="twitter:description" content="${esc(metaDesc)}">
 <meta name="google-adsense-account" content="${ADSENSE}">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%233987e5'/><rect x='8' y='11' width='16' height='3' rx='1.5' fill='%230a0b0d'/><rect x='8' y='18' width='16' height='3' rx='1.5' fill='%230a0b0d'/></svg>">
 <script async src="https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}"></script>
@@ -82,6 +139,17 @@ function modelPage(key, d){
   const m = d.meta, url = `${SITE}/cars/${m.slug}/`;
   const T = d.tco && typeof d.price === "number" ? tco(d, STATES.OH) : null;
   const hasListing = typeof d.price === "number";
+  const federal = d.federal || null;
+  const published = m.published || m.retrievedAt?.slice(0,10) || "2026-08-06";
+  const modified = m.updated || m.retrievedAt?.slice(0,10) || published;
+  const peers = Object.values(D).filter(o => o.meta.mk === m.mk && o.meta.md === m.md)
+    .sort((a,b) => a.meta.y - b.meta.y);
+  const seenModels = new Set();
+  const others = Object.values(D).filter(o => {
+    const group = `${o.meta.mk}|${o.meta.md}`;
+    if (o.meta.slug === m.slug || group === `${m.mk}|${m.md}` || seenModels.has(group)) return false;
+    seenModels.add(group); return true;
+  }).slice(0,6);
   const risks = d.risks.map(r=>`
     <article class="risk s-${["crit","ser","warn"].includes(r.s) ? r.s : "warn"}">
       <div class="sevwrap"><div class="sevbar"></div><div class="sevtxt">${esc(r.lbl)}</div></div>
@@ -92,7 +160,7 @@ function modelPage(key, d){
 
   const jsonld = {
     "@context":"https://schema.org","@type":"Article",
-    headline:m.title, description:m.desc, datePublished:TODAY, dateModified:TODAY,
+    headline:m.title, description:m.desc, datePublished:published, dateModified:modified,
     author:{"@type":"Organization",name:NAME}, publisher:{"@type":"Organization",name:NAME},
     mainEntityOfPage:url,
     about:{"@type":"Car",name:`${m.y} ${m.mk} ${m.md}`,modelDate:String(m.y),
@@ -104,10 +172,53 @@ function modelPage(key, d){
       acceptedAnswer:{"@type":"Answer",text:r.b + " Typical cost: " + r.c + "."}}))
   };
 
+  const federalPanel = !federal ? "" : (() => {
+    const top = federal.topComponents.slice(0,6);
+    const max = Math.max(1,...top.map(item=>item.count));
+    const components = top.map(item=>`<div class="component-row">
+      <span>${esc(item.component)}</span><div><i style="width:${(item.count/max*100).toFixed(1)}%"></i></div>
+      <b>${item.count.toLocaleString("en-US")}</b></div>`).join("");
+    const excerpts = top.slice(0,3).flatMap(item => (item.examples||[]).slice(0,1)
+      .filter(example => example.length >= 20).map(example=>`<article class="report-excerpt">
+        <p class="micro">Representative ${esc(item.component)} report</p><p>${esc(example)}</p></article>`)).join("");
+    const recallRows = federal.recalls.slice(0,6).map(item=>`<article class="recall-row">
+      <div><span class="campaign">${esc(item.campaign)}</span><b>${esc(item.component)}</b></div>
+      <p>${esc(item.consequence || "See the campaign record for the stated safety consequence.")}</p></article>`).join("");
+    const epa = d.epa?.kind === "liquid" ? `<div><span>EPA efficiency</span><b>${d.epa.mpg} mpg</b>
+      <small>median across ${d.epa.variants} configurations</small></div>` : "";
+    return `<h2>The federal record, without the folklore</h2>
+      <p class="sub">Retrieved ${dateLabel(federal.retrievedAt)}. Complaint reports are allegations, not verified defects or failure rates.</p>
+      <section class="panel federal-panel">
+        <div class="record-stats">
+          <div><span>Complaints</span><b>${federal.complaintTotal.toLocaleString("en-US")}</b><small>NHTSA consumer reports</small></div>
+          <div><span>Recall campaigns</span><b>${federal.recallTotal.toLocaleString("en-US")}</b><small>VIN applicability varies</small></div>
+          <div><span>Crash flags</span><b>${federal.crashes.toLocaleString("en-US")}</b><small>reports marked crash</small></div>
+          <div><span>Fire flags</span><b>${federal.fires.toLocaleString("en-US")}</b><small>reports marked fire</small></div>${epa}
+        </div>
+        ${top.length ? `<div class="federal-block"><div class="block-head"><div><p class="micro">Complaint tags</p><h3>Where owners reported problems</h3></div></div>
+          <div class="component-list">${components}</div><p class="data-note">One complaint can carry more than one component tag, so these rows do not add up to the complaint total.</p></div>` : ""}
+        ${excerpts ? `<div class="federal-block"><div class="block-head"><div><p class="micro">Raw federal reports</p><h3>What representative filings say</h3></div></div>
+          <div class="report-grid">${excerpts}</div><p class="data-note">Excerpts are allegations submitted to NHTSA. They are shown as inspection leads, not proof of a defect.</p></div>` : ""}
+        ${recallRows ? `<div class="federal-block"><div class="block-head"><div><p class="micro">Safety campaigns</p><h3>Recall records to check by VIN</h3></div>
+          <a href="https://www.nhtsa.gov/recalls" rel="noopener">Check your VIN at NHTSA ↗</a></div><div class="recall-list">${recallRows}</div>
+          ${federal.recallTotal > 6 ? `<p class="data-note">Showing 6 of ${federal.recallTotal} campaigns returned for this model year.</p>` : ""}</div>` : ""}
+      </section>`;
+  })();
+
+  const peerPanel = peers.length < 2 ? "" : `<h2>Compare nearby model years</h2>
+    <p class="sub">The badge is the leading NHTSA complaint tag for that year. A high total is not a failure rate.</p>
+    <div class="year-compare">${peers.map(peer=>{
+      const lead = peer.federal?.topComponents?.[0];
+      const inner = `<span class="year-num">${peer.meta.y}</span><b>${peer.meta.nhtsa.toLocaleString("en-US")} complaints</b><small>${esc(lead?.component || peer.vline)}</small>`;
+      return peer.meta.slug === m.slug ? `<div class="year-card current">${inner}<em>Current page</em></div>`
+        : `<a class="year-card" href="/cars/${peer.meta.slug}/">${inner}<em>Open guide →</em></a>`;
+    }).join("")}</div>`;
+
   return head({title:m.title, desc:m.desc, url, jsonld:[jsonld,faq]}) + `
 <main class="shell">
   <div class="crumb"><a href="/">Home</a> › <a href="/cars/">Models</a> › ${m.y} ${m.mk} ${m.md}</div>
-  <p class="micro">Verified against ${m.nhtsa} NHTSA complaints${m.recalls?` and ${m.recalls} recall campaigns`:""}</p>
+  <p class="micro">${d.generated ? `Federal snapshot · retrieved ${dateLabel(federal.retrievedAt)}`
+    : `Editorially reviewed against ${m.nhtsa} NHTSA complaints`}</p>
   <h1>${m.y} ${m.mk} ${m.md} problems</h1>
   <p class="verdict-lead">${esc(d.vline)}</p>
   <p class="lede">${esc(d.vsub)}</p>
@@ -118,12 +229,20 @@ function modelPage(key, d){
     <div class="pbody"><div class="specs">${d.specs.map(s=>`<span class="spec">${esc(s)}</span>`).join("")}</div></div>
   </section>
 
-  <h2>What actually goes wrong</h2>
-  <p class="sub">Ranked by what it does to your wallet, not by how often it is mentioned online.</p>
+  <section class="model-cta">
+    <div><p class="micro">Check the actual listing</p><h2>Model-year records cannot tell you whether this price is good.</h2>
+      <p>Paste the listing with its price and mileage. We will compare active listings, apply these federal records and estimate five-year cost.</p></div>
+    <a class="btn" href="/#check" onclick="if(window.gtag)gtag('event','model_analyzer_clicked',{page_slug:'${m.slug}'})">Check a listing</a>
+  </section>
+
+  ${federalPanel}
+
+  <h2>${d.generated ? "What deserves inspection" : "What actually goes wrong"}</h2>
+  <p class="sub">Ranked by potential cost and safety. Counts show complaint tags, not the probability that your car will fail.</p>
   <section class="panel">${risks}
     <div class="legend">
       <div class="lg"><div class="evtag e-v">NHTSA</div><p>Straight from federal recall and complaint records. Looked up, not interpreted.</p></div>
-      <div class="lg"><div class="evtag e-s">OWNERS</div><p>Reported by owners in public forums, with a source we checked ourselves.</p></div>
+      ${d.generated ? "" : `<div class="lg"><div class="evtag e-s">OWNERS</div><p>Reported by owners in public forums, with a source we checked ourselves.</p></div>`}
       <div class="lg"><div class="evtag e-o">OUR TAKE</div><p>Our judgment — the part that could be wrong. We label it rather than blending it in.</p></div>
     </div>
   </section>
@@ -140,6 +259,11 @@ function modelPage(key, d){
     <div class="tlines">${T.rows.map(r=>`<div class="tline"><span class="tdot ${r[3]}"></span><span class="tname">${r[0]}</span><span class="tnote">${esc(r[2])}</span><span class="tval">${money(r[1])}</span></div>`).join("")}</div>
   </div></section>`}
 
+  ${T ? "" : `<h2>What five years may cost</h2>
+  <section class="estimate-callout"><div><p class="micro">No fake total</p><h3>The listing is missing from this page.</h3>
+    <p>A real total needs the asking price, mileage and state. ${d.epa?.mpg ? `EPA data puts this model year's configurations around ${d.epa.mpg} mpg, but fuel is only one part of the bill.` : "Federal records alone are not enough to price ownership."}</p></div>
+    <a href="/#check" onclick="if(window.gtag)gtag('event','model_analyzer_clicked',{page_slug:'${m.slug}',placement:'tco'})">Paste a listing →</a></section>`}
+
   <h2>Take this to the inspection</h2>
   <section class="panel"><div class="pbody">
     ${d.chk.map(c=>`<div class="chk"><div class="cbox"></div><p>${safeBold(c)}</p></div>`).join("")}
@@ -150,8 +274,10 @@ function modelPage(key, d){
     <p><b>We take no money from dealers, sellers, or marketplaces — ever.</b> Every site that ranks listings for you is paid by someone who wants you to buy one. That is why they will call a car a great deal and never tell you why it is cheap. We have nothing to lose if you walk away.</p>
   </section>
 
-  <h2>Other models</h2>
-  <div class="cards">${Object.entries(D).filter(([k])=>k!==key).map(([k,o])=>
+  ${peerPanel}
+
+  <h2>Other popular models</h2>
+  <div class="cards">${others.map(o=>
     `<a class="card" href="/cars/${o.meta.slug}/"><span class="micro">${o.meta.nhtsa} complaints</span><span class="cardt">${o.meta.y} ${o.meta.mk} ${o.meta.md}</span><span class="cardd">${esc(o.vline)}</span></a>`).join("")}</div>
 </main>` + foot;
 }
@@ -203,8 +329,8 @@ function home(){
 
   <div class="section-heading model-heading"><div><p class="micro">Buyer guides</p><h2>Popular models we've checked</h2></div>
     <a href="/cars/">See all models &rarr;</a></div>
-  <p class="sub">Year-specific findings cross-checked against federal complaint and recall records.</p>
-  <div class="cards">${Object.values(D).map(o=>
+  <p class="sub">${Object.values(D).length} year-specific guides built from federal complaint and recall records.</p>
+  <div class="cards">${FEATURED.map(o=>
     `<a class="card" href="/cars/${o.meta.slug}/"><span class="micro">${o.meta.nhtsa} complaints checked</span><span class="cardt">${o.meta.y} ${o.meta.mk} ${o.meta.md}</span><span class="cardd">${esc(o.vline)}</span></a>`).join("")}</div>
 </main>
 <script>
@@ -392,9 +518,12 @@ function render(output){
     return '<div class="chk"><div class="cbox"></div><p><b>'+html(item.lead)+'</b>'+
       (item.detail ? ' '+html(item.detail) : '')+'</p></div>';
   }).join("");
-  const source = facts.source === "reviewed_db" ? "Reviewed KickTires profile" : "NHTSA records pulled live";
+  const source = facts.source === "reviewed_db" ? "Reviewed KickTires profile"
+    : facts.source === "federal_snapshot" ? "Precomputed NHTSA snapshot" : "NHTSA records pulled live";
+  const profileLabel = facts.source === "federal_snapshot"
+    ? "Open the federal model-year page" : "Open the reviewed model page";
   const profileLink = output.profile ? '<p class="profilelink"><a href="'+html(output.profile)+
-    '">Open the reviewed model page &rarr;</a></p>' : '';
+    '">'+html(profileLabel)+' &rarr;</a></p>' : '';
   const missing = Array.isArray(limitations.missing) ? limitations.missing : [];
   const missingLabel = missing.join(" and ");
   const stateMatch = String(car.location || "").match(/,\\s*([A-Z]{2})(?:\\s+\\d{5})?\\b/);
@@ -576,16 +705,50 @@ async function route(event){
 }
 
 function indexPage(){
+  const groups = new Map();
+  for (const profile of Object.values(D)) {
+    const id = `${profile.meta.mk}|${profile.meta.md}`;
+    if (!groups.has(id)) groups.set(id, []);
+    groups.get(id).push(profile);
+  }
+  const ordered = [...groups.values()].sort((a,b)=>(a[0].meta.priority??999)-(b[0].meta.priority??999)
+    || a[0].meta.mk.localeCompare(b[0].meta.mk) || a[0].meta.md.localeCompare(b[0].meta.md));
+  const sections = ordered.map(items => {
+    items.sort((a,b)=>b.meta.y-a.meta.y);
+    const first = items[0];
+    const search = `${first.meta.mk} ${first.meta.md}`.toLowerCase();
+    return `<section class="model-group" data-search="${esc(search)}">
+      <div class="model-group-head"><div><p class="micro">${esc(first.meta.mk)}</p><h2>${esc(first.meta.mk)} ${esc(first.meta.md)}</h2></div>
+        <span>${items.length} model year${items.length===1?"":"s"}</span></div>
+      <div class="model-years">${items.map(o=>{
+        const lead = o.federal?.topComponents?.[0]?.component;
+        return `<a href="/cars/${o.meta.slug}/"><span class="year-num">${o.meta.y}</span>
+          <b>${o.meta.nhtsa.toLocaleString("en-US")} complaints</b>
+          <small>${o.meta.recalls.toLocaleString("en-US")} recalls${lead?` · ${esc(lead)}`:""}</small><em>Open guide →</em></a>`;
+      }).join("")}</div></section>`;
+  }).join("");
   return head({title:`All models — ${NAME}`,
     desc:"Every used car model we've analysed against federal NHTSA complaint and recall records, with real ownership costs.",
     url:SITE+"/cars/"}) + `
 <main class="shell">
   <div class="crumb"><a href="/">Home</a> › Models</div>
   <h1>Every model we've checked</h1>
-  <p class="lede">Each page is cross-checked against federal complaint and recall records before it goes up. We add models in order of how often people search for them.</p>
-  <div class="cards">${Object.values(D).map(o=>
-    `<a class="card" href="/cars/${o.meta.slug}/"><span class="micro">${o.meta.nhtsa} complaints checked</span><span class="cardt">${o.meta.y} ${o.meta.mk} ${o.meta.md}</span><span class="cardd">${esc(o.vline)}</span></a>`).join("")}</div>
-</main>` + foot;
+  <p class="lede">${Object.values(D).length} model-year pages. Each federal snapshot must pass the complaint, recall and provenance checks before it is published.</p>
+  <div class="model-index-tools"><label for="modelSearch">Find a make or model</label>
+    <input id="modelSearch" type="search" autocomplete="off" placeholder="Try Camry, Civic or F-150"></div>
+  <div class="model-groups" id="modelGroups">${sections}</div>
+  <p class="no-models" id="noModels" hidden>No matching guide yet. Paste the listing on the home page and we will still analyze it live.</p>
+</main>
+<script>
+const modelSearch=document.getElementById("modelSearch");
+modelSearch.addEventListener("input",function(){
+  const query=this.value.trim().toLowerCase();let shown=0;
+  document.querySelectorAll(".model-group").forEach(function(group){
+    const visible=!query||group.dataset.search.includes(query);group.hidden=!visible;if(visible)shown++;
+  });
+  document.getElementById("noModels").hidden=shown!==0;
+});
+</script>` + foot;
 }
 
 function privacyPage(){
@@ -631,11 +794,12 @@ write(`${OUT}/privacy/index.html`, privacyPage());
 write(`${OUT}/about/index.html`, aboutPage());
 for (const [k,d] of Object.entries(D)) write(`${OUT}/cars/${d.meta.slug}/index.html`, modelPage(k,d));
 
-const urls = [ [SITE+"/",1.0], [SITE+"/cars/",0.8], [SITE+"/about/",0.5], [SITE+"/privacy/",0.3],
-  ...Object.values(D).map(d=>[`${SITE}/cars/${d.meta.slug}/`,0.9]) ];
+const urls = [ [SITE+"/",1.0,TODAY], [SITE+"/cars/",0.8,TODAY], [SITE+"/about/",0.5,TODAY], [SITE+"/privacy/",0.3,TODAY],
+  ...Object.values(D).map(d=>[`${SITE}/cars/${d.meta.slug}/`,0.9,
+    d.meta.updated || d.meta.retrievedAt?.slice(0,10) || "2026-08-06"]) ];
 write(`${OUT}/sitemap.xml`,
 `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` +
-urls.map(([u,p])=>`  <url><loc>${u}</loc><lastmod>${TODAY}</lastmod><priority>${p}</priority></url>`).join("\n") +
+urls.map(([u,p,lastmod])=>`  <url><loc>${u}</loc><lastmod>${lastmod}</lastmod><priority>${p}</priority></url>`).join("\n") +
 `\n</urlset>\n`);
 // Search Console ownership file + anything you drop in ./static
 if (GOOGLE_VERIFY) write(`${OUT}/${GOOGLE_VERIFY}.html`, `google-site-verification: ${GOOGLE_VERIFY}.html`);

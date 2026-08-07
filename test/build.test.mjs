@@ -59,4 +59,26 @@ test("build emits GA4 and AdSense with privacy-safe analysis events", () => {
 
   const ads = fs.readFileSync(path.join(ROOT, "dist/ads.txt"), "utf8");
   assert.equal(ads, "google.com, pub-1234567890123456, DIRECT, f08c47fec0942fa0\n");
+
+  const generated = JSON.parse(fs.readFileSync(path.join(ROOT, "generated.json"), "utf8"));
+  assert.equal(Object.keys(generated).length, 40);
+  const modelDirectories = fs.readdirSync(path.join(ROOT, "dist/cars"), { withFileTypes: true })
+    .filter(entry => entry.isDirectory());
+  assert.equal(modelDirectories.length, 41);
+
+  const evidencePage = fs.readFileSync(path.join(ROOT,
+    "dist/cars/2020-toyota-camry-problems/index.html"), "utf8");
+  assert.match(evidencePage, /The federal record, without the folklore/);
+  assert.match(evidencePage, /20V682000/);
+  assert.match(evidencePage, /model_analyzer_clicked/);
+  assert.match(evidencePage, /Compare nearby model years/);
+
+  const directory = fs.readFileSync(path.join(ROOT, "dist/cars/index.html"), "utf8");
+  assert.match(directory, /41 model-year pages/);
+  assert.match(directory, /class="model-group"/);
+
+  const sitemap = fs.readFileSync(path.join(ROOT, "dist/sitemap.xml"), "utf8");
+  assert.equal((sitemap.match(/<url>/g) || []).length, 45);
+  assert.match(sitemap, /2018-ford-f150-problems/);
+  assert.doesNotMatch(sitemap, /2018-ford-f-150-problems/);
 });

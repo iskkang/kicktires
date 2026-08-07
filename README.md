@@ -11,8 +11,11 @@ retrieves the evidence first and supplies it as fixed input.
 
 ## Architecture
 
-- `build.mjs` generates the static site in `dist/` from `data.json`.
-- `data.json` contains reviewed model profiles used by SEO pages and live analysis.
+- `build.mjs` generates the static site in `dist/` from editorial and federal snapshot data.
+- `data.json` preserves the original editorially reviewed profiles.
+- `models.json` defines the 40-page phase-one publication cohort.
+- `generated.json` contains committed NHTSA/EPA snapshots produced by the sync script.
+- `scripts/sync-model-pages.mjs` retrieves federal records and refuses incomplete pages.
 - `netlify/functions/analyze.mjs` handles listing extraction and live analysis.
 - Netlify Blobs stores derived analyses for 30 days and vehicle evidence for 7 days.
 - Pasted listing text is not stored in the cache.
@@ -21,7 +24,7 @@ The live request flow is:
 
 1. Fetch a public listing URL safely, or use pasted listing text.
 2. Extract year, make, model, price, mileage and seller disclosures.
-3. Match the reviewed database.
+3. Match a precomputed model-year evidence profile when one exists.
 4. Retrieve mileage-matched active dealer or private-party comparison statistics.
 5. If the vehicle is not reviewed, retrieve NHTSA and EPA records.
 6. Generate an ownership-risk analysis, then apply the market verdict in server code.
@@ -39,6 +42,18 @@ npm test
 npm run build
 npx netlify-cli build --offline
 ```
+
+To refresh the 40 phase-one federal snapshots:
+
+```sh
+npm run sync:models
+```
+
+The sync command makes live NHTSA and EPA requests. A target is rejected instead of
+published when both federal datasets are unavailable, the vehicle has no federal records,
+component totals do not match the complaint response, provenance is missing, or generated
+content contains an unverified owner-forum evidence tag. The build repeats the structural
+checks and also rejects duplicate titles, slugs and search queries.
 
 ## Netlify deployment
 
@@ -63,12 +78,12 @@ Never place keys in `build.mjs`, `style.css`, `data.json`, or `dist/`.
 The build emits the AdSense Auto Ads loader and a root `ads.txt` entry. Auto Ads must
 also be enabled for the site in AdSense; no manual ad-slot IDs are emitted.
 
-## Adding a reviewed model
+## Adding a model-year page
 
-Add an entry to `data.json` with `meta`, risks, inspection items and reviewed cost
-inputs, then run the checks above. NHTSA vehicle model names must match the federal
-API. A reviewed page is a trusted cache, not a gate: unreviewed models still use the
-live NHTSA path.
+Add a model and its selected years to `models.json`, run `npm run sync:models`, inspect
+the resulting evidence, then run the checks above. NHTSA vehicle names must match the
+federal API. A precomputed page is a trusted cache, not a gate: unlisted models still use
+the live NHTSA path.
 
 Before changing domains, update `SITE` in `build.mjs`; it controls canonical URLs,
 Open Graph URLs, `robots.txt`, and `sitemap.xml`.

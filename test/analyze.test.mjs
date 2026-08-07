@@ -187,7 +187,7 @@ test("completes a partial live response from supplied federal facts", () => {
   assert.ok(baseline.estimates.annualRepairs >= 500);
 });
 
-test("uses the reviewed database before NHTSA and assesses the actual listing", async () => {
+test("uses the precomputed evidence page before NHTSA and assesses the actual listing", async () => {
   const originalFetch = globalThis.fetch;
   const old = {
     provider: process.env.PROVIDER,
@@ -207,7 +207,7 @@ test("uses the reviewed database before NHTSA and assesses the actual listing", 
     const target = String(url);
     if (target.includes("api.nhtsa.gov")) {
       nhtsaCalls++;
-      throw new Error("reviewed profiles must not call NHTSA");
+      throw new Error("precomputed profiles must not call NHTSA");
     }
     if (target.startsWith("https://api.marketcheck.com/")) {
       marketCalls++;
@@ -241,7 +241,7 @@ test("uses the reviewed database before NHTSA and assesses the actual listing", 
     const response = await handler(request);
     const output = await response.json();
     assert.equal(response.status, 200);
-    assert.equal(output.facts.source, "reviewed_db");
+    assert.equal(output.facts.source, "federal_snapshot");
     assert.equal(output.profile, "/cars/2019-nissan-altima-problems/");
     assert.equal(output.car.price, 7900);
     assert.equal(output.analysis.deal.grade, "caution");
@@ -261,7 +261,7 @@ test("uses the reviewed database before NHTSA and assesses the actual listing", 
   }
 });
 
-test("returns the reviewed evidence when the model provider is slow or unavailable", async () => {
+test("returns precomputed evidence when the model provider is slow or unavailable", async () => {
   const originalFetch = globalThis.fetch;
   const old = { provider: process.env.PROVIDER, key: process.env.DEEPSEEK_API_KEY,
     marketKey: process.env.MARKETCHECK_API_KEY };
@@ -286,7 +286,7 @@ test("returns the reviewed evidence when the model provider is slow or unavailab
     const response = await handler(request);
     const output = await response.json();
     assert.equal(response.status, 200);
-    assert.equal(output.facts.source, "reviewed_db");
+    assert.equal(output.facts.source, "federal_snapshot");
     assert.equal(output.profile, "/cars/2019-honda-cr-v-problems/");
     assert.equal(output.analysis.deal.label, "Risk check only");
     assert.ok(output.analysis.risks.length >= 2);

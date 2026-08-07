@@ -2,7 +2,7 @@
 //
 // The server, not the language model, retrieves the evidence:
 //   1. extract the exact vehicle and listing details
-//   2. use the reviewed profile in data.json when one exists
+//   2. use a precomputed model-year profile when one exists
 //   3. otherwise retrieve current NHTSA records and EPA fuel-economy data
 //   4. ask the configured model for a listing-specific ownership-risk verdict
 //   5. cache only derived results, never the pasted listing text
@@ -12,6 +12,7 @@ import { lookup } from "node:dns/promises";
 import { isIP } from "node:net";
 import { getStore } from "@netlify/blobs";
 import DB from "../../data.json" with { type: "json" };
+import GENERATED from "../../generated.json" with { type: "json" };
 
 const ANALYSIS_CACHE_DAYS = 30;
 const FACT_CACHE_DAYS = 7;
@@ -21,7 +22,12 @@ const ANALYSIS_VERSION = "2026-08-07.5";
 const REQUEST_BUDGET_MS = 25_000;
 const MAX_LISTING_BYTES = 1_500_000;
 const CURRENT_YEAR = new Date().getUTCFullYear();
-const PROFILES = Object.values(DB);
+const profileIdentity = profile => `${profile.meta.y}|${profile.meta.mk}|${profile.meta.md}`
+  .toLowerCase().replace(/[^a-z0-9|]/g, "");
+const PROFILES = [...new Map([
+  ...Object.values(DB),
+  ...Object.values(GENERATED)
+].map(profile => [profileIdentity(profile), profile])).values()];
 
 const UA = "KickTires/1.0 (+https://kicktires.netlify.app/about/)";
 const BROWSER_UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) " +
@@ -139,7 +145,7 @@ Rules:
 
 const ASSESS_REVIEWED = `You are the buyer-side analyst for KickTires.
 
-The vehicle profile below was reviewed against federal records. Treat it as the fixed
+The vehicle profile below was precomputed from checked federal records. Treat it as the fixed
 evidence layer. Judge this specific listing using its asking price, mileage, seller notes,
 and that profile. You are judging ownership-risk at the stated price, not claiming to know
 the live market value.
@@ -718,16 +724,40 @@ async function fetchJson(url, timeout = 5_000) {
   }
 }
 
+// NHTSA occasionally returns a temporary empty/400 response for a valid vehicle query.
+// Retry that response once, and never turn a missing endpoint into a factual zero.
+async function fetchNhtsaJson(url, timeout = 8_000) {
+  let emptyResponse = null;
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      const response = await fetch(url, {
+        signal: AbortSignal.timeout(timeout),
+        headers: { "User-Agent": UA, Accept: "application/json" }
+      });
+      const data = await response.json().catch(() => null);
+      const count = Number(data?.count ?? data?.Count);
+      const structured = data && Array.isArray(data.results)
+        && Number.isInteger(count) && count >= 0;
+      if (structured && count > 0) return data;
+      if (structured) emptyResponse = data;
+    } catch {
+      // The second attempt is the recovery path. Failure after it returns null.
+    }
+    if (attempt === 0) await new Promise(resolve => setTimeout(resolve, 250));
+  }
+  return emptyResponse;
+}
+
 async function getNhtsaFacts(car) {
   const make = MAKE_ALIAS[car.make] || car.make;
   const model = MODEL_ALIAS[car.model] || car.model;
   const query = `make=${encodeURIComponent(make)}&model=${encodeURIComponent(model)}`
     + `&modelYear=${encodeURIComponent(car.year)}`;
   const [complaints, recalls] = await Promise.all([
-    fetchJson(`https://api.nhtsa.gov/complaints/complaintsByVehicle?${query}`),
-    fetchJson(`https://api.nhtsa.gov/recalls/recallsByVehicle?${query}`)
+    fetchNhtsaJson(`https://api.nhtsa.gov/complaints/complaintsByVehicle?${query}`),
+    fetchNhtsaJson(`https://api.nhtsa.gov/recalls/recallsByVehicle?${query}`)
   ]);
-  if (!complaints && !recalls) throw new Error("records_unavailable");
+  if (!complaints || !recalls) throw new Error("records_unavailable");
 
   const complaintRows = asItems(complaints?.results);
   const recallRows = asItems(recalls?.results);
@@ -1060,7 +1090,8 @@ function tcoFrom(profile, analysis, epa) {
       mpg: numeric(profile.tco.mpg, 1, 200),
       fuel: ["regular", "premium", "diesel"].includes(profile.tco.fuel)
         ? profile.tco.fuel : "regular",
-      source: "reviewed profile"
+      source: profile.tco.source || (profile.generated
+        ? "EPA efficiency + KickTires cost estimates" : "reviewed profile")
     };
   }
   if (!epa || analysis.estimates.annualInsurance == null || analysis.estimates.annualRepairs == null) {
@@ -1178,10 +1209,10 @@ export default async (request) => {
       }
     }
     analysis = reviewedAnalysis(profile, assessment);
-    facts = factsSummary({
+    facts = factsSummary(profile.federal || {
       complaintTotal: profile.meta.nhtsa,
       recallTotal: profile.meta.recalls
-    }, "reviewed_db");
+    }, profile.generated ? "federal_snapshot" : "reviewed_db", profile.epa || null);
     tco = tcoFrom(profile, analysis, null);
   } else {
     const vehicleKey = `${car.year}-${norm(car.make)}-${norm(car.model)}`;
