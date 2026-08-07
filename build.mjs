@@ -64,7 +64,10 @@ ${jsonld ? `<script type="application/ld+json">${JSON.stringify(jsonld).replace(
 </head><body>
 <nav><div class="navin">
   <a class="logo" href="/"><i></i>${NAME}</a>
-  <a class="navlink" href="/cars/">All models</a>
+  <div class="navlinks">
+    <a class="navlink navcheck" href="/#check">Check a listing</a>
+    <a class="navlink" href="/cars/">Model guides</a>
+  </div>
 </div></nav>`;
 }
 const foot = `<footer class="site"><div class="shell">
@@ -156,26 +159,51 @@ function modelPage(key, d){
 /* ── home ──────────────────────────────────────────────────────── */
 function home(){
   const jsonld = {"@context":"https://schema.org","@type":"WebSite",name:NAME,url:SITE+"/"};
-  return head({title:`${NAME} — every cheap used car is cheap for a reason`,
+  return head({title:`${NAME} — paste the listing, know the deal`,
     desc:"Paste any used car listing. We compare the asking price with similar active listings, check federal complaint records, and estimate five-year ownership cost. We take no money from sellers.",
     url:SITE+"/", jsonld}) + `
-<main class="shell">
-  <section class="hero"><div class="inner">
-    <p class="micro">Independent · never paid by sellers</p>
-    <h1 class="big">Every cheap car is cheap<br><em>for a reason.</em></h1>
-    <p class="lede">Paste any used listing. We'll compare its price with similar cars, check what breaks, and tell you whether the seller wins or you do.</p>
-    <form class="paste" onsubmit="route(event);return false">
-      <textarea id="inp" placeholder="Paste a listing URL — or if it's Facebook Marketplace, paste the listing text instead."></textarea>
-      <div class="pfoot"><span class="srcs">Cars.com · Autotrader · CarGurus · Craigslist · dealer sites · pasted text</span>
-      <button class="btn" id="analyzeBtn" type="submit">Check this car</button></div>
-    </form>
-    <p id="hint" class="hint" aria-live="polite"></p>
+<main class="shell home-shell">
+  <section class="hero" id="check"><div class="hero-grid">
+    <div class="hero-primary">
+      <div class="hero-copy">
+        <p class="micro">Free used-car deal check</p>
+        <h1 class="big">Paste the listing.<br><em>Know the deal.</em></h1>
+        <p class="lede">We compare the asking price, federal safety records and five-year ownership cost. Then we tell you who wins: you or the seller.</p>
+      </div>
+      <form class="paste" onsubmit="route(event);return false">
+        <label class="paste-label" for="inp">Listing URL or listing text</label>
+        <textarea id="inp" autocomplete="off" spellcheck="false" placeholder="Paste a Cars.com, Autotrader or dealer link. For Facebook Marketplace, paste the listing text."></textarea>
+        <div class="pfoot"><span class="srcs">URL or pasted text · no account needed</span>
+        <button class="btn" id="analyzeBtn" type="submit">Check this deal</button></div>
+      </form>
+      <div class="hero-actions">
+        <button class="example-link" type="button" onclick="useExample()">Try a real example</button>
+        <span>Most checks take 20–40 seconds</span>
+      </div>
+      <p id="hint" class="hint" aria-live="polite"></p>
+      <div class="trustrow" aria-label="KickTires data sources">
+        <span>Live market listings</span><span>NHTSA federal records</span><span>No dealer commissions</span>
+      </div>
+    </div>
+    <aside class="result-preview" aria-label="Example KickTires result">
+      <div class="preview-top"><span class="micro">Example result</span><span class="preview-dot">Live-data format</span></div>
+      <p class="preview-car">2023 Tesla Model Y Performance</p>
+      <p class="preview-grade">Price needs explaining</p>
+      <p class="preview-copy">Far below comparable listings. Verify the title, condition and fees before calling it a bargain.</p>
+      <div class="preview-metrics">
+        <div><span>Market</span><b>$9,009 below</b></div>
+        <div><span>Evidence</span><b>56 matches</b></div>
+        <div><span>Federal</span><b>16 recalls</b></div>
+      </div>
+      <p class="preview-foot">The cheapest answer is not always “buy it.”</p>
+    </aside>
   </div></section>
 
   <div id="live" aria-live="polite"></div>
 
-  <h2>Models we've checked</h2>
-  <p class="sub">Every claim cross-checked against federal complaint and recall records.</p>
+  <div class="section-heading model-heading"><div><p class="micro">Buyer guides</p><h2>Popular models we've checked</h2></div>
+    <a href="/cars/">See all models &rarr;</a></div>
+  <p class="sub">Year-specific findings cross-checked against federal complaint and recall records.</p>
   <div class="cards">${Object.values(D).map(o=>
     `<a class="card" href="/cars/${o.meta.slug}/"><span class="micro">${o.meta.nhtsa} complaints checked</span><span class="cardt">${o.meta.y} ${o.meta.mk} ${o.meta.md}</span><span class="cardd">${esc(o.vline)}</span></a>`).join("")}</div>
 </main>
@@ -189,6 +217,15 @@ const html = value => String(value == null ? "" : value).replace(/&/g,"&amp;")
   .replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
 const dollars = value => "$" + Math.round(Number(value)).toLocaleString("en-US");
 const validClass = (value, allowed, fallback) => allowed.includes(value) ? value : fallback;
+const MODEL_NAMES = {modely:"Model Y",model3:"Model 3",crv:"CR-V",f150:"F-150",f250:"F-250",
+  rav4:"RAV4",cx5:"CX-5",grandcherokee:"Grand Cherokee",santafe:"Santa Fe",boltev:"Bolt EV"};
+const titleCase = value => String(value || "").replace(/\b\w/g,function(letter){return letter.toUpperCase();});
+const prettyVehicle = car => {
+  const key = String(car.model || "").toLowerCase().replace(/[^a-z0-9]/g,"");
+  const make = /^(bmw|gmc)$/i.test(car.make || "") ? String(car.make).toUpperCase() : titleCase(car.make);
+  const model = MODEL_NAMES[key] || titleCase(String(car.model || "").replace(/([a-z])([0-9])/gi,"$1 $2"));
+  return [car.year,make,model,car.trim].filter(Boolean).join(" ");
+};
 const track = (name, params) => {
   if (typeof window.gtag === "function") window.gtag("event", name, params || {});
 };
@@ -197,10 +234,37 @@ const fail = (code, message) => {
   track("listing_analysis_failed", {error_code:code});
   hint("");
   $("live").innerHTML = '<section class="analysis-state analysis-error" role="alert">'+
-    '<p class="micro">Analysis stopped</p><h2>We could not finish this check.</h2><p>'+html(message)+'</p></section>';
+    '<p class="micro">Analysis stopped</p><h2>We could not finish this check.</h2><p>'+html(message)+'</p>'+
+    '<button class="btn state-button" type="button" onclick="editCheck()">Edit the listing and try again</button></section>';
   $("live").scrollIntoView({behavior:"smooth",block:"start"});
   return false;
 };
+
+function useExample(){
+  $("inp").value = "Used 2023 Tesla Model Y Performance AWD\\n28,000 miles\\nSterling, VA\\n$24,986";
+  track("example_listing_loaded");
+  $("inp").focus();
+  $("inp").scrollIntoView({behavior:"smooth",block:"center"});
+}
+
+function resetCheck(){
+  stopLoading();
+  $("live").innerHTML = "";
+  $("inp").value = "";
+  document.body.classList.remove("analysis-active");
+  track("check_another_listing");
+  $("check").scrollIntoView({behavior:"smooth",block:"start"});
+  window.setTimeout(function(){$("inp").focus();},350);
+}
+
+function editCheck(){
+  stopLoading();
+  $("live").innerHTML = "";
+  document.body.classList.remove("analysis-active");
+  track("edit_listing");
+  $("check").scrollIntoView({behavior:"smooth",block:"start"});
+  window.setTimeout(function(){$("inp").focus();},350);
+}
 
 function totalCost(tco, price, stateCode){
   const state = STATES[stateCode] || STATES.OH;
@@ -246,7 +310,7 @@ function tcoRows(tco, car, stateCode){
       html(tco.source || "KickTires estimate")+'.</p>';
 }
 
-function marketCard(market){
+function marketCard(market, verdictGrade){
   if (!market || market.status === "missing_input") return "";
   if (market.status !== "ready") {
     const count = Number(market.sampleSize || 0);
@@ -262,7 +326,8 @@ function marketCard(market){
   }
 
   const delta = Number(market.deltaPercent || 0);
-  const deltaClass = delta > 7 ? "market-high" : delta < -7 ? "market-low" : "market-even";
+  const deltaClass = "market-tone-"+validClass(verdictGrade,
+    ["walk","caution","inspect","reasonable"],"inspect");
   const deltaText = Math.abs(delta) < 0.05 ? "at the market median"
     : Math.abs(delta).toFixed(1)+"% "+(delta > 0 ? "above" : "below")+" median";
   const range = Number.isFinite(Number(market.percentile25)) && Number.isFinite(Number(market.percentile75))
@@ -270,9 +335,22 @@ function marketCard(market){
   const seller = market.sellerType === "private-party" ? "private-party" : "dealer";
   const retrieved = market.retrievedAt ? new Date(market.retrievedAt).toLocaleDateString("en-US",{
     month:"short",day:"numeric",year:"numeric",timeZone:"UTC"}) : "today";
+  const prices = [market.askingPrice,market.percentile25,market.medianPrice,market.percentile75]
+    .map(function(value){return value == null ? NaN : Number(value);}).filter(Number.isFinite);
+  const floor = Math.min.apply(null,prices)*0.92, ceiling = Math.max.apply(null,prices)*1.08;
+  const scale = Math.max(1,ceiling-floor);
+  const position = function(value){return Math.max(2,Math.min(98,(Number(value)-floor)/scale*100));};
+  const askPos = position(market.askingPrice), medianPos = position(market.medianPrice);
+  const bandLeft = position(market.percentile25), bandRight = position(market.percentile75);
   return '<section class="panel live-market"><div class="market-head"><div><p class="micro">Live market comparison</p>'+
-    '<h2>'+dollars(market.askingPrice)+' asking <span>vs '+dollars(market.medianPrice)+' median</span></h2></div>'+
+    '<h2><strong>'+dollars(market.askingPrice)+'</strong> asking <span>vs '+dollars(market.medianPrice)+' median</span></h2></div>'+
     '<span class="market-delta '+deltaClass+'">'+html(deltaText)+'</span></div>'+
+    '<div class="market-meter-wrap"><div class="market-meter" aria-label="Asking price compared with the market median">'+
+      '<span class="market-band" style="left:'+bandLeft.toFixed(1)+'%;width:'+Math.max(1,bandRight-bandLeft).toFixed(1)+'%"></span>'+
+      '<span class="market-median" style="left:'+medianPos.toFixed(1)+'%"></span>'+
+      '<span class="market-you '+deltaClass+'" style="left:'+askPos.toFixed(1)+'%"></span></div>'+
+      '<div class="market-key"><span><i class="key-you '+deltaClass+'"></i>You '+dollars(market.askingPrice)+'</span>'+
+      '<span><i class="key-median"></i>Median '+dollars(market.medianPrice)+'</span></div></div>'+
     '<div class="market-stats">'+
       '<div><span class="micro">Close matches</span><b>'+Number(market.sampleSize).toLocaleString()+" active "+html(seller)+' listings</b></div>'+
       '<div><span class="micro">Middle 50%</span><b>'+html(range)+'</b></div>'+
@@ -285,7 +363,7 @@ function marketCard(market){
 function render(output){
   const analysis = output.analysis || {}, car = output.car || {}, facts = output.facts || {};
   const limitations = output.limitations || {}, market = output.market || {};
-  const title = [car.year,car.make,car.model,car.trim].filter(Boolean).join(" ");
+  const title = prettyVehicle(car);
   const chips = [
     facts.complaintTotal != null ? Number(facts.complaintTotal).toLocaleString()+" NHTSA complaints" : null,
     facts.recallTotal != null ? Number(facts.recallTotal).toLocaleString()+" recall campaigns" : null,
@@ -319,41 +397,63 @@ function render(output){
     '">Open the reviewed model page &rarr;</a></p>' : '';
   const missing = Array.isArray(limitations.missing) ? limitations.missing : [];
   const missingLabel = missing.join(" and ");
-  const limitationCard = missing.length ? '<section class="analysis-state listing-limit" role="note">'+
-    '<p class="micro">Missing listing data</p><h2>'+html(missingLabel.charAt(0).toUpperCase()+missingLabel.slice(1))+
-    (missing.length === 1 ? ' is' : ' are')+' missing.</h2><p>We can screen the model-year federal records below, but '+
-    'we cannot judge whether this specific listing is a good transaction. '+html(limitations.message || "Add the missing data and run the check again.")+'</p></section>' : '';
   const stateMatch = String(car.location || "").match(/,\\s*([A-Z]{2})(?:\\s+\\d{5})?\\b/);
   const defaultState = stateMatch && STATES[stateMatch[1]] ? stateMatch[1] : "OH";
   const stateOptions = Object.entries(STATES).map(function(entry){
     return '<option value="'+html(entry[0])+'"'+(entry[0]===defaultState?' selected':'')+'>'+html(entry[1].n)+'</option>';
   }).join("");
   const verdictScope = market.status === "ready" ? "price + ownership risk" : "ownership risk only";
+  const displayGrade = missing.length ? "incomplete" : grade;
+  const displayLabel = missing.length ? "Incomplete listing" : (deal.label || "Inspection first");
+  const displayReason = missing.length
+    ? "The listing is missing "+missingLabel+". We can screen this model, but cannot tell whether this specific deal is good."
+    : (deal.reason || "The evidence is not strong enough to skip an inspection.");
+  const marketMetric = market.status === "ready"
+    ? dollars(Math.abs(Number(market.deltaAmount || 0)))+" "+(Number(market.deltaPercent) < 0 ? "below" : "above")
+    : missing.includes("mileage") ? "Need mileage" : missing.includes("asking price") ? "Need price" : "Risk only";
+  const marketNote = market.status === "ready" ? Math.abs(Number(market.deltaPercent || 0)).toFixed(1)+"% vs median" : "No deal grade";
+  const federalMetric = Number(facts.recallTotal) > 0 ? Number(facts.recallTotal).toLocaleString()+" recalls"
+    : facts.complaintTotal != null ? Number(facts.complaintTotal).toLocaleString()+" reports" : "Records checked";
+  const tcoResult = output.tco ? totalCost(output.tco,Number(car.price),defaultState) : null;
+  const tcoMetric = tcoResult ? dollars(tcoResult.total) : (car.price == null ? "Need price" : "Unavailable");
+  const missingAction = missing.length ? '<div class="missing-action"><span><b>Needed:</b> '+html(missingLabel)+
+    '</span><button type="button" onclick="editCheck()">Add details</button></div>' : '';
 
   $("live").innerHTML =
-    limitationCard+
-    '<section class="deal deal-'+grade+'"><p class="micro">Buyer verdict · '+html(verdictScope)+'</p>'+
-      '<div class="dealrow"><span class="dealbadge">'+html(deal.label || "Inspection first")+'</span>'+
-      '<p>'+html(deal.reason || "The evidence is not strong enough to skip an inspection.")+'</p></div></section>'+
-    marketCard(market)+
+    '<section class="deal deal-'+displayGrade+'"><div class="deal-head"><div><p class="micro">KickTires buyer verdict · '+html(verdictScope)+'</p>'+
+      '<p class="deal-car">'+html(title)+'</p></div><button class="text-button" type="button" onclick="resetCheck()">Check another</button></div>'+
+      '<h2 class="deal-title">'+html(displayLabel)+'</h2><p class="deal-reason">'+html(displayReason)+'</p>'+missingAction+
+      '<div class="deal-metrics"><div><span>Market position</span><b>'+html(marketMetric)+'</b><small>'+html(marketNote)+'</small></div>'+
+      '<div><span>Federal record</span><b>'+html(federalMetric)+'</b><small>NHTSA model-year data</small></div>'+
+      '<div><span>Five-year cost</span><b id="dealTcoMetric">'+html(tcoMetric)+'</b><small id="dealTcoState">'+html(STATES[defaultState].n)+' estimate</small></div></div></section>'+
+    marketCard(market,grade)+
     '<section class="panel"><div class="carid"><p class="micro">'+html(source)+'</p><p class="cname">'+html(title)+'</p>'+
       '<div class="specs">'+chips.map(function(chip){return '<span class="spec">'+html(chip)+'</span>';}).join("")+'</div>'+
       '<p class="verdict-lead liveverdict">'+html(analysis.vline)+'</p><p class="lede liveline">'+html(analysis.vsub)+'</p>'+
       profileLink+'</div></section>'+
-    '<h2>What actually goes wrong</h2><p class="sub">Ranked by what it can do to your wallet and safety.</p>'+
+    '<div class="section-heading result-heading"><div><p class="micro">Vehicle risk</p><h2>What actually goes wrong</h2></div></div><p class="sub">Ranked by what it can do to your wallet and safety.</p>'+
     '<section class="panel">'+risks+'<div class="legend">'+
       '<div class="lg"><div class="evtag e-v">NHTSA</div><p>Consumer reports and recall records filed in the federal database. Reports are not proof of a defect.</p></div>'+
       '<div class="lg"><div class="evtag e-s">OWNERS</div><p>Used only when a reviewed profile contains a checked owner source.</p></div>'+
       '<div class="lg"><div class="evtag e-o">OUR TAKE</div><p>Our judgment and cost estimates — the part that can be wrong.</p></div></div></section>'+
-    (output.tco ? '<h2>What five years of ownership may cost</h2><div class="tcoheading"><p class="sub">'+
+    (output.tco ? '<div class="section-heading result-heading"><div><p class="micro">Ownership cost</p><h2>What five years may cost</h2></div></div><div class="tcoheading"><p class="sub">'+
       (missing.includes("mileage") ? 'Current mileage is missing, so repairs are only a generic model-year estimate. ' : '')+
       'Uses the asking price, 12,000 miles a year and the selected state.</p>'+
       '<label class="statepick">State <select id="statePick">'+stateOptions+'</select></label></div>'+
       '<section class="panel"><div class="pbody" id="tcoBody"></div></section>' : '')+
-    '<h2>Take this to the inspection</h2><section class="panel"><div class="pbody">'+checklist+'</div></section>';
+    '<div class="section-heading result-heading"><div><p class="micro">Before you buy</p><h2>Take this to the inspection</h2></div></div>'+
+    '<section class="panel"><div class="pbody">'+checklist+'</div></section>'+
+    '<section class="again"><div><p class="micro">One more car?</p><h2>Check the next listing before you text the seller.</h2></div>'+
+      '<button class="btn" type="button" onclick="resetCheck()">Check another deal</button></section>';
 
   if (output.tco) {
-    const update = function(){ $("tcoBody").innerHTML = tcoRows(output.tco,car,$("statePick").value); };
+    const update = function(){
+      const stateCode = $("statePick").value;
+      $("tcoBody").innerHTML = tcoRows(output.tco,car,stateCode);
+      const summary = totalCost(output.tco,Number(car.price),stateCode);
+      if (summary && $("dealTcoMetric")) $("dealTcoMetric").textContent = dollars(summary.total);
+      if ($("dealTcoState")) $("dealTcoState").textContent = STATES[stateCode].n+" estimate";
+    };
     $("statePick").addEventListener("change",update); update();
   }
   $("live").scrollIntoView({behavior:"smooth",block:"start"});
@@ -362,16 +462,15 @@ function render(output){
 function setBusy(busy){
   const button = $("analyzeBtn");
   button.disabled = busy;
-  button.textContent = busy ? "Checking…" : "Check this car";
+  button.textContent = busy ? "Checking…" : "Check this deal";
 }
 
 const LOADING_STAGES = [
-  {after:0, title:"Reading the listing", detail:"Finding the exact year, make, model, price and mileage."},
-  {after:5, title:"Matching the exact vehicle", detail:"Separating the model from the trim and seller language."},
-  {after:10, title:"Checking comparable listings", detail:"Comparing price and mileage with close active market listings."},
-  {after:16, title:"Pulling federal safety records", detail:"Checking live NHTSA complaints and recall campaigns."},
-  {after:25, title:"Building your buyer verdict", detail:"Combining market price, ownership risk and five-year cost."},
-  {after:40, title:"Still working on this one", detail:"Live sources and AI can take close to a minute. The check is still running."}
+  {after:0, step:0, title:"Reading the listing", detail:"Finding the exact year, make, model, price and mileage."},
+  {after:6, step:1, title:"Checking comparable listings", detail:"Comparing price and mileage with close active listings."},
+  {after:14, step:2, title:"Pulling federal records", detail:"Checking NHTSA complaints and recall campaigns for this model year."},
+  {after:23, step:3, title:"Building your buyer verdict", detail:"Combining market price, ownership risk and five-year cost."},
+  {after:40, step:3, title:"Still working. Nothing is stuck.", detail:"Live market sources can take close to a minute. Keep this tab open."}
 ];
 let loadingTimer = null;
 let loadingStartedAt = 0;
@@ -386,18 +485,27 @@ function updateLoading(){
   if (title.textContent !== stage.title) title.textContent = stage.title;
   if (detail.textContent !== stage.detail) detail.textContent = stage.detail;
   clock.textContent = elapsed + "s elapsed";
+  const steps = document.querySelectorAll("#loadingSteps li");
+  steps.forEach(function(item,index){
+    item.classList.toggle("done",index < stage.step);
+    item.classList.toggle("on",index === stage.step);
+  });
 }
 
 function startLoading(){
   stopLoading();
   loadingStartedAt = Date.now();
+  document.body.classList.add("analysis-active");
   $("live").setAttribute("aria-busy","true");
   $("live").innerHTML = '<section class="analysis-state analysis-loading" role="status">'+
-    '<div class="loading-mark" aria-hidden="true"><span></span></div>'+
-    '<div class="loading-copy"><div class="loading-top"><p class="micro">Live vehicle analysis</p>'+
+    '<div class="loading-copy"><div class="loading-top"><p class="micro">Live deal check</p>'+
     '<span id="loadingClock" class="loading-clock" aria-hidden="true">0s elapsed</span></div>'+
+    '<div class="loading-title-row"><div class="loading-mark" aria-hidden="true"><span></span></div><div>'+
     '<h2 id="loadingTitle">Reading the listing</h2>'+
-    '<p id="loadingDetail">Finding the exact year, make, model, price and mileage.</p>'+
+    '<p id="loadingDetail">Finding the exact year, make, model, price and mileage.</p></div></div>'+
+    '<ol class="loading-steps" id="loadingSteps" aria-label="Analysis progress">'+
+      '<li class="on"><i></i><span>Read listing</span></li><li><i></i><span>Compare market</span></li>'+
+      '<li><i></i><span>Check NHTSA</span></li><li><i></i><span>Build verdict</span></li></ol>'+
     '<div class="loading-track" aria-hidden="true"><span></span></div>'+
     '<p class="loading-note">Most checks finish in 20–40 seconds. Keep this tab open.</p></div></section>';
   updateLoading();
