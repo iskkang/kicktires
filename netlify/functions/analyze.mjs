@@ -17,7 +17,8 @@ const ANALYSIS_CACHE_DAYS = 30;
 const FACT_CACHE_DAYS = 7;
 const MARKET_CACHE_DAYS = 1;
 const MARKET_MIN_SAMPLE = 8;
-const ANALYSIS_VERSION = "2026-08-07.4";
+const ANALYSIS_VERSION = "2026-08-07.5";
+const REQUEST_BUDGET_MS = 25_000;
 const MAX_LISTING_BYTES = 1_500_000;
 const CURRENT_YEAR = new Date().getUTCFullYear();
 const PROFILES = Object.values(DB);
@@ -556,13 +557,14 @@ function applyMarketVerdict(analysis, car, market) {
 }
 
 /* ── model providers ──────────────────────────────────────────── */
-async function callModel(system, user, maxTokens = 2400, temperature = 0.2) {
+async function callModel(system, user, maxTokens = 2400, temperature = 0.2, timeoutMs = 11_000) {
+  const timeout = Math.max(1_000,Math.min(20_000,Math.round(timeoutMs)));
   const provider = (process.env.PROVIDER || "deepseek").toLowerCase();
   if (provider === "claude") {
     if (!process.env.ANTHROPIC_API_KEY) throw new Error("missing_key");
     const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
-      signal: AbortSignal.timeout(24_000),
+      signal: AbortSignal.timeout(timeout),
       headers: {
         "Content-Type": "application/json",
         "x-api-key": process.env.ANTHROPIC_API_KEY,
@@ -584,7 +586,7 @@ async function callModel(system, user, maxTokens = 2400, temperature = 0.2) {
   if (!process.env.DEEPSEEK_API_KEY) throw new Error("missing_key");
   const response = await fetch("https://api.deepseek.com/chat/completions", {
     method: "POST",
-    signal: AbortSignal.timeout(24_000),
+    signal: AbortSignal.timeout(timeout),
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${process.env.DEEPSEEK_API_KEY}`
@@ -672,7 +674,7 @@ async function fetchListing(input) {
   let response;
   for (let redirects = 0; redirects < 5; redirects++) {
     response = await fetch(url, {
-      signal: AbortSignal.timeout(8_000),
+      signal: AbortSignal.timeout(6_000),
       redirect: "manual",
       headers: {
         "User-Agent": BROWSER_UA,
@@ -704,7 +706,7 @@ async function fetchListing(input) {
 }
 
 /* ── federal and EPA evidence ─────────────────────────────────── */
-async function fetchJson(url, timeout = 10_000) {
+async function fetchJson(url, timeout = 5_000) {
   try {
     const response = await fetch(url, {
       signal: AbortSignal.timeout(timeout),
@@ -903,7 +905,7 @@ async function requestMarketCheck(car, attempt, mileageRange) {
   if (car.seller !== "private") params.set("car_type", car.certified ? "certified" : "used");
 
   const response = await fetch(`${endpoint}?${params}`, {
-    signal: AbortSignal.timeout(8_000),
+    signal: AbortSignal.timeout(5_000),
     headers: { Accept: "application/json", "User-Agent": UA }
   });
   if (!response.ok) throw new Error(`market_${response.status}`);
@@ -974,6 +976,18 @@ async function readCache(store, key, days) {
 
 async function writeCache(store, key, value) {
   if (store) await store.setJSON(key, { at: Date.now(), value }).catch(() => {});
+}
+
+async function within(promise, timeoutMs, fallback = null) {
+  let timer;
+  try {
+    return await Promise.race([
+      promise,
+      new Promise(resolve => { timer = setTimeout(() => resolve(fallback), timeoutMs); })
+    ]);
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
 }
 
 async function marketComparisonFor(car) {
@@ -1072,6 +1086,9 @@ function tcoFrom(profile, analysis, epa) {
 
 /* ── handler ──────────────────────────────────────────────────── */
 export default async (request) => {
+  const requestStartedAt = Date.now();
+  const modelBudget = () => Math.max(0, Math.min(11_000,
+    REQUEST_BUDGET_MS - (Date.now() - requestStartedAt) - 1_500));
   if (request.method !== "POST") return json({ error: "POST only" }, 405);
 
   let input = "";
@@ -1105,7 +1122,7 @@ export default async (request) => {
   let car = page ? null : parseObviousPastedListing(input);
   if (!car) {
     try {
-      car = normalizeCar(asJson(await callModel(EXTRACT, extractionInput, 700, 0)));
+      car = normalizeCar(asJson(await callModel(EXTRACT, extractionInput, 700, 0, 8_000)));
     } catch (error) {
       return json({ error: error.message === "missing_key" ? "missing_key" : "extract_failed" }, 502);
     }
@@ -1140,22 +1157,25 @@ export default async (request) => {
   let facts;
   let tco;
   if (profile) {
-    let assessment;
-    try {
-      assessment = asJson(await callModel(ASSESS_REVIEWED, JSON.stringify({
-        listing: car,
-        reviewedProfile: {
-          vehicle: `${profile.meta.y} ${profile.meta.mk} ${profile.meta.md}`,
-          complaints: profile.meta.nhtsa,
-          recalls: profile.meta.recalls,
-          verdict: profile.vline,
-          explanation: profile.vsub,
-          risks: profile.risks,
-          annualCostEstimates: profile.tco
-        }
-      }, null, 1), 900, 0.15));
-    } catch {
-      return json({ error: "analysis_failed", car }, 502);
+    let assessment = {};
+    const budget = modelBudget();
+    if (budget >= 2_500) {
+      try {
+        assessment = asJson(await callModel(ASSESS_REVIEWED, JSON.stringify({
+          listing: car,
+          reviewedProfile: {
+            vehicle: `${profile.meta.y} ${profile.meta.mk} ${profile.meta.md}`,
+            complaints: profile.meta.nhtsa,
+            recalls: profile.meta.recalls,
+            verdict: profile.vline,
+            explanation: profile.vsub,
+            risks: profile.risks,
+            annualCostEstimates: profile.tco
+          }
+        }, null, 1), 900, 0.15, budget));
+      } catch (error) {
+        console.error("reviewed assessment timed out; using reviewed profile", error?.message || "unknown");
+      }
     }
     analysis = reviewedAnalysis(profile, assessment);
     facts = factsSummary({
@@ -1169,20 +1189,25 @@ export default async (request) => {
     let evidence = await readCache(factsStore, vehicleKey, FACT_CACHE_DAYS);
     if (!evidence) {
       let nhtsa, epa;
-      try { [nhtsa, epa] = await Promise.all([getNhtsaFacts(car), getEpaFacts(car)]); }
+      try { [nhtsa, epa] = await Promise.all([
+        getNhtsaFacts(car), within(getEpaFacts(car).catch(() => null), 7_000, null)
+      ]); }
       catch { return json({ error: "records_unavailable", car }, 502); }
       evidence = { nhtsa, epa };
       await writeCache(factsStore, vehicleKey, evidence);
     }
 
     let rawAnalysis = {};
-    try {
-      rawAnalysis = asJson(await callModel(ANALYZE_LIVE, JSON.stringify({
-        vehicle: car,
-        ...liveModelEvidence(evidence)
-      }), 1300, 0.15));
-    } catch (error) {
-      console.error("live analysis failed", error?.message || "unknown");
+    const budget = modelBudget();
+    if (budget >= 2_500) {
+      try {
+        rawAnalysis = asJson(await callModel(ANALYZE_LIVE, JSON.stringify({
+          vehicle: car,
+          ...liveModelEvidence(evidence)
+        }), 1300, 0.15, budget));
+      } catch (error) {
+        console.error("live analysis timed out; using federal-record fallback", error?.message || "unknown");
+      }
     }
     analysis = completeLiveAnalysis(rawAnalysis, evidence, car);
     facts = factsSummary(evidence.nhtsa, "live_nhtsa", evidence.epa);

@@ -261,6 +261,44 @@ test("uses the reviewed database before NHTSA and assesses the actual listing", 
   }
 });
 
+test("returns the reviewed evidence when the model provider is slow or unavailable", async () => {
+  const originalFetch = globalThis.fetch;
+  const old = { provider: process.env.PROVIDER, key: process.env.DEEPSEEK_API_KEY,
+    marketKey: process.env.MARKETCHECK_API_KEY };
+  process.env.PROVIDER = "deepseek";
+  process.env.DEEPSEEK_API_KEY = "test-key";
+  delete process.env.MARKETCHECK_API_KEY;
+  let modelCalls = 0;
+  globalThis.fetch = async url => {
+    if (String(url) === "https://api.deepseek.com/chat/completions") {
+      modelCalls++;
+      return new Response("provider unavailable", { status: 503 });
+    }
+    throw new Error(`unexpected fetch ${url}`);
+  };
+
+  try {
+    const request = new Request("https://kicktires.test/api/analyze", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: "Used 2019 Honda CR-V EX, 70,000 miles, $15,000" })
+    });
+    const response = await handler(request);
+    const output = await response.json();
+    assert.equal(response.status, 200);
+    assert.equal(output.facts.source, "reviewed_db");
+    assert.equal(output.profile, "/cars/2019-honda-cr-v-problems/");
+    assert.equal(output.analysis.deal.label, "Risk check only");
+    assert.ok(output.analysis.risks.length >= 2);
+    assert.equal(modelCalls, 1);
+  } finally {
+    globalThis.fetch = originalFetch;
+    if (old.provider == null) delete process.env.PROVIDER; else process.env.PROVIDER = old.provider;
+    if (old.key == null) delete process.env.DEEPSEEK_API_KEY; else process.env.DEEPSEEK_API_KEY = old.key;
+    if (old.marketKey == null) delete process.env.MARKETCHECK_API_KEY; else process.env.MARKETCHECK_API_KEY = old.marketKey;
+  }
+});
+
 test("retrieves NHTSA and EPA evidence for an unreviewed model", async () => {
   const originalFetch = globalThis.fetch;
   const old = { provider: process.env.PROVIDER, key: process.env.DEEPSEEK_API_KEY,
