@@ -53,9 +53,12 @@ Set these environment variables in Netlify:
 | `ANTHROPIC_API_KEY` | for Claude | Optional alternate provider key |
 | `ANTHROPIC_MODEL` | optional | Alternate Claude model |
 | `GA_MEASUREMENT_ID` | optional | Overrides the production GA4 ID (`G-5NSV1Y7TSJ`) |
-| `ADSENSE_CLIENT` | optional | Enables AdSense after approval |
+| `ADSENSE_CLIENT` | optional | Overrides the production AdSense client (`ca-pub-3682195653529318`) |
 
 Never place keys in `build.mjs`, `style.css`, `data.json`, or `dist/`.
+
+The build emits the AdSense Auto Ads loader and a root `ads.txt` entry. Auto Ads must
+also be enabled for the site in AdSense; no manual ad-slot IDs are emitted.
 
 ## Adding a reviewed model
 

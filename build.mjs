@@ -10,8 +10,10 @@ const GOOGLE_VERIFY = "googlee9c6c5390d444c3c";
 // Public GA4 measurement ID. Netlify may override it for another deployment.
 const GA_MEASUREMENT_ID = (process.env.GA_MEASUREMENT_ID || "G-5NSV1Y7TSJ").trim();
 if (!/^G-[A-Z0-9]+$/i.test(GA_MEASUREMENT_ID)) throw new Error("invalid GA_MEASUREMENT_ID");
-// Leave empty to disable ads entirely. Set to "ca-pub-XXXXXXXXXXXXXXXX" once approved.
-const ADSENSE = process.env.ADSENSE_CLIENT || "";
+// Public AdSense client ID. Auto Ads placement is controlled in the AdSense account.
+const ADSENSE = (process.env.ADSENSE_CLIENT || "ca-pub-3682195653529318").trim();
+if (!/^ca-pub-\d{16}$/.test(ADSENSE)) throw new Error("invalid ADSENSE_CLIENT");
+const ADSENSE_PUBLISHER = ADSENSE.replace(/^ca-/, "");
 const D = JSON.parse(fs.readFileSync("data.json", "utf8"));
 const OUT = "dist";
 const TODAY = process.env.BUILD_DATE || new Date().toISOString().slice(0, 10);
@@ -52,6 +54,7 @@ function head({title,desc,url,jsonld}){
 <meta property="og:site_name" content="${NAME}">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="${esc(title)}"><meta name="twitter:description" content="${esc(desc)}">
+<meta name="google-adsense-account" content="${ADSENSE}">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%233987e5'/><rect x='8' y='11' width='16' height='3' rx='1.5' fill='%230a0b0d'/><rect x='8' y='18' width='16' height='3' rx='1.5' fill='%230a0b0d'/></svg>">
 <script async src="https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","${GA_MEASUREMENT_ID}");</script>
@@ -70,12 +73,6 @@ const foot = `<footer class="site"><div class="shell">
 <p class="fine">We take no money from dealers, sellers or marketplaces. Cost figures are estimates, not quotes. Always get an independent inspection before buying.</p>
 <p class="fine"><a href="/privacy/">Privacy &amp; cookies</a> · <a href="/about/">About</a></p>
 </div></footer></body></html>`;
-
-const adUnit = slot => ADSENSE ? `
-  <aside class="adwrap"><span class="micro">Advertisement</span>
-    <ins class="adsbygoogle" style="display:block" data-ad-client="${ADSENSE}" data-ad-slot="${slot}" data-ad-format="auto" data-full-width-responsive="true"></ins>
-    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-  </aside>` : "";
 
 /* ── model page ────────────────────────────────────────────────── */
 function modelPage(key, d){
@@ -150,8 +147,6 @@ function modelPage(key, d){
     <p><b>We take no money from dealers, sellers, or marketplaces — ever.</b> Every site that ranks listings for you is paid by someone who wants you to buy one. That is why they will call a car a great deal and never tell you why it is cheap. We have nothing to lose if you walk away.</p>
   </section>
 
-  ${adUnit("0000000000")}
-
   <h2>Other models</h2>
   <div class="cards">${Object.entries(D).filter(([k])=>k!==key).map(([k,o])=>
     `<a class="card" href="/cars/${o.meta.slug}/"><span class="micro">${o.meta.nhtsa} complaints</span><span class="cardt">${o.meta.y} ${o.meta.mk} ${o.meta.md}</span><span class="cardd">${esc(o.vline)}</span></a>`).join("")}</div>
@@ -178,8 +173,6 @@ function home(){
   </div></section>
 
   <div id="live" aria-live="polite"></div>
-
-  ${adUnit("1111111111")}
 
   <h2>Models we've checked</h2>
   <p class="sub">Every claim cross-checked against federal complaint and recall records.</p>
@@ -390,7 +383,7 @@ function privacyPage(){
   <h2>What we collect</h2>
   <p class="lede">Google Analytics 4 records page views, browser and device signals, approximate region, and three product events: an analysis started, completed, or failed. We do not send the listing text, pasted listing URL, price, mileage, location, or seller notes to Analytics. No names, accounts, or email addresses are collected. Listing text or page content you submit is sent to our configured AI provider to identify the vehicle and produce the analysis. We cache only the derived vehicle analysis and source summaries, not the pasted listing text.</p>
   <h2>Advertising</h2>
-  <p class="lede">${ADSENSE ? "This site shows ads served by Google AdSense. Google and its partners may use cookies to serve ads based on your prior visits to this and other websites. You can opt out of personalised advertising at <a href='https://www.google.com/settings/ads'>Google Ads Settings</a>, or opt out of third-party vendor cookies at <a href='https://www.aboutads.info'>aboutads.info</a>." : "This site currently shows no advertising."}</p>
+  <p class="lede">This site is configured to show ads served by Google AdSense. Google and its partners may use cookies to serve ads based on your prior visits to this and other websites. You can opt out of personalised advertising at <a href='https://www.google.com/settings/ads'>Google Ads Settings</a>, or opt out of third-party vendor cookies at <a href='https://www.aboutads.info'>aboutads.info</a>.</p>
   <h2>What we never do</h2>
   <p class="lede">We take no money from car dealers, private sellers or listing marketplaces, and we accept no payment to change or soften what a page says about a vehicle. If that ever changes, it will be stated on this page before it happens anywhere else.</p>
   <h2>Contact</h2>
@@ -433,6 +426,7 @@ urls.map(([u,p])=>`  <url><loc>${u}</loc><lastmod>${TODAY}</lastmod><priority>${
 if (GOOGLE_VERIFY) write(`${OUT}/${GOOGLE_VERIFY}.html`, `google-site-verification: ${GOOGLE_VERIFY}.html`);
 if (fs.existsSync("static")) fs.cpSync("static", OUT, { recursive: true });
 
+write(`${OUT}/ads.txt`, `google.com, ${ADSENSE_PUBLISHER}, DIRECT, f08c47fec0942fa0\n`);
 write(`${OUT}/robots.txt`, `User-agent: *\nAllow: /\n\nSitemap: ${SITE}/sitemap.xml\n`);
 write(`${OUT}/_headers`, `/*\n  X-Content-Type-Options: nosniff\n  Referrer-Policy: strict-origin-when-cross-origin\n`);
 
