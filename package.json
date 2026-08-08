@@ -5,14 +5,15 @@
   "type": "module",
   "description": "Buyer-side used-car risk analysis grounded in NHTSA and EPA records.",
   "scripts": {
-    "build": "node build.mjs && node research.mjs && node seo.mjs && node homepage.mjs && node photos.mjs",
-    "dev": "node build.mjs && node research.mjs && node seo.mjs && node homepage.mjs && node photos.mjs && python3 -m http.server 8080 --directory dist",
+    "build": "node build.mjs && node research.mjs && node seo.mjs && node homepage.mjs && node photos.mjs && node ui-polish.mjs",
+    "dev": "node build.mjs && node research.mjs && node seo.mjs && node homepage.mjs && node photos.mjs && node ui-polish.mjs && python3 -m http.server 8080 --directory dist",
     "test": "node --test",
     "sync:models": "node scripts/sync-model-pages.mjs",
     "research": "node research.mjs",
     "seo": "node seo.mjs",
     "homepage": "node homepage.mjs",
-    "photos": "node photos.mjs"
+    "photos": "node photos.mjs",
+    "ui": "node ui-polish.mjs"
   },
   "engines": {
     "node": ">=20"
