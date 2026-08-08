@@ -1,5 +1,5 @@
 [build]
-  command = "node build.mjs"
+  command = "npm run build"
   publish = "dist"
 
 [functions]
@@ -9,6 +9,18 @@
 
 [build.environment]
   NODE_VERSION = "20"
+
+[[redirects]]
+  from = "/cars/bmw-3-series"
+  to = "/cars/bmw-330i/"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/cars/bmw-3-series/*"
+  to = "/cars/bmw-330i/:splat"
+  status = 301
+  force = true
 
 [[headers]]
   for = "/*"
