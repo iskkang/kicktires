@@ -1,6 +1,6 @@
 {
-  "version": 2,
-  "description": "Model-level research pages prioritized around current US used-car search intent. Expand only after Search Console validates demand.",
+  "version": 3,
+  "description": "Model-level research pages prioritized around US used-car search intent. Phase 2 adds high-intent luxury and EV models while preserving federal-data quality gates.",
   "models": [
     {
       "make": "Toyota",
@@ -31,6 +31,191 @@
       "annualInsurance": 2200,
       "annualRepairs": 1600,
       "fuelPrice": 4.05
+    },
+
+    {
+      "make": "Tesla",
+      "model": "Model 3",
+      "slug": "tesla-model-3",
+      "segment": "Electric sedan",
+      "years": [2019, 2020, 2021, 2022, 2023],
+      "annualInsurance": 2400,
+      "annualRepairs": 650,
+      "fuelPrice": 0
+    },
+    {
+      "make": "Tesla",
+      "model": "Model Y",
+      "slug": "tesla-model-y",
+      "segment": "Electric compact SUV",
+      "years": [2020, 2021, 2022, 2023, 2024],
+      "annualInsurance": 2500,
+      "annualRepairs": 700,
+      "fuelPrice": 0
+    },
+    {
+      "make": "Tesla",
+      "model": "Model S",
+      "slug": "tesla-model-s",
+      "segment": "Electric luxury sedan",
+      "years": [2018, 2019, 2020, 2021, 2022],
+      "annualInsurance": 2900,
+      "annualRepairs": 1200,
+      "fuelPrice": 0
+    },
+    {
+      "make": "Tesla",
+      "model": "Model X",
+      "slug": "tesla-model-x",
+      "segment": "Electric luxury SUV",
+      "years": [2018, 2019, 2020, 2021, 2022],
+      "annualInsurance": 3000,
+      "annualRepairs": 1400,
+      "fuelPrice": 0
+    },
+
+    {
+      "make": "Lexus",
+      "model": "RX",
+      "slug": "lexus-rx",
+      "segment": "Luxury midsize SUV",
+      "years": [2019, 2020, 2021, 2022, 2023],
+      "annualInsurance": 2050,
+      "annualRepairs": 850,
+      "fuelPrice": 3.20
+    },
+    {
+      "make": "Lexus",
+      "model": "NX",
+      "slug": "lexus-nx",
+      "segment": "Luxury compact SUV",
+      "years": [2019, 2020, 2021, 2022, 2023],
+      "annualInsurance": 2000,
+      "annualRepairs": 800,
+      "fuelPrice": 3.20
+    },
+    {
+      "make": "Lexus",
+      "model": "ES",
+      "slug": "lexus-es",
+      "segment": "Luxury midsize sedan",
+      "years": [2019, 2020, 2021, 2022, 2023],
+      "annualInsurance": 1950,
+      "annualRepairs": 800,
+      "fuelPrice": 3.20
+    },
+
+    {
+      "make": "Mercedes-Benz",
+      "model": "GLC 300",
+      "slug": "mercedes-benz-glc-300",
+      "segment": "Luxury compact SUV",
+      "years": [2019, 2020, 2021, 2022, 2023],
+      "annualInsurance": 2450,
+      "annualRepairs": 1500,
+      "fuelPrice": 4.05
+    },
+    {
+      "make": "Mercedes-Benz",
+      "model": "C 300",
+      "slug": "mercedes-benz-c-300",
+      "segment": "Compact luxury sedan",
+      "years": [2019, 2020, 2021, 2022, 2023],
+      "annualInsurance": 2350,
+      "annualRepairs": 1450,
+      "fuelPrice": 4.05
+    },
+    {
+      "make": "Mercedes-Benz",
+      "model": "GLE 350",
+      "slug": "mercedes-benz-gle-350",
+      "segment": "Luxury midsize SUV",
+      "years": [2020, 2021, 2022, 2023, 2024],
+      "annualInsurance": 2600,
+      "annualRepairs": 1700,
+      "fuelPrice": 4.05
+    },
+
+    {
+      "make": "Acura",
+      "model": "MDX",
+      "slug": "acura-mdx",
+      "segment": "Luxury three-row SUV",
+      "years": [2019, 2020, 2022, 2023, 2024],
+      "annualInsurance": 2050,
+      "annualRepairs": 950,
+      "fuelPrice": 4.05
+    },
+    {
+      "make": "Acura",
+      "model": "RDX",
+      "slug": "acura-rdx",
+      "segment": "Luxury compact SUV",
+      "years": [2019, 2020, 2021, 2022, 2023],
+      "annualInsurance": 2000,
+      "annualRepairs": 900,
+      "fuelPrice": 4.05
+    },
+    {
+      "make": "Infiniti",
+      "model": "QX60",
+      "slug": "infiniti-qx60",
+      "segment": "Luxury three-row SUV",
+      "years": [2019, 2020, 2022, 2023, 2024],
+      "annualInsurance": 2100,
+      "annualRepairs": 1100,
+      "fuelPrice": 4.05
+    },
+
+    {
+      "make": "Hyundai",
+      "model": "IONIQ 5",
+      "slug": "hyundai-ioniq-5",
+      "segment": "Electric compact crossover",
+      "years": [2022, 2023, 2024, 2025],
+      "annualInsurance": 2200,
+      "annualRepairs": 650,
+      "fuelPrice": 0
+    },
+    {
+      "make": "Hyundai",
+      "model": "IONIQ 6",
+      "slug": "hyundai-ioniq-6",
+      "segment": "Electric sedan",
+      "years": [2023, 2024, 2025],
+      "annualInsurance": 2150,
+      "annualRepairs": 600,
+      "fuelPrice": 0
+    },
+    {
+      "make": "Kia",
+      "model": "EV6",
+      "slug": "kia-ev6",
+      "segment": "Electric crossover",
+      "years": [2022, 2023, 2024, 2025],
+      "annualInsurance": 2200,
+      "annualRepairs": 650,
+      "fuelPrice": 0
+    },
+    {
+      "make": "Kia",
+      "model": "EV9",
+      "slug": "kia-ev9",
+      "segment": "Electric three-row SUV",
+      "years": [2024, 2025],
+      "annualInsurance": 2400,
+      "annualRepairs": 700,
+      "fuelPrice": 0
+    },
+    {
+      "make": "Genesis",
+      "model": "GV60",
+      "slug": "genesis-gv60",
+      "segment": "Electric luxury crossover",
+      "years": [2023, 2024, 2025],
+      "annualInsurance": 2400,
+      "annualRepairs": 800,
+      "fuelPrice": 0
     }
   ]
 }
