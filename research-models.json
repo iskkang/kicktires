@@ -1,6 +1,6 @@
 {
-  "version": 1,
-  "description": "Model-level research pages. Expand this list after Search Console validates demand.",
+  "version": 2,
+  "description": "Model-level research pages prioritized around current US used-car search intent. Expand only after Search Console validates demand.",
   "models": [
     {
       "make": "Toyota",
@@ -24,8 +24,8 @@
     },
     {
       "make": "BMW",
-      "model": "3 Series",
-      "slug": "bmw-3-series",
+      "model": "330i",
+      "slug": "bmw-330i",
       "segment": "Compact luxury sedan",
       "years": [2019, 2020, 2021, 2022],
       "annualInsurance": 2200,
