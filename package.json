@@ -5,8 +5,8 @@
   "type": "module",
   "description": "Buyer-side used-car risk analysis grounded in NHTSA and EPA records.",
   "scripts": {
-    "build": "node build.mjs && node research.mjs && node seo.mjs && node homepage.mjs && node photos.mjs && node ui-polish.mjs && node header-polish.mjs && node filter-fix.mjs",
-    "dev": "node build.mjs && node research.mjs && node seo.mjs && node homepage.mjs && node photos.mjs && node ui-polish.mjs && node header-polish.mjs && node filter-fix.mjs && python3 -m http.server 8080 --directory dist",
+    "build": "node build.mjs && node research.mjs && node seo.mjs && node homepage.mjs && node photos.mjs && node ui-polish.mjs && node header-polish.mjs && node filter-fix.mjs && node image-map-fix.mjs",
+    "dev": "node build.mjs && node research.mjs && node seo.mjs && node homepage.mjs && node photos.mjs && node ui-polish.mjs && node header-polish.mjs && node filter-fix.mjs && node image-map-fix.mjs && python3 -m http.server 8080 --directory dist",
     "test": "node --test",
     "sync:models": "node scripts/sync-model-pages.mjs",
     "research": "node research.mjs",
@@ -15,7 +15,8 @@
     "photos": "node photos.mjs",
     "ui": "node ui-polish.mjs",
     "header": "node header-polish.mjs",
-    "filter": "node filter-fix.mjs"
+    "filter": "node filter-fix.mjs",
+    "images": "node image-map-fix.mjs"
   },
   "engines": {
     "node": ">=20"
