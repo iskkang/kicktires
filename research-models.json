@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "description": "Model-level research pages. Expand this list after Search Console validates demand.",
+  "models": [
+    {
+      "make": "Toyota",
+      "model": "Camry",
+      "slug": "toyota-camry",
+      "segment": "Midsize sedan",
+      "years": [2018, 2019, 2020, 2021],
+      "annualInsurance": 1650,
+      "annualRepairs": 650,
+      "fuelPrice": 3.20
+    },
+    {
+      "make": "Honda",
+      "model": "Civic",
+      "slug": "honda-civic",
+      "segment": "Compact sedan",
+      "years": [2018, 2019, 2020, 2021],
+      "annualInsurance": 1700,
+      "annualRepairs": 600,
+      "fuelPrice": 3.20
+    },
+    {
+      "make": "BMW",
+      "model": "3 Series",
+      "slug": "bmw-3-series",
+      "segment": "Compact luxury sedan",
+      "years": [2019, 2020, 2021, 2022],
+      "annualInsurance": 2200,
+      "annualRepairs": 1600,
+      "fuelPrice": 4.05
+    }
+  ]
+}
