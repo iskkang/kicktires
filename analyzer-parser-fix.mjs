@@ -45,22 +45,22 @@ Glendale Nissan
 Glendale Heights, IL (23 mi)`;
 
 function clipped(value, max = 500) {
-  return String(value || "").replace(/[\\u0000-\\u0008\\u000b\\u000c\\u000e-\\u001f\\u007f]/g, " ").replace(/\\s+/g, " ").trim().slice(0, max);
+  return String(value || "").replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, " ").replace(/\s+/g, " ").trim().slice(0, max);
 }
 const makes = [["nissan", "nissan"]];
-const lines = fixture.split(/\\r?\\n/).map(line => clipped(line, 260)).filter(Boolean);
+const lines = fixture.split(/\r?\n/).map(line => clipped(line, 260)).filter(Boolean);
 const title = lines[0];
-const yearMatch = title.match(/\\b(19[89]\\d|20\\d{2})\\b/);
-const afterYear = title.slice(yearMatch.index + yearMatch[0].length).replace(/^[\\s:|,;\\-–—]+/, "").trim();
+const yearMatch = title.match(/\b(19[89]\d|20\d{2})\b/);
+const afterYear = title.slice(yearMatch.index + yearMatch[0].length).replace(/^[\s:|,;\-–—]+/, "").trim();
 const makeEntry = makes.find(([label]) => afterYear.toLowerCase().startsWith(label + " "));
-const afterMake = afterYear.slice(makeEntry[0].length).replace(/^[\\s:|,;\\-–—]+/, "").trim();
-const token = afterMake.match(/^([a-z0-9]+(?:[-/][a-z0-9]+)*)\\b/i)?.[1] || "";
+const afterMake = afterYear.slice(makeEntry[0].length).replace(/^[\s:|,;\-–—]+/, "").trim();
+const token = afterMake.match(/^([a-z0-9]+(?:[-/][a-z0-9]+)*)\b/i)?.[1] || "";
 const model = token;
-const trim = afterMake.slice(model.length).replace(/^[\\s:|,;\\-–—]+/, "").trim() || null;
-const price = fixture.match(/(?:\\$\\s*|USD\\s*)(\\d{1,3}(?:,\\d{3})+|\\d{3,7})(?:\\.\\d{2})?/i)?.[1];
-const mileage = fixture.match(/\\b(\\d{1,3}(?:,\\d{3})+|\\d{1,6})\\s*(?:miles?|mi)\\b/i)?.[1];
-const locationLine = lines.find(value => /^[A-Za-z .'-]+,\\s*[A-Z]{2}(?:\\s+\\d{5})?(?:\\s+\\(\\d+\\s*mi\\))?$/.test(value)) || null;
-const location = locationLine?.replace(/\\s+\\(\\d+\\s*mi\\)$/i, "") || null;
+const trim = afterMake.slice(model.length).replace(/^[\s:|,;\-–—]+/, "").trim() || null;
+const price = fixture.match(/(?:\$\s*|USD\s*)(\d{1,3}(?:,\d{3})+|\d{3,7})(?:\.\d{2})?/i)?.[1];
+const mileage = fixture.match(/\b(\d{1,3}(?:,\d{3})+|\d{1,6})\s*(?:miles?|mi)\b/i)?.[1];
+const locationLine = lines.find(value => /^[A-Za-z .'-]+,\s*[A-Z]{2}(?:\s+\d{5})?(?:\s+\(\d+\s*mi\))?$/.test(value)) || null;
+const location = locationLine?.replace(/\s+\(\d+\s*mi\)$/i, "") || null;
 const actual = { year: Number(yearMatch?.[1]), make: makeEntry?.[1], model: model.toLowerCase(), trim, price: Number(price?.replace(/,/g, "")), mileage: Number(mileage?.replace(/,/g, "")), location };
 const expected = { year: 2023, make: "nissan", model: "frontier", trim: "PRO-4X", price: 37640, mileage: 29891, location: "Glendale Heights, IL" };
 if (JSON.stringify(actual) !== JSON.stringify(expected)) {
