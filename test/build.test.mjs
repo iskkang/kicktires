@@ -48,6 +48,11 @@ test("build emits GA4 and AdSense with privacy-safe analysis events", () => {
   assert.match(home, /Paste the listing/);
   assert.match(home, /class="deal-metrics"/);
   assert.match(home, /class="loading-steps"/);
+  assert.match(home, /Two possible verdicts/);
+  assert.match(home, /Smart buy candidate/);
+  assert.match(home, /Walk away/);
+  assert.match(home, /Top reported area/);
+  assert.doesNotMatch(home, /complaints checked/);
   assert.match(home, /const defaultState = stateMatch/);
   assert.ok(home.includes('match(/,\\s*([A-Z]{2})(?:\\s+\\d{5})?\\b/)'));
   assert.doesNotMatch(home, /listing_text|seller_notes/);
@@ -61,7 +66,13 @@ test("build emits GA4 and AdSense with privacy-safe analysis events", () => {
   assert.equal(ads, "google.com, pub-1234567890123456, DIRECT, f08c47fec0942fa0\n");
 
   const generated = JSON.parse(fs.readFileSync(path.join(ROOT, "generated.json"), "utf8"));
-  assert.equal(Object.keys(generated).length, 40);
+  assert.equal(Object.keys(generated).length, 41);
+  const f150 = generated["2020-ford-f-150"];
+  assert.equal(f150.federal.complaintStatus, "resolved");
+  assert.ok(f150.federal.complaintTotal >= 500);
+  assert.ok(f150.federal.resolvedModels.complaints.length >= 2);
+  assert.equal(f150.federal.resolvedModels.complaints.some(model => /lightning/i.test(model)), false);
+  assert.ok(f150.federal.topComponents.find(item => item.component === "POWER TRAIN").count >= 150);
   const modelDirectories = fs.readdirSync(path.join(ROOT, "dist/cars"), { withFileTypes: true })
     .filter(entry => entry.isDirectory());
   assert.equal(modelDirectories.length, 41);
@@ -73,9 +84,16 @@ test("build emits GA4 and AdSense with privacy-safe analysis events", () => {
   assert.match(evidencePage, /model_analyzer_clicked/);
   assert.match(evidencePage, /Compare nearby model years/);
 
+  const f150Page = fs.readFileSync(path.join(ROOT,
+    "dist/cars/2020-ford-f-150-problems/index.html"), "utf8");
+  assert.match(f150Page, /516 raw NHTSA reports/);
+  assert.match(f150Page, /must not be compared across models without sales-volume normalization/);
+  assert.doesNotMatch(f150Page, /10 complaints checked/);
+
   const directory = fs.readFileSync(path.join(ROOT, "dist/cars/index.html"), "utf8");
   assert.match(directory, /41 model-year pages/);
   assert.match(directory, /class="model-group"/);
+  assert.match(directory, /Leading reported area/);
 
   const sitemap = fs.readFileSync(path.join(ROOT, "dist/sitemap.xml"), "utf8");
   assert.equal((sitemap.match(/<url>/g) || []).length, 45);

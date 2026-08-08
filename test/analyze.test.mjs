@@ -150,6 +150,60 @@ test("normalizes model output into text-only checklist fields", () => {
   assert.equal(analysis.chk[0].detail, "Use a lift.");
 });
 
+test("resolves NHTSA pickup variants and deduplicates complaints by ODI number", async () => {
+  const originalFetch = globalThis.fetch;
+  const requestedModels = [];
+  globalThis.fetch = async url => {
+    const parsed = new URL(String(url));
+    if (parsed.pathname.includes("/products/vehicle/models")) {
+      return Response.json({ count: 5, results: [
+        { model: "F-150" },
+        { model: "F-150 REGULAR CAB" },
+        { model: "F150 SUPERCAB" },
+        { model: "F-150 LIGHTNING" },
+        { model: "F-250 REGULAR CAB" }
+      ] });
+    }
+    if (parsed.pathname.includes("/complaints/complaintsByVehicle")) {
+      const model = parsed.searchParams.get("model");
+      requestedModels.push(model);
+      if (model === "F-150") {
+        return Response.json({ count: 1, results: [
+          { odiNumber: "1", components: "ENGINE", summary: "Generic record." }
+        ] });
+      }
+      return Response.json({ count: 2, results: [
+        { odiNumber: "2", components: "POWER TRAIN", summary: "Shared record." },
+        { odiNumber: "3", components: "ELECTRICAL SYSTEM", summary: "Another record." }
+      ] });
+    }
+    throw new Error(`unexpected fetch ${url}`);
+  };
+
+  try {
+    const result = await __test.lookupComplaints({ year: 2020, make: "ford", model: "f150" });
+    assert.equal(result.status, "resolved");
+    assert.equal(result.count, 3);
+    assert.deepEqual(result.resolvedModels, ["F-150", "F-150 REGULAR CAB", "F150 SUPERCAB"]);
+    assert.equal(requestedModels.includes("F-150 LIGHTNING"), false);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("returns unresolved instead of a silent zero when the NHTSA model dictionary cannot match", async () => {
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async () => Response.json({ count: 1, results: [{ model: "SOMETHING ELSE" }] });
+  try {
+    const result = await __test.lookupComplaints({ year: 2020, make: "ford", model: "f150" });
+    assert.equal(result.status, "unresolved");
+    assert.equal(result.count, null);
+    assert.deepEqual(result.resolvedModels, []);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
 test("completes a partial live response from supplied federal facts", () => {
   const analysis = __test.completeLiveAnalysis({
     deal: { grade: "inspect", label: "Inspection first" },
@@ -331,6 +385,9 @@ test("retrieves NHTSA and EPA evidence for an unreviewed model", async () => {
           estimates: { annualInsurance: 1500, annualRepairs: 800 }
         });
       return Response.json({ choices: [{ message: { content } }] });
+    }
+    if (target.includes("products/vehicle/models")) {
+      return Response.json({ count: 1, results: [{ model: "TESTMODEL" }] });
     }
     if (target.includes("complaintsByVehicle")) {
       return Response.json({ count: 2, results: [

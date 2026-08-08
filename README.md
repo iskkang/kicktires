@@ -13,7 +13,7 @@ retrieves the evidence first and supplies it as fixed input.
 
 - `build.mjs` generates the static site in `dist/` from editorial and federal snapshot data.
 - `data.json` preserves the original editorially reviewed profiles.
-- `models.json` defines the 40-page phase-one publication cohort.
+- `models.json` defines the 41-page publication cohort.
 - `generated.json` contains committed NHTSA/EPA snapshots produced by the sync script.
 - `scripts/sync-model-pages.mjs` retrieves federal records and refuses incomplete pages.
 - `netlify/functions/analyze.mjs` handles listing extraction and live analysis.
@@ -43,17 +43,20 @@ npm run build
 npx netlify-cli build --offline
 ```
 
-To refresh the 40 phase-one federal snapshots:
+To refresh all 41 federal snapshots:
 
 ```sh
 npm run sync:models
 ```
 
-The sync command makes live NHTSA and EPA requests. A target is rejected instead of
-published when both federal datasets are unavailable, the vehicle has no federal records,
-component totals do not match the complaint response, provenance is missing, or generated
-content contains an unverified owner-forum evidence tag. The build repeats the structural
-checks and also rejects duplicate titles, slugs and search queries.
+The sync command first resolves the model through NHTSA's year/make/model catalog. It
+queries every approved body-style label, deduplicates complaints by ODI number, and records
+the resolved labels in the snapshot. Distinct derivatives such as F-150 Lightning are not
+rolled into the base model. Complaint lookup is tri-state (`resolved`, `none`, or
+`unresolved`); an unresolved target is rejected instead of being rendered as zero. The
+publication gate also rejects missing EPA/TCO evidence, mismatched totals, missing
+provenance, and unverified owner-forum evidence. The build repeats the structural checks
+and rejects duplicate titles, slugs, and search queries.
 
 ## Netlify deployment
 

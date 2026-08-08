@@ -25,7 +25,8 @@ const MODEL_COSTS = {
   "nissan-altima": { ins: 1800, repair: 900 },
   "nissan-rogue": { ins: 1750, repair: 1000 },
   "ford-f-150": { ins: 1800, repair: 1100 },
-  "jeep-grand-cherokee": { ins: 1950, repair: 1400 }
+  "jeep-grand-cherokee": { ins: 1950, repair: 1400 },
+  "bmw-x5": { ins: 2100, repair: 1800 }
 };
 
 const GUIDANCE = [
@@ -107,11 +108,15 @@ function uniqueHighSignalComponents(facts) {
 }
 
 function buildProfile(target, facts, epa, oldProfile) {
+  const resolvedEpa = epa || oldProfile?.epa || null;
   const federal = {
     source: "NHTSA",
     retrievedAt: facts.retrievedAt,
+    complaintStatus: facts.complaintStatus,
     complaintTotal: facts.complaintTotal,
+    recallStatus: facts.recallStatus,
     recallTotal: facts.recallTotal,
+    resolvedModels: facts.resolvedModels,
     crashes: facts.crashes,
     fires: facts.fires,
     topComponents: facts.topComponents.map(item => ({
@@ -154,17 +159,17 @@ function buildProfile(target, facts, epa, oldProfile) {
 
   const modelKey = `${slugPart(target.make)}-${slugPart(target.model)}`;
   const costs = MODEL_COSTS[modelKey];
-  const tco = epa?.kind === "liquid" && costs ? {
+  const tco = resolvedEpa?.kind === "liquid" && costs ? {
     ins: costs.ins,
     repair: costs.repair,
-    mpg: epa.mpg,
-    fuel: epa.fuel,
+    mpg: resolvedEpa.mpg,
+    fuel: resolvedEpa.fuel,
     source: "EPA efficiency + KickTires cost estimates"
   } : null;
   const factsFingerprint = createHash("sha256").update(JSON.stringify({
     complaintTotal: federal.complaintTotal, recallTotal: federal.recallTotal,
     crashes: federal.crashes, fires: federal.fires,
-    topComponents: federal.topComponents, recalls: federal.recalls, epa
+    topComponents: federal.topComponents, recalls: federal.recalls, epa: resolvedEpa
   })).digest("hex");
   const oldFingerprint = oldProfile?.quality?.factsFingerprint;
   const published = oldProfile?.meta?.published || TODAY;
@@ -191,7 +196,7 @@ function buildProfile(target, facts, epa, oldProfile) {
     risks,
     chk: checklist.slice(0, 4),
     federal,
-    epa,
+    epa: resolvedEpa,
     quality: {
       method: "deterministic-federal-snapshot-v1",
       factsFingerprint,
@@ -226,6 +231,17 @@ function validateProfile(profile) {
   if (meta.nhtsa === 0 && meta.recalls === 0) errors.push("no federal records");
   if (meta.nhtsa !== federal.complaintTotal) errors.push("complaint total mismatch");
   if (meta.recalls !== federal.recallTotal) errors.push("recall total mismatch");
+  if (!["resolved", "none"].includes(federal.complaintStatus)) {
+    errors.push("complaint lookup unresolved");
+  }
+  if (!Array.isArray(federal.resolvedModels?.complaints)
+    || federal.resolvedModels.complaints.length === 0) {
+    errors.push("missing resolved complaint models");
+  }
+  if (meta.md === "F-150" && federal.resolvedModels.complaints.length < 2) {
+    errors.push("F-150 body variants were not resolved");
+  }
+  if (!profile.epa?.source || !profile.tco) errors.push("missing EPA/TCO evidence");
   if (meta.nhtsa > 0 && federal.topComponents.length < 2) errors.push("fewer than two component groups");
   for (const item of federal.topComponents) {
     if (!Number.isInteger(item.count) || item.count < 0 || item.count > meta.nhtsa) {
@@ -241,9 +257,24 @@ function validateProfile(profile) {
   return errors;
 }
 
+async function getNhtsaFactsWithRetry(car) {
+  let lastError;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      return await __test.getNhtsaFacts(car);
+    } catch (error) {
+      lastError = error;
+      if (attempt < 2) await sleep(1_500 * (2 ** attempt));
+    }
+  }
+  throw lastError;
+}
+
 const expanded = targets.models.flatMap(model => model.years.map(year => ({ ...model, year })))
   .sort((a, b) => a.priority - b.priority || a.year - b.year);
-if (expanded.length !== 40) throw new Error(`phase 1 must contain 40 targets, found ${expanded.length}`);
+if (expanded.length !== targets.expectedPages) {
+  throw new Error(`expected ${targets.expectedPages} targets, found ${expanded.length}`);
+}
 
 const output = {};
 const rejected = [];
@@ -258,8 +289,8 @@ for (let index = 0; index < expanded.length; index++) {
       model: target.model.toLowerCase().replace(/[^a-z0-9]/g, "")
     });
     const [facts, epa] = await Promise.all([
-      __test.getNhtsaFacts(car),
-      __test.getEpaFacts(car).catch(() => null)
+      getNhtsaFactsWithRetry(car),
+      __test.getEpaFacts(car, 25_000).catch(() => null)
     ]);
     const profile = buildProfile(target, facts, epa, previous[key]);
     const errors = validateProfile(profile);
@@ -274,7 +305,7 @@ for (let index = 0; index < expanded.length; index++) {
     rejected.push({ target, errors: [error.message] });
     console.log(`REJECTED: ${error.message}`);
   }
-  await sleep(250);
+  await sleep(750);
 }
 
 if (rejected.length) {

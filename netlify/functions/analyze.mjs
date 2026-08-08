@@ -18,7 +18,8 @@ const ANALYSIS_CACHE_DAYS = 30;
 const FACT_CACHE_DAYS = 7;
 const MARKET_CACHE_DAYS = 1;
 const MARKET_MIN_SAMPLE = 8;
-const ANALYSIS_VERSION = "2026-08-07.5";
+const ANALYSIS_VERSION = "2026-08-08.1";
+const FACTS_VERSION = "2026-08-08.1";
 const REQUEST_BUDGET_MS = 25_000;
 const MAX_LISTING_BYTES = 1_500_000;
 const CURRENT_YEAR = new Date().getUTCFullYear();
@@ -59,6 +60,21 @@ const MODEL_ALIAS = {
   sierra: "sierra 1500",
   silverado: "silverado 1500"
 };
+
+// NHTSA's complaint catalog sometimes splits one marketed pickup into body-style
+// labels. These are the only suffixes we intentionally roll into the base model.
+// Powertrain derivatives such as F-150 LIGHTNING and separately marketed models
+// such as ROGUE SPORT are excluded by design.
+const NHTSA_BODY_VARIANT_SUFFIXES = new Set([
+  "regularcab",
+  "supercab",
+  "crewcab",
+  "supercrew",
+  "regularcabdiesel",
+  "supercabdiesel",
+  "crewcabdiesel",
+  "supercrewdiesel"
+]);
 
 // Clear pasted listing headers should not spend a model call just to read
 // "2025 Cadillac XT6". Ambiguous text still goes through the configured model.
@@ -712,23 +728,28 @@ async function fetchListing(input) {
 }
 
 /* ── federal and EPA evidence ─────────────────────────────────── */
-async function fetchJson(url, timeout = 5_000) {
-  try {
-    const response = await fetch(url, {
-      signal: AbortSignal.timeout(timeout),
-      headers: { "User-Agent": UA, Accept: "application/json" }
-    });
-    return response.ok ? response.json() : null;
-  } catch {
-    return null;
+async function fetchJson(url, timeout = 12_000) {
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const response = await fetch(url, {
+        signal: AbortSignal.timeout(timeout),
+        headers: { "User-Agent": UA, Accept: "application/json" }
+      });
+      if (response.ok) return response.json();
+    } catch {
+      // Retry transient EPA/API failures. The caller still receives null after all attempts.
+    }
+    if (attempt < 2) await new Promise(resolve => setTimeout(resolve, 350 * (2 ** attempt)));
   }
+  return null;
 }
 
 // NHTSA occasionally returns a temporary empty/400 response for a valid vehicle query.
-// Retry that response once, and never turn a missing endpoint into a factual zero.
+// Retry with backoff, and never turn a missing endpoint into a factual zero.
 async function fetchNhtsaJson(url, timeout = 8_000) {
   let emptyResponse = null;
-  for (let attempt = 0; attempt < 2; attempt++) {
+  const attempts = 4;
+  for (let attempt = 0; attempt < attempts; attempt++) {
     try {
       const response = await fetch(url, {
         signal: AbortSignal.timeout(timeout),
@@ -741,26 +762,124 @@ async function fetchNhtsaJson(url, timeout = 8_000) {
       if (structured && count > 0) return data;
       if (structured) emptyResponse = data;
     } catch {
-      // The second attempt is the recovery path. Failure after it returns null.
+      // Failure after the final attempt returns null to the tri-state resolver.
     }
-    if (attempt === 0) await new Promise(resolve => setTimeout(resolve, 250));
+    if (attempt < attempts - 1) {
+      await new Promise(resolve => setTimeout(resolve, 300 * (2 ** attempt)));
+    }
   }
   return emptyResponse;
 }
 
-async function getNhtsaFacts(car) {
+function resolveNhtsaModels(requestedModel, catalogRows) {
+  const requested = norm(requestedModel);
+  if (!requested) return [];
+  const matches = [];
+  for (const row of asItems(catalogRows)) {
+    const official = clipped(row?.model, 120);
+    const token = norm(official);
+    if (!official || !token.startsWith(requested)) continue;
+    const suffix = token.slice(requested.length);
+    if (suffix && !NHTSA_BODY_VARIANT_SUFFIXES.has(suffix)) continue;
+    matches.push(official);
+  }
+  return [...new Set(matches)];
+}
+
+async function lookupIssueCatalog(car, issueType) {
+  const make = MAKE_ALIAS[car.make] || car.make;
+  const query = new URLSearchParams({
+    modelYear: String(car.year),
+    make,
+    issueType
+  });
+  const data = await fetchNhtsaJson(`https://api.nhtsa.gov/products/vehicle/models?${query}`, 8_000);
+  const count = Number(data?.count ?? data?.Count);
+  if (!data || !Array.isArray(data.results) || !Number.isInteger(count) || count < 0) return null;
+  return data.results;
+}
+
+async function lookupComplaints(car) {
   const make = MAKE_ALIAS[car.make] || car.make;
   const model = MODEL_ALIAS[car.model] || car.model;
-  const query = `make=${encodeURIComponent(make)}&model=${encodeURIComponent(model)}`
-    + `&modelYear=${encodeURIComponent(car.year)}`;
-  const [complaints, recalls] = await Promise.all([
-    fetchNhtsaJson(`https://api.nhtsa.gov/complaints/complaintsByVehicle?${query}`),
-    fetchNhtsaJson(`https://api.nhtsa.gov/recalls/recallsByVehicle?${query}`)
-  ]);
-  if (!complaints || !recalls) throw new Error("records_unavailable");
+  const catalog = await lookupIssueCatalog(car, "c");
+  if (!catalog) return { status: "unresolved", count: null, resolvedModels: [], rows: [] };
+  const resolvedModels = resolveNhtsaModels(model, catalog);
+  if (!resolvedModels.length) {
+    return { status: "unresolved", count: null, resolvedModels: [], rows: [] };
+  }
 
-  const complaintRows = asItems(complaints?.results);
-  const recallRows = asItems(recalls?.results);
+  const payloads = await Promise.all(resolvedModels.map(officialModel => {
+    const query = new URLSearchParams({ make, model: officialModel, modelYear: String(car.year) });
+    return fetchNhtsaJson(`https://api.nhtsa.gov/complaints/complaintsByVehicle?${query}`);
+  }));
+  if (payloads.some(payload => !payload)) {
+    return { status: "unresolved", count: null, resolvedModels, rows: [] };
+  }
+
+  const unique = new Map();
+  for (const row of payloads.flatMap(payload => asItems(payload.results))) {
+    const key = clipped(row?.odiNumber, 40) || hash(JSON.stringify([
+      row?.manufacturer, row?.dateComplaintFiled, row?.dateOfIncident,
+      row?.vin, row?.components, row?.summary
+    ]));
+    if (!unique.has(key)) unique.set(key, row);
+  }
+  const rows = [...unique.values()];
+  return {
+    status: rows.length ? "resolved" : "none",
+    count: rows.length,
+    resolvedModels,
+    rows
+  };
+}
+
+async function lookupRecalls(car) {
+  const make = MAKE_ALIAS[car.make] || car.make;
+  const model = MODEL_ALIAS[car.model] || car.model;
+  const catalog = await lookupIssueCatalog(car, "r");
+  if (!catalog) return { status: "unresolved", count: null, resolvedModels: [], rows: [] };
+  const resolvedModels = resolveNhtsaModels(model, catalog);
+  if (!resolvedModels.length) {
+    return { status: "none", count: 0, resolvedModels: [], rows: [] };
+  }
+
+  const payloads = await Promise.all(resolvedModels.map(officialModel => {
+    const query = new URLSearchParams({ make, model: officialModel, modelYear: String(car.year) });
+    return fetchNhtsaJson(`https://api.nhtsa.gov/recalls/recallsByVehicle?${query}`);
+  }));
+  if (payloads.some(payload => !payload)) {
+    return { status: "unresolved", count: null, resolvedModels, rows: [] };
+  }
+
+  const unique = new Map();
+  for (const row of payloads.flatMap(payload => asItems(payload.results))) {
+    const campaign = clipped(row?.NHTSACampaignNumber, 40);
+    const key = campaign || hash(JSON.stringify([
+      row?.Manufacturer, row?.Component, row?.ReportReceivedDate, row?.Summary
+    ]));
+    if (!unique.has(key)) unique.set(key, row);
+  }
+  const rows = [...unique.values()];
+  return {
+    status: rows.length ? "resolved" : "none",
+    count: rows.length,
+    resolvedModels,
+    rows
+  };
+}
+
+async function getNhtsaFacts(car) {
+  const [complaints, recalls] = await Promise.all([
+    lookupComplaints(car),
+    lookupRecalls(car)
+  ]);
+  if (complaints.status === "unresolved" || recalls.status === "unresolved") {
+    throw new Error(`records_unavailable:${complaints.status}:${recalls.status}`);
+  }
+
+  const complaintRows = complaints.rows;
+  const recallRows = recalls.rows;
 
   const components = {};
   for (const item of complaintRows) {
@@ -781,8 +900,14 @@ async function getNhtsaFacts(car) {
     source: "NHTSA",
     retrievedAt: new Date().toISOString(),
     hasRecords: complaintRows.length > 0 || recallRows.length > 0,
-    complaintTotal: numeric(complaints?.count, 0, 1_000_000) ?? complaintRows.length,
-    recallTotal: numeric(recalls?.Count, 0, 100_000) ?? recallRows.length,
+    complaintStatus: complaints.status,
+    complaintTotal: complaints.count,
+    recallStatus: recalls.status,
+    recallTotal: recalls.count,
+    resolvedModels: {
+      complaints: complaints.resolvedModels,
+      recalls: recalls.resolvedModels
+    },
     crashes: complaintRows.filter(item => item.crash === true).length,
     fires: complaintRows.filter(item => item.fire === true).length,
     topComponents: Object.entries(components).sort((a, b) => b[1].count - a[1].count)
@@ -795,12 +920,12 @@ async function getNhtsaFacts(car) {
   };
 }
 
-async function getEpaFacts(car) {
+async function getEpaFacts(car, fetchTimeout = 12_000) {
   const make = MAKE_ALIAS[car.make] || car.make;
   const target = norm(MODEL_ALIAS[car.model] || car.model);
   const base = "https://www.fueleconomy.gov/ws/rest/vehicle";
   const modelMenu = await fetchJson(`${base}/menu/model?year=${encodeURIComponent(car.year)}`
-    + `&make=${encodeURIComponent(make)}`);
+    + `&make=${encodeURIComponent(make)}`, fetchTimeout);
   const candidates = asItems(modelMenu?.menuItem).filter(item => {
     const value = norm(item?.value || item?.text);
     return value === target || value.startsWith(target) || target.startsWith(value);
@@ -809,13 +934,13 @@ async function getEpaFacts(car) {
 
   const optionMenus = await Promise.all(candidates.map(item => fetchJson(
     `${base}/menu/options?year=${encodeURIComponent(car.year)}&make=${encodeURIComponent(make)}`
-      + `&model=${encodeURIComponent(item.value || item.text)}`
+      + `&model=${encodeURIComponent(item.value || item.text)}`, fetchTimeout
   )));
   const ids = [...new Set(optionMenus.flatMap(menu => asItems(menu?.menuItem)
     .map(item => String(item?.value || "")).filter(Boolean)))].slice(0, 24);
   if (!ids.length) return null;
 
-  const records = (await Promise.all(ids.map(id => fetchJson(`${base}/${encodeURIComponent(id)}`))))
+  const records = (await Promise.all(ids.map(id => fetchJson(`${base}/${encodeURIComponent(id)}`, fetchTimeout))))
     .filter(Boolean);
   if (!records.length) return null;
 
@@ -836,7 +961,7 @@ async function getEpaFacts(car) {
   if (!liquid.length) return null;
   const values = liquid.map(record => Number(record.comb08));
   const fuels = liquid.map(record => String(record.fuelType1 || "").toLowerCase());
-  const fuel = fuels.some(value => value.includes("diesel")) ? "diesel"
+  const fuel = fuels.filter(value => value.includes("diesel")).length > fuels.length / 2 ? "diesel"
     : fuels.filter(value => value.includes("premium")).length > fuels.length / 2 ? "premium"
       : "regular";
   return {
@@ -1047,10 +1172,13 @@ async function marketComparisonFor(car) {
 function factsSummary(facts, source, epa = null) {
   return {
     source,
+    complaintStatus: facts?.complaintStatus || facts?.complaints?.status
+      || (facts?.complaintTotal == null ? "unresolved" : "resolved"),
     complaintTotal: facts?.complaintTotal ?? null,
     recallTotal: facts?.recallTotal ?? null,
     crashes: facts?.crashes ?? null,
     fires: facts?.fires ?? null,
+    resolvedModels: facts?.resolvedModels || null,
     topComponents: asItems(facts?.topComponents).map(item => ({
       component: clipped(item.component, 180), count: numeric(item.count, 0, 1_000_000)
     })).filter(item => item.component && item.count != null).slice(0, 8),
@@ -1067,6 +1195,7 @@ function liveModelEvidence(evidence) {
     nhtsa: {
       source: nhtsa.source,
       retrievedAt: nhtsa.retrievedAt,
+      complaintStatus: nhtsa.complaintStatus,
       complaintTotal: nhtsa.complaintTotal,
       recallTotal: nhtsa.recallTotal,
       crashes: nhtsa.crashes,
@@ -1215,7 +1344,7 @@ export default async (request) => {
     }, profile.generated ? "federal_snapshot" : "reviewed_db", profile.epa || null);
     tco = tcoFrom(profile, analysis, null);
   } else {
-    const vehicleKey = `${car.year}-${norm(car.make)}-${norm(car.model)}`;
+    const vehicleKey = `${FACTS_VERSION}-${car.year}-${norm(car.make)}-${norm(car.model)}`;
     const factsStore = openStore("vehicle-facts");
     let evidence = await readCache(factsStore, vehicleKey, FACT_CACHE_DAYS);
     if (!evidence) {
@@ -1277,7 +1406,9 @@ export const __test = {
   getMarketComparison,
   getNhtsaFacts,
   isPrivateAddress,
+  lookupComplaints,
   normalizeCar,
+  resolveNhtsaModels,
   normalizeChecklist,
   completeLiveAnalysis,
   normalizeLiveAnalysis,

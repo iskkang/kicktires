@@ -45,6 +45,16 @@ const shortDesc = value => {
 const dateLabel = value => new Date(value).toLocaleDateString("en-US", {
   month:"short", day:"numeric", year:"numeric", timeZone:"UTC"
 });
+const complaintHeadline = source => {
+  const federal = source?.federal || source || {};
+  const status = federal.complaintStatus
+    || (federal.complaintTotal == null ? "unresolved" : federal.complaintTotal === 0 ? "none" : "resolved");
+  if (status === "unresolved") return "Complaint records unavailable";
+  if (status === "none") return "No NHTSA complaints found";
+  return `${Number(federal.complaintTotal).toLocaleString("en-US")} raw NHTSA reports`;
+};
+const topProblemArea = profile => profile?.federal?.topComponents?.[0]?.component
+  || "Federal records reviewed";
 
 function validateProfiles(profiles){
   const slugs = new Set(), titles = new Set(), queries = new Set();
@@ -60,6 +70,10 @@ function validateProfiles(profiles){
         || d.federal.recallTotal !== m.recalls) throw new Error(`federal totals mismatch: ${m.slug}`);
       if (!d.federal.retrievedAt || !d.quality?.factsFingerprint) {
         throw new Error(`missing provenance: ${m.slug}`);
+      }
+      if (!["resolved", "none"].includes(d.federal.complaintStatus)
+        || !d.federal.resolvedModels?.complaints?.length) {
+        throw new Error(`unresolved complaint lookup: ${m.slug}`);
       }
       if (d.risks.some(risk => risk.e?.some(row => row[0] === "s"))) {
         throw new Error(`unverified owner evidence: ${m.slug}`);
@@ -187,10 +201,10 @@ function modelPage(key, d){
     const epa = d.epa?.kind === "liquid" ? `<div><span>EPA efficiency</span><b>${d.epa.mpg} mpg</b>
       <small>median across ${d.epa.variants} configurations</small></div>` : "";
     return `<h2>The federal record, without the folklore</h2>
-      <p class="sub">Retrieved ${dateLabel(federal.retrievedAt)}. Complaint reports are allegations, not verified defects or failure rates.</p>
+      <p class="sub">Retrieved ${dateLabel(federal.retrievedAt)}. Raw report totals are not failure rates and must not be compared across models without sales-volume normalization.</p>
       <section class="panel federal-panel">
         <div class="record-stats">
-          <div><span>Complaints</span><b>${federal.complaintTotal.toLocaleString("en-US")}</b><small>NHTSA consumer reports</small></div>
+          <div><span>Complaint lookup</span><b>${complaintHeadline(federal)}</b><small>raw reports, not a safety score</small></div>
           <div><span>Recall campaigns</span><b>${federal.recallTotal.toLocaleString("en-US")}</b><small>VIN applicability varies</small></div>
           <div><span>Crash flags</span><b>${federal.crashes.toLocaleString("en-US")}</b><small>reports marked crash</small></div>
           <div><span>Fire flags</span><b>${federal.fires.toLocaleString("en-US")}</b><small>reports marked fire</small></div>${epa}
@@ -206,10 +220,10 @@ function modelPage(key, d){
   })();
 
   const peerPanel = peers.length < 2 ? "" : `<h2>Compare nearby model years</h2>
-    <p class="sub">The badge is the leading NHTSA complaint tag for that year. A high total is not a failure rate.</p>
+    <p class="sub">Compare the leading complaint area, not raw totals. NHTSA does not provide sales-volume exposure in this view.</p>
     <div class="year-compare">${peers.map(peer=>{
       const lead = peer.federal?.topComponents?.[0];
-      const inner = `<span class="year-num">${peer.meta.y}</span><b>${peer.meta.nhtsa.toLocaleString("en-US")} complaints</b><small>${esc(lead?.component || peer.vline)}</small>`;
+      const inner = `<span class="year-num">${peer.meta.y}</span><b>${esc(lead?.component || "Federal records reviewed")}</b><small>Leading reported problem area</small>`;
       return peer.meta.slug === m.slug ? `<div class="year-card current">${inner}<em>Current page</em></div>`
         : `<a class="year-card" href="/cars/${peer.meta.slug}/">${inner}<em>Open guide →</em></a>`;
     }).join("")}</div>`;
@@ -218,7 +232,7 @@ function modelPage(key, d){
 <main class="shell">
   <div class="crumb"><a href="/">Home</a> › <a href="/cars/">Models</a> › ${m.y} ${m.mk} ${m.md}</div>
   <p class="micro">${d.generated ? `Federal snapshot · retrieved ${dateLabel(federal.retrievedAt)}`
-    : `Editorially reviewed against ${m.nhtsa} NHTSA complaints`}</p>
+    : `Editorial review · ${complaintHeadline(d)}`}</p>
   <h1>${m.y} ${m.mk} ${m.md} problems</h1>
   <p class="verdict-lead">${esc(d.vline)}</p>
   <p class="lede">${esc(d.vsub)}</p>
@@ -278,7 +292,7 @@ function modelPage(key, d){
 
   <h2>Other popular models</h2>
   <div class="cards">${others.map(o=>
-    `<a class="card" href="/cars/${o.meta.slug}/"><span class="micro">${o.meta.nhtsa} complaints</span><span class="cardt">${o.meta.y} ${o.meta.mk} ${o.meta.md}</span><span class="cardd">${esc(o.vline)}</span></a>`).join("")}</div>
+    `<a class="card" href="/cars/${o.meta.slug}/"><span class="micro">Top reported area · ${esc(topProblemArea(o))}</span><span class="cardt">${o.meta.y} ${o.meta.mk} ${o.meta.md}</span><span class="cardd">${esc(o.vline)}</span></a>`).join("")}</div>
 </main>` + foot;
 }
 
@@ -311,17 +325,21 @@ function home(){
         <span>Live market listings</span><span>NHTSA federal records</span><span>No dealer commissions</span>
       </div>
     </div>
-    <aside class="result-preview" aria-label="Example KickTires result">
-      <div class="preview-top"><span class="micro">Example result</span><span class="preview-dot">Live-data format</span></div>
-      <p class="preview-car">2023 Tesla Model Y Performance</p>
-      <p class="preview-grade">Price needs explaining</p>
-      <p class="preview-copy">Far below comparable listings. Verify the title, condition and fees before calling it a bargain.</p>
-      <div class="preview-metrics">
-        <div><span>Market</span><b>$9,009 below</b></div>
-        <div><span>Evidence</span><b>56 matches</b></div>
-        <div><span>Federal</span><b>16 recalls</b></div>
+    <aside class="result-preview" aria-label="Examples of KickTires buyer verdicts">
+      <div class="preview-top"><span class="micro">Two possible verdicts</span><span class="preview-dot">Illustrative format</span></div>
+      <div class="preview-cases">
+        <article class="preview-case preview-good">
+          <span class="preview-label">GOOD DEAL</span><p class="preview-grade">Smart buy candidate</p>
+          <p class="preview-copy">Below close market matches, with the mileage and known repair exposure accounted for. Inspect it, then negotiate.</p>
+          <div class="preview-signals"><span>Price <b>Below market</b></span><span>Buyer <b>Wins</b></span></div>
+        </article>
+        <article class="preview-case preview-bad">
+          <span class="preview-label">BAD DEAL</span><p class="preview-grade">Walk away</p>
+          <p class="preview-copy">Above close market matches while the federal record points to expensive powertrain inspection targets.</p>
+          <div class="preview-signals"><span>Price <b>Above market</b></span><span>Seller <b>Wins</b></span></div>
+        </article>
       </div>
-      <p class="preview-foot">The cheapest answer is not always “buy it.”</p>
+      <p class="preview-foot">KickTires can say yes. It can also tell you to leave.</p>
     </aside>
   </div></section>
 
@@ -331,7 +349,7 @@ function home(){
     <a href="/cars/">See all models &rarr;</a></div>
   <p class="sub">${Object.values(D).length} year-specific guides built from federal complaint and recall records.</p>
   <div class="cards">${FEATURED.map(o=>
-    `<a class="card" href="/cars/${o.meta.slug}/"><span class="micro">${o.meta.nhtsa} complaints checked</span><span class="cardt">${o.meta.y} ${o.meta.mk} ${o.meta.md}</span><span class="cardd">${esc(o.vline)}</span></a>`).join("")}</div>
+    `<a class="card" href="/cars/${o.meta.slug}/"><span class="micro">Top reported area · ${esc(topProblemArea(o))}</span><span class="cardt">${o.meta.y} ${o.meta.mk} ${o.meta.md}</span><span class="cardd">${esc(o.vline)}</span></a>`).join("")}</div>
 </main>
 <script>
 const STATES = ${JSON.stringify(STATES)};
@@ -342,6 +360,13 @@ const hint = message => { $("hint").textContent = message; };
 const html = value => String(value == null ? "" : value).replace(/&/g,"&amp;")
   .replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
 const dollars = value => "$" + Math.round(Number(value)).toLocaleString("en-US");
+const complaintHeadline = facts => {
+  const status = facts && facts.complaintStatus
+    || (facts && facts.complaintTotal != null ? (Number(facts.complaintTotal) === 0 ? "none" : "resolved") : "unresolved");
+  if (status === "unresolved") return "Complaint records unavailable";
+  if (status === "none") return "No NHTSA complaints found";
+  return Number(facts.complaintTotal).toLocaleString()+" raw NHTSA reports";
+};
 const validClass = (value, allowed, fallback) => allowed.includes(value) ? value : fallback;
 const MODEL_NAMES = {modely:"Model Y",model3:"Model 3",crv:"CR-V",f150:"F-150",f250:"F-250",
   rav4:"RAV4",cx5:"CX-5",grandcherokee:"Grand Cherokee",santafe:"Santa Fe",boltev:"Bolt EV"};
@@ -491,7 +516,7 @@ function render(output){
   const limitations = output.limitations || {}, market = output.market || {};
   const title = prettyVehicle(car);
   const chips = [
-    facts.complaintTotal != null ? Number(facts.complaintTotal).toLocaleString()+" NHTSA complaints" : null,
+    complaintHeadline(facts),
     facts.recallTotal != null ? Number(facts.recallTotal).toLocaleString()+" recall campaigns" : null,
     facts.crashes ? Number(facts.crashes).toLocaleString()+" crash reports" : null,
     car.mileage != null ? Number(car.mileage).toLocaleString()+" mi" : null,
@@ -541,8 +566,7 @@ function render(output){
     ? dollars(Math.abs(Number(market.deltaAmount || 0)))+" "+(Number(market.deltaPercent) < 0 ? "below" : "above")
     : missing.includes("mileage") ? "Need mileage" : missing.includes("asking price") ? "Need price" : "Risk only";
   const marketNote = market.status === "ready" ? Math.abs(Number(market.deltaPercent || 0)).toFixed(1)+"% vs median" : "No deal grade";
-  const federalMetric = Number(facts.recallTotal) > 0 ? Number(facts.recallTotal).toLocaleString()+" recalls"
-    : facts.complaintTotal != null ? Number(facts.complaintTotal).toLocaleString()+" reports" : "Records checked";
+  const federalMetric = complaintHeadline(facts);
   const tcoResult = output.tco ? totalCost(output.tco,Number(car.price),defaultState) : null;
   const tcoMetric = tcoResult ? dollars(tcoResult.total) : (car.price == null ? "Need price" : "Unavailable");
   const missingAction = missing.length ? '<div class="missing-action"><span><b>Needed:</b> '+html(missingLabel)+
@@ -723,8 +747,8 @@ function indexPage(){
       <div class="model-years">${items.map(o=>{
         const lead = o.federal?.topComponents?.[0]?.component;
         return `<a href="/cars/${o.meta.slug}/"><span class="year-num">${o.meta.y}</span>
-          <b>${o.meta.nhtsa.toLocaleString("en-US")} complaints</b>
-          <small>${o.meta.recalls.toLocaleString("en-US")} recalls${lead?` · ${esc(lead)}`:""}</small><em>Open guide →</em></a>`;
+          <b>${esc(lead || "Federal records reviewed")}</b>
+          <small>Leading reported area · ${o.meta.recalls.toLocaleString("en-US")} recall campaigns</small><em>Open guide →</em></a>`;
       }).join("")}</div></section>`;
   }).join("");
   return head({title:`All models — ${NAME}`,

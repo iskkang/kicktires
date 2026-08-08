@@ -1,7 +1,8 @@
 {
   "version": 1,
   "phase": "phase-1",
-  "description": "First evidence-page cohort: ten high-volume US used-car models and four model years each.",
+  "description": "First evidence-page cohort plus the existing X5 guide, regenerated through the same federal-data resolver.",
+  "expectedPages": 41,
   "models": [
     { "make": "Toyota", "model": "Camry", "years": [2018, 2019, 2020, 2021], "priority": 1 },
     { "make": "Toyota", "model": "Corolla", "years": [2018, 2019, 2020, 2021], "priority": 2 },
@@ -12,6 +13,7 @@
     { "make": "Nissan", "model": "Altima", "years": [2018, 2019, 2020, 2021], "priority": 7 },
     { "make": "Nissan", "model": "Rogue", "years": [2018, 2019, 2020, 2021], "priority": 8 },
     { "make": "Ford", "model": "F-150", "years": [2017, 2018, 2019, 2020], "priority": 9 },
-    { "make": "Jeep", "model": "Grand Cherokee", "years": [2017, 2018, 2019, 2020], "priority": 10 }
+    { "make": "Jeep", "model": "Grand Cherokee", "years": [2017, 2018, 2019, 2020], "priority": 10 },
+    { "make": "BMW", "model": "X5", "years": [2017], "priority": 11 }
   ]
 }
