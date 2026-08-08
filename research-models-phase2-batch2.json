@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "models": [
+    {"make":"BMW","model":"i4","slug":"bmw-i4","segment":"Electric luxury liftback","years":[2022,2023,2024,2025],"annualInsurance":2550,"annualRepairs":850,"fuelPrice":0},
+    {"make":"BMW","model":"iX","slug":"bmw-ix","segment":"Electric luxury SUV","years":[2022,2023,2024,2025],"annualInsurance":2850,"annualRepairs":950,"fuelPrice":0},
+    {"make":"Audi","model":"e-tron","slug":"audi-e-tron","segment":"Electric luxury SUV","years":[2019,2020,2021,2022,2023],"annualInsurance":2650,"annualRepairs":1100,"fuelPrice":0},
+    {"make":"Audi","model":"Q4 e-tron","slug":"audi-q4-e-tron","segment":"Electric luxury compact SUV","years":[2022,2023,2024,2025],"annualInsurance":2450,"annualRepairs":850,"fuelPrice":0},
+    {"make":"Rivian","model":"R1S","slug":"rivian-r1s","segment":"Electric three-row SUV","years":[2022,2023,2024,2025],"annualInsurance":3000,"annualRepairs":900,"fuelPrice":0},
+    {"make":"Rivian","model":"R1T","slug":"rivian-r1t","segment":"Electric pickup","years":[2022,2023,2024,2025],"annualInsurance":2950,"annualRepairs":950,"fuelPrice":0},
+    {"make":"Lucid","model":"Air","slug":"lucid-air","segment":"Electric luxury sedan","years":[2022,2023,2024,2025],"annualInsurance":3200,"annualRepairs":1000,"fuelPrice":0},
+    {"make":"Polestar","model":"2","slug":"polestar-2","segment":"Electric fastback","years":[2021,2022,2023,2024,2025],"annualInsurance":2500,"annualRepairs":800,"fuelPrice":0},
+    {"make":"Polestar","model":"3","slug":"polestar-3","segment":"Electric luxury SUV","years":[2025,2026],"annualInsurance":2900,"annualRepairs":900,"fuelPrice":0},
+    {"make":"Volvo","model":"EX30","slug":"volvo-ex30","segment":"Electric compact SUV","years":[2025,2026],"annualInsurance":2300,"annualRepairs":700,"fuelPrice":0},
+    {"make":"Volvo","model":"EX40","slug":"volvo-ex40","segment":"Electric compact SUV","years":[2025,2026],"annualInsurance":2450,"annualRepairs":750,"fuelPrice":0},
+    {"make":"Volvo","model":"EX90","slug":"volvo-ex90","segment":"Electric three-row luxury SUV","years":[2025,2026],"annualInsurance":3000,"annualRepairs":900,"fuelPrice":0},
+    {"make":"Lexus","model":"GX","slug":"lexus-gx","segment":"Luxury midsize SUV","years":[2019,2020,2021,2022,2023],"annualInsurance":2250,"annualRepairs":1100,"fuelPrice":4.05},
+    {"make":"Lexus","model":"IS","slug":"lexus-is","segment":"Compact luxury sedan","years":[2019,2020,2021,2022,2023],"annualInsurance":2150,"annualRepairs":900,"fuelPrice":4.05},
+    {"make":"Lexus","model":"RZ","slug":"lexus-rz","segment":"Electric luxury crossover","years":[2023,2024,2025],"annualInsurance":2450,"annualRepairs":750,"fuelPrice":0},
+    {"make":"Infiniti","model":"Q50","slug":"infiniti-q50","segment":"Compact luxury sedan","years":[2019,2020,2021,2022,2023],"annualInsurance":2200,"annualRepairs":1200,"fuelPrice":4.05},
+    {"make":"Infiniti","model":"QX50","slug":"infiniti-qx50","segment":"Luxury compact SUV","years":[2019,2020,2021,2022,2023],"annualInsurance":2150,"annualRepairs":1150,"fuelPrice":4.05},
+    {"make":"Infiniti","model":"QX80","slug":"infiniti-qx80","segment":"Luxury full-size SUV","years":[2019,2020,2021,2022,2023],"annualInsurance":2400,"annualRepairs":1350,"fuelPrice":4.05}
+  ]
+}
