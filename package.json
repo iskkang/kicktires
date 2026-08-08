@@ -5,8 +5,8 @@
   "type": "module",
   "description": "Buyer-side used-car risk analysis grounded in NHTSA and EPA records.",
   "scripts": {
-    "build": "node build.mjs && node research.mjs && node seo.mjs && node homepage.mjs && node photos.mjs && node ui-polish.mjs && node header-polish.mjs && node filter-fix.mjs && node image-map-fix.mjs && node cars-premium.mjs && node home-premium.mjs && node seo-funnel.mjs && node vehicle-assets.mjs",
-    "dev": "node build.mjs && node research.mjs && node seo.mjs && node homepage.mjs && node photos.mjs && node ui-polish.mjs && node header-polish.mjs && node filter-fix.mjs && node image-map-fix.mjs && node cars-premium.mjs && node home-premium.mjs && node seo-funnel.mjs && node vehicle-assets.mjs && python3 -m http.server 8080 --directory dist",
+    "build": "node build.mjs && node research.mjs && node seo.mjs && node homepage.mjs && node photos.mjs && node ui-polish.mjs && node header-polish.mjs && node filter-fix.mjs && node image-map-fix.mjs && node cars-premium.mjs && node home-premium.mjs && node seo-funnel.mjs && node vehicle-assets.mjs && node home-reference.mjs",
+    "dev": "node build.mjs && node research.mjs && node seo.mjs && node homepage.mjs && node photos.mjs && node ui-polish.mjs && node header-polish.mjs && node filter-fix.mjs && node image-map-fix.mjs && node cars-premium.mjs && node home-premium.mjs && node seo-funnel.mjs && node vehicle-assets.mjs && node home-reference.mjs && python3 -m http.server 8080 --directory dist",
     "test": "node --test",
     "sync:models": "node scripts/sync-model-pages.mjs",
     "research": "node research.mjs",
@@ -20,7 +20,8 @@
     "cars": "node cars-premium.mjs",
     "home": "node home-premium.mjs",
     "funnel": "node seo-funnel.mjs",
-    "vehicle-assets": "node vehicle-assets.mjs"
+    "vehicle-assets": "node vehicle-assets.mjs",
+    "home-reference": "node home-reference.mjs"
   },
   "engines": {
     "node": ">=20"
