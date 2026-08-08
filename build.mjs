@@ -356,7 +356,9 @@ const STATES = ${JSON.stringify(STATES)};
 const ENERGY = {regular:3.20,premium:4.05,diesel:3.85,electric:0.16};
 const MILES = 12000, YEARS = 5;
 const $ = id => document.getElementById(id);
-const hint = message => { $("hint").textContent = message; };
+// The hint line is optional chrome: some homepage layouts omit it. It must never be
+// able to throw, or the check would stall with the button stuck on "Checking…".
+const hint = message => { const node = $("hint"); if (node) node.textContent = message; };
 const html = value => String(value == null ? "" : value).replace(/&/g,"&amp;")
   .replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
 const dollars = value => "$" + Math.round(Number(value)).toLocaleString("en-US");
@@ -614,8 +616,12 @@ function render(output){
 
 function setBusy(busy){
   const button = $("analyzeBtn");
+  if (!button) return;
+  // Homepage layouts label this button differently, so restore whatever it started as
+  // rather than renaming it to a fixed string once the first check finishes.
+  if (!button.dataset.idleLabel) button.dataset.idleLabel = button.textContent.trim() || "Check this deal";
   button.disabled = busy;
-  button.textContent = busy ? "Checking…" : "Check this deal";
+  button.textContent = busy ? "Checking…" : button.dataset.idleLabel;
 }
 
 const LOADING_STAGES = [
@@ -681,9 +687,12 @@ async function route(event){
   if (!text) return false;
   track("listing_check_started");
   setBusy(true);
-  hint("");
-  startLoading();
+  // Everything after setBusy must sit inside the try. A throw between the two
+  // (a missing optional element, a blocked analytics call) would otherwise skip
+  // the finally and leave the button disabled on "Checking…" with no request sent.
   try {
+    hint("");
+    startLoading();
     const response = await fetch("/api/analyze", {
       method:"POST", headers:{"Content-Type":"application/json"},
       body: JSON.stringify({text:text})

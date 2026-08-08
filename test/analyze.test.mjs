@@ -303,7 +303,9 @@ test("uses the precomputed evidence page before NHTSA and assesses the actual li
     assert.equal(output.market.status, "ready");
     assert.equal(output.market.medianPrice, 9000);
     assert.equal(output.tco.mpg, 30);
-    assert.equal(modelCalls, 2);
+    // One call, not two: the deterministic parser now reads "2019 Nissan Altima" itself,
+    // so only the reviewed-profile assessment reaches the model.
+    assert.equal(modelCalls, 1);
     assert.equal(marketCalls, 1);
     assert.equal(nhtsaCalls, 0);
   } finally {
