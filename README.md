@@ -67,7 +67,9 @@ Set these environment variables in Netlify:
 
 | Key | Required | Purpose |
 |---|---:|---|
-| `PROVIDER` | yes | `deepseek` or `claude`; production normally uses `deepseek` |
+| `PROVIDER` | optional | `openai`, `deepseek` or `claude`. When unset, the provider is inferred from whichever key below is set |
+| `OPENAI_API_KEY` | for OpenAI | Server-side API key |
+| `OPENAI_MODEL` | optional | Defaults to `gpt-4o-mini`. Reasoning models (`o*`, `gpt-5*`) are sent `max_completion_tokens` and no `temperature` |
 | `DEEPSEEK_API_KEY` | for DeepSeek | Server-side API key |
 | `DEEPSEEK_MODEL` | recommended | The production DeepSeek V4 model alias |
 | `ANTHROPIC_API_KEY` | for Claude | Optional alternate provider key |

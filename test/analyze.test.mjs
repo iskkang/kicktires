@@ -439,3 +439,87 @@ test("retrieves NHTSA and EPA evidence for an unreviewed model", async () => {
     if (old.marketKey == null) delete process.env.MARKETCHECK_API_KEY; else process.env.MARKETCHECK_API_KEY = old.marketKey;
   }
 });
+
+// The site's concept is "paste a listing, get an OpenAI-backed analysis", but the function
+// only ever spoke DeepSeek and Anthropic. PROVIDER=openai fell through the key guard and
+// then threw unknown_provider from inside callModel, which the handler reported as
+// "extract_failed" — so every check failed and the real cause stayed invisible.
+test("analyzes a listing through the OpenAI provider", async () => {
+  const originalFetch = globalThis.fetch;
+  const old = {
+    provider: process.env.PROVIDER, openaiKey: process.env.OPENAI_API_KEY,
+    openaiModel: process.env.OPENAI_MODEL, deepseekKey: process.env.DEEPSEEK_API_KEY,
+    anthropicKey: process.env.ANTHROPIC_API_KEY, marketKey: process.env.MARKETCHECK_API_KEY
+  };
+  // No PROVIDER set: only a key. The provider must be inferred from it.
+  delete process.env.PROVIDER;
+  delete process.env.OPENAI_MODEL;
+  delete process.env.DEEPSEEK_API_KEY;
+  delete process.env.ANTHROPIC_API_KEY;
+  delete process.env.MARKETCHECK_API_KEY;
+  process.env.OPENAI_API_KEY = "sk-test-key";
+
+  const requests = [];
+  globalThis.fetch = async (url, options = {}) => {
+    const target = String(url);
+    if (target !== "https://api.openai.com/v1/chat/completions") {
+      throw new Error(`unexpected fetch ${target}`);
+    }
+    const body = JSON.parse(options.body);
+    requests.push({ authorization: options.headers.Authorization, body });
+    const content = body.messages[0].content.includes("extract structured data")
+      ? JSON.stringify({ year: 2019, make: "nissan", model: "altima", trim: "S",
+        mileage: 91000, price: 7900, location: "Ohio", seller: "private" })
+      : JSON.stringify({ deal: { grade: "caution", label: "Cheap for a reason",
+        reason: "The price does not erase the reviewed repair exposure." },
+        vline: "The discount is repair money.",
+        vsub: "At 91,000 miles the reviewed risks outweigh the sticker." });
+    return Response.json({ choices: [{ message: { content } }] });
+  };
+
+  const check = text => handler(new Request("https://kicktires.test/api/analyze", {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ text })
+  }));
+
+  try {
+    const output = await (await check("2019 Nissan Altima S, 91,000 miles, $7,900, sold as is")).json();
+    assert.equal(output.error, undefined);
+    assert.equal(output.car.make, "nissan");
+    assert.equal(output.profile, "/cars/2019-nissan-altima-problems/");
+    assert.equal(output.analysis.vline, "The discount is repair money.");
+    assert.equal(requests.length, 1);
+    assert.equal(requests[0].authorization, "Bearer sk-test-key");
+    assert.equal(requests[0].body.model, "gpt-4o-mini");
+    assert.equal(requests[0].body.response_format.type, "json_object");
+
+    // The reasoning families reject `temperature` and renamed the token cap; sending the
+    // older shape would 400 every request.
+    process.env.OPENAI_MODEL = "gpt-5-mini";
+    requests.length = 0;
+    await (await check("2019 Nissan Altima S, 88,500 miles, $8,250, sold as is")).json();
+    assert.equal(requests[0].body.model, "gpt-5-mini");
+    assert.equal(requests[0].body.max_completion_tokens > 0, true);
+    assert.equal("max_tokens" in requests[0].body, false);
+    assert.equal("temperature" in requests[0].body, false);
+
+    // Misconfiguration must fail before any listing work, naming the actual cause.
+    process.env.PROVIDER = "gpt";
+    const unknown = await check("2019 Nissan Altima S, 91,000 miles, $7,900");
+    assert.equal(unknown.status, 500);
+    assert.deepEqual(await unknown.json(), { error: "unknown_provider", provider: "gpt" });
+
+    process.env.PROVIDER = "openai";
+    delete process.env.OPENAI_API_KEY;
+    const keyless = await check("2019 Nissan Altima S, 91,000 miles, $7,900");
+    assert.equal(keyless.status, 500);
+    assert.deepEqual(await keyless.json(), { error: "missing_key", provider: "openai" });
+  } finally {
+    globalThis.fetch = originalFetch;
+    for (const [name, value] of [["PROVIDER", old.provider], ["OPENAI_API_KEY", old.openaiKey],
+      ["OPENAI_MODEL", old.openaiModel], ["DEEPSEEK_API_KEY", old.deepseekKey],
+      ["ANTHROPIC_API_KEY", old.anthropicKey], ["MARKETCHECK_API_KEY", old.marketKey]]) {
+      if (value == null) delete process.env[name]; else process.env[name] = value;
+    }
+  }
+});

@@ -723,6 +723,15 @@ async function route(event){
     if (output.error === "no_vehicle") {
       return fail("no_vehicle", "We could not identify the exact year, make and model. Paste the listing text with all three.");
     }
+    if (output.error === "provider_error") {
+      return fail("provider_error", "The analysis provider rejected our request. This is a configuration problem on our side, not a problem with your listing.");
+    }
+    if (output.error === "unknown_provider") {
+      return fail("unknown_provider", "The analysis service is pointed at a provider we do not support. This is a configuration problem on our side.");
+    }
+    if (output.error === "extract_failed") {
+      return fail("extract_failed", "We reached the analysis service but could not read a vehicle out of that listing. Paste the listing text with the year, make, model, price and mileage.");
+    }
     if (output.error === "missing_key") {
       return fail("missing_key", "The analysis service is not configured.");
     }
