@@ -740,6 +740,11 @@ async function route(event){
     if (output.error === "records_unavailable") {
       return fail("records_unavailable", "The federal data service did not respond. Try this check again in a moment.");
     }
+    if (output.error === "model_not_in_catalog") {
+      const listed = (output.catalogModels || []).slice(0, 8).join(", ");
+      return fail("model_not_in_catalog", "NHTSA does not file this vehicle under that model name, so we will not guess at its record."+
+        (listed ? " For this make and year it lists: "+listed+". Try the closest one." : ""));
+    }
     if (output.error === "no_vehicle") {
       return fail("no_vehicle", "We could not identify the exact year, make and model. Paste the listing text with all three.");
     }

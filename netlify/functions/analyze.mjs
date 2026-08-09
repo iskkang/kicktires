@@ -851,6 +851,12 @@ function resolveNhtsaModels(requestedModel, catalogRows) {
   return [...new Set(matches)];
 }
 
+// The names NHTSA actually files this make and year under. When our model never matches one
+// of them, these are what the reader needs to see — the catalog was retrieved, so they cost
+// nothing and turn a dead end into something the reader can retype.
+const catalogModelNames = catalog => [...new Set(asItems(catalog)
+  .map(row => clipped(row?.model, 60)).filter(Boolean))].slice(0, 12);
+
 async function lookupIssueCatalog(car, issueType) {
   const make = MAKE_ALIAS[car.make] || car.make;
   const query = new URLSearchParams({
@@ -871,7 +877,8 @@ async function lookupComplaints(car) {
   if (!catalog) return { status: "unresolved", count: null, resolvedModels: [], rows: [] };
   const resolvedModels = resolveNhtsaModels(model, catalog);
   if (!resolvedModels.length) {
-    return { status: "unresolved", count: null, resolvedModels: [], rows: [] };
+    return { status: "unmatched", count: null, resolvedModels: [], rows: [],
+      catalogModels: catalogModelNames(catalog) };
   }
 
   const payloads = await Promise.all(resolvedModels.map(officialModel => {
@@ -906,7 +913,10 @@ async function lookupRecalls(car) {
   if (!catalog) return { status: "unresolved", count: null, resolvedModels: [], rows: [] };
   const resolvedModels = resolveNhtsaModels(model, catalog);
   if (!resolvedModels.length) {
-    return { status: "none", count: 0, resolvedModels: [], rows: [] };
+    // Reporting zero recalls here claimed a federal fact we never checked: the model name
+    // simply never matched the catalog. A vehicle we could not look up is not a clean one.
+    return { status: "unmatched", count: null, resolvedModels: [], rows: [],
+      catalogModels: catalogModelNames(catalog) };
   }
 
   const payloads = await Promise.all(resolvedModels.map(officialModel => {
@@ -939,6 +949,16 @@ async function getNhtsaFacts(car) {
     lookupComplaints(car),
     lookupRecalls(car)
   ]);
+  // "We could not find this model in NHTSA's catalog" and "NHTSA did not answer" are
+  // different failures. Reporting the first as the second sent the reader off to wait out
+  // an outage that was not happening, while the catalog sat there naming the vehicle.
+  if (complaints.status === "unmatched" || recalls.status === "unmatched") {
+    const error = new Error("model_not_in_catalog");
+    error.catalogModels = [...new Set([
+      ...asItems(complaints.catalogModels), ...asItems(recalls.catalogModels)
+    ])].slice(0, 12);
+    throw error;
+  }
   if (complaints.status === "unresolved" || recalls.status === "unresolved") {
     throw new Error(`records_unavailable:${complaints.status}:${recalls.status}`);
   }
@@ -1443,7 +1463,13 @@ export default async (request) => {
       try { [nhtsa, epa] = await Promise.all([
         getNhtsaFacts(car), within(getEpaFacts(car).catch(() => null), 7_000, null)
       ]); }
-      catch { return json({ error: "records_unavailable", car }, 502); }
+      catch (error) {
+        if (error?.message === "model_not_in_catalog") {
+          return json({ error: "model_not_in_catalog", car,
+            catalogModels: asItems(error.catalogModels) }, 200);
+        }
+        return json({ error: "records_unavailable", car }, 502);
+      }
       evidence = { nhtsa, epa };
       await writeCache(factsStore, vehicleKey, evidence);
     }
@@ -1502,6 +1528,7 @@ export const __test = {
   getNhtsaFacts,
   isPrivateAddress,
   lookupComplaints,
+  lookupRecalls,
   normalizeCar,
   resolveNhtsaModels,
   normalizeChecklist,

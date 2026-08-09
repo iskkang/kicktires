@@ -192,14 +192,22 @@ test("resolves NHTSA pickup variants and deduplicates complaints by ODI number",
   }
 });
 
-test("returns unresolved instead of a silent zero when the NHTSA model dictionary cannot match", async () => {
+test("returns unmatched instead of a silent zero when the NHTSA model dictionary cannot match", async () => {
   const originalFetch = globalThis.fetch;
   globalThis.fetch = async () => Response.json({ count: 1, results: [{ model: "SOMETHING ELSE" }] });
   try {
-    const result = await __test.lookupComplaints({ year: 2020, make: "ford", model: "f150" });
-    assert.equal(result.status, "unresolved");
-    assert.equal(result.count, null);
-    assert.deepEqual(result.resolvedModels, []);
+    const complaints = await __test.lookupComplaints({ year: 2020, make: "ford", model: "f150" });
+    assert.equal(complaints.status, "unmatched");
+    assert.equal(complaints.count, null);
+    assert.deepEqual(complaints.resolvedModels, []);
+    assert.deepEqual(complaints.catalogModels, ["SOMETHING ELSE"]);
+
+    // Recalls used to answer "none" here — a federal fact, zero recall campaigns, asserted
+    // about a vehicle we never managed to look up.
+    const recalls = await __test.lookupRecalls({ year: 2020, make: "ford", model: "f150" });
+    assert.equal(recalls.status, "unmatched");
+    assert.equal(recalls.count, null);
+    assert.notEqual(recalls.status, "none");
   } finally {
     globalThis.fetch = originalFetch;
   }
@@ -651,4 +659,57 @@ Glendale Heights, IL (23 mi)`);
   assert.equal(__test.parseObviousPastedListing(
     "Used 2023 Tesla Model Y Performance AWD/4WD\nSterling, VA\n$24,986").trim,
     "Performance AWD/4WD");
+});
+
+// "We could not find this model in NHTSA's catalog" was reported two different wrong ways:
+// complaints called it "unresolved", which the reader saw as "the federal data service did
+// not respond" and was told to wait out an outage that was not happening; recalls called it
+// "none", which claimed a federal fact — zero recalls — that was never checked.
+test("separates a model missing from the NHTSA catalog from NHTSA being down", async () => {
+  const originalFetch = globalThis.fetch;
+  const old = { provider: process.env.PROVIDER, key: process.env.DEEPSEEK_API_KEY,
+    marketKey: process.env.MARKETCHECK_API_KEY };
+  process.env.PROVIDER = "deepseek";
+  process.env.DEEPSEEK_API_KEY = "test-key";
+  delete process.env.MARKETCHECK_API_KEY;
+
+  // NHTSA answers, and lists this make and year — under names our model never matches.
+  globalThis.fetch = async url => {
+    const parsed = new URL(String(url));
+    if (parsed.pathname.includes("/products/vehicle/models")) {
+      return Response.json({ count: 4, results: [
+        { model: "330I XDRIVE" }, { model: "330E" }, { model: "M340I" }, { model: "3 SERIES" }
+      ] });
+    }
+    throw new Error(`unexpected fetch ${parsed.href}`);
+  };
+
+  try {
+    assert.deepEqual(__test.resolveNhtsaModels("330i",
+      [{ model: "330I XDRIVE" }, { model: "330E" }]), [],
+      "the matcher is expected to reject variant-only catalog names");
+
+    const response = await handler(new Request("https://kicktires.test/api/analyze", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: "2021 bmw 330i 42000mi 25000usd" })
+    }));
+    const output = await response.json();
+
+    assert.equal(output.error, "model_not_in_catalog",
+      `expected a catalog miss, got ${JSON.stringify(output.error)}`);
+    assert.notEqual(output.error, "records_unavailable",
+      "a catalog miss is still being reported as a service outage");
+    assert.deepEqual(output.catalogModels, ["330I XDRIVE", "330E", "M340I", "3 SERIES"],
+      "the reader is not told which names NHTSA does file this make and year under");
+
+    // The listing itself parsed fine; only the federal lookup failed.
+    assert.equal(output.car.model, "330i");
+    assert.equal(output.car.price, 25000);
+  } finally {
+    globalThis.fetch = originalFetch;
+    for (const [name, value] of [["PROVIDER", old.provider], ["DEEPSEEK_API_KEY", old.key],
+      ["MARKETCHECK_API_KEY", old.marketKey]]) {
+      if (value == null) delete process.env[name]; else process.env[name] = value;
+    }
+  }
 });
