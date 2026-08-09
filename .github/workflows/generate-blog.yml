@@ -94,11 +94,11 @@ jobs:
           console.log('static HTML ok for '+slugs.length+' post(s)');
           "
 
-      # Mirrors the generator's own rule: it treats a run as dry unless BLOG_AUTO_PUBLISH is
-      # true, so committing on that condition too keeps the two from disagreeing. Without the
-      # vars check a scheduled run would commit its run log while having published nothing.
+      # Mirrors the generator's own rule: it publishes unless BLOG_AUTO_PUBLISH is false, so
+      # committing on that same condition keeps the two from disagreeing. If they drifted, a
+      # run would either commit a log having published nothing, or write a post and drop it.
       - name: Commit
-        if: ${{ inputs.dry_run != true && vars.BLOG_AUTO_PUBLISH == 'true' }}
+        if: ${{ inputs.dry_run != true && vars.BLOG_AUTO_PUBLISH != 'false' }}
         run: |
           git config user.name "kicktires-bot"
           git config user.email "bot@users.noreply.github.com"
