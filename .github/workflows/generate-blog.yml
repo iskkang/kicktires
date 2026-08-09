@@ -1,0 +1,122 @@
+name: Generate blog post
+
+# Mon/Wed/Fri. The schedule is UTC; 13:10 UTC keeps it off the top of the hour, where
+# GitHub's scheduled-run queue is busiest and starts are least predictable.
+on:
+  schedule:
+    - cron: "10 13 * * 1,3,5"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Run the whole pipeline but write nothing"
+        type: boolean
+        default: false
+      posts:
+        description: "Posts to generate this run"
+        type: string
+        default: "1"
+
+# Two runs writing posts at once would race on the ledger and could publish the same
+# subject twice. Queued rather than cancelled: a half-finished run must still commit or
+# cleanly abandon, not be killed between the post file and the ledger update.
+concurrency:
+  group: generate-blog
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # The commit below pushes to main, so start from it rather than a detached ref.
+          ref: main
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - run: npm ci
+
+      # Nothing is generated against a broken tree. If the analyzer or the existing pages
+      # are already failing, a blog post is not the thing to add on top.
+      - name: Test before generating
+        run: npm test
+
+      - name: Generate
+        id: generate
+        env:
+          PROVIDER: ${{ vars.PROVIDER }}
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          DEEPSEEK_MODEL: ${{ vars.DEEPSEEK_MODEL }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_MODEL: ${{ vars.OPENAI_MODEL }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          BLOG_AUTO_PUBLISH: ${{ vars.BLOG_AUTO_PUBLISH }}
+          BLOG_POSTS_PER_RUN: ${{ inputs.posts || vars.BLOG_POSTS_PER_RUN || '1' }}
+        run: |
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            npm run blog:dry-run
+          else
+            npm run blog:generate
+          fi
+
+      # Re-checks every post on disk, including the new one, against its stored snapshot.
+      - name: Validate posts
+        run: npm run blog:validate
+
+      # A post that cannot be built into a page is not published. This is the same build
+      # Netlify runs, so a failure here would have been a broken deploy.
+      - name: Production build
+        env:
+          GA_MEASUREMENT_ID: ${{ vars.GA_MEASUREMENT_ID }}
+          ADSENSE_CLIENT: ${{ vars.ADSENSE_CLIENT }}
+        run: npm run build
+
+      - name: Check the post reached the served HTML
+        run: |
+          node -e "
+          const fs=require('fs'),path=require('path');
+          const dir='dist/blog';
+          if(!fs.existsSync(dir)) throw new Error('no dist/blog produced');
+          const slugs=fs.readdirSync(dir,{withFileTypes:true}).filter(e=>e.isDirectory()).map(e=>e.name);
+          for(const slug of slugs){
+            const html=fs.readFileSync(path.join(dir,slug,'index.html'),'utf8');
+            if(!html.includes('\"@type\":\"BlogPosting\"')) throw new Error(slug+': no BlogPosting');
+            if(!html.includes('<div class=\"bl-body\">')) throw new Error(slug+': no body in static HTML');
+          }
+          console.log('static HTML ok for '+slugs.length+' post(s)');
+          "
+
+      - name: Commit
+        if: ${{ inputs.dry_run != true }}
+        run: |
+          git config user.name "kicktires-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add blog/
+          if git diff --cached --quiet; then
+            echo "nothing new to publish"
+            exit 0
+          fi
+          SLUG=$(git diff --cached --name-only | grep 'blog/posts/' | head -1 | xargs -r basename | sed 's/\.json$//')
+          git commit -m "Publish blog post: ${SLUG:-update}" \
+                     -m "Generated and reviewed by the blog pipeline. Run: ${{ github.run_id }}"
+          git push origin main
+
+      # Kept whether the run published or not — a failed run's reason is the point.
+      - name: Upload run report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: blog-run-${{ github.run_id }}
+          path: |
+            blog/runs/
+            blog/posts/
+          retention-days: 30
+          if-no-files-found: warn
