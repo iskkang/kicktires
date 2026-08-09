@@ -579,9 +579,52 @@ function applyMarketVerdict(analysis, car, market) {
 }
 
 /* ── model providers ──────────────────────────────────────────── */
+const PROVIDER_KEYS = {
+  openai: "OPENAI_API_KEY",
+  deepseek: "DEEPSEEK_API_KEY",
+  claude: "ANTHROPIC_API_KEY"
+};
+
+// PROVIDER is an explicit override. When it is unset, use whichever key is actually
+// configured, so deploying with only OPENAI_API_KEY works instead of falling through
+// to a default provider whose key is missing and failing every request.
+function resolveProvider() {
+  const requested = String(process.env.PROVIDER || "").trim().toLowerCase();
+  if (requested) return requested;
+  return Object.keys(PROVIDER_KEYS).find(name => process.env[PROVIDER_KEYS[name]]) || "deepseek";
+}
+
+// The reasoning families reject `temperature` and renamed the token cap. Sending the
+// older shape to them fails the whole check with an opaque 400.
+const isReasoningModel = model => /^(?:o\d|gpt-5)/i.test(String(model || ""));
+
 async function callModel(system, user, maxTokens = 2400, temperature = 0.2, timeoutMs = 11_000) {
   const timeout = Math.max(1_000,Math.min(20_000,Math.round(timeoutMs)));
-  const provider = (process.env.PROVIDER || "deepseek").toLowerCase();
+  const provider = resolveProvider();
+  if (provider === "openai") {
+    if (!process.env.OPENAI_API_KEY) throw new Error("missing_key");
+    const model = process.env.OPENAI_MODEL || "gpt-4o-mini";
+    const reasoning = isReasoningModel(model);
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      signal: AbortSignal.timeout(timeout),
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`
+      },
+      body: JSON.stringify({
+        model,
+        messages: [{ role: "system", content: system }, { role: "user", content: user }],
+        response_format: { type: "json_object" },
+        ...(reasoning
+          ? { max_completion_tokens: maxTokens }
+          : { max_tokens: maxTokens, temperature })
+      })
+    });
+    if (!response.ok) throw new Error(`provider_${response.status}`);
+    return (await response.json()).choices?.[0]?.message?.content || "{}";
+  }
+
   if (provider === "claude") {
     if (!process.env.ANTHROPIC_API_KEY) throw new Error("missing_key");
     const response = await fetch("https://api.anthropic.com/v1/messages", {
@@ -1257,10 +1300,13 @@ export default async (request) => {
   input = String(input).trim().slice(0, 12_000);
   if (input.length < 8) return json({ error: "too_short" }, 400);
 
-  const provider = (process.env.PROVIDER || "deepseek").toLowerCase();
-  if ((provider === "deepseek" && !process.env.DEEPSEEK_API_KEY)
-    || (provider === "claude" && !process.env.ANTHROPIC_API_KEY)) {
-    return json({ error: "missing_key" }, 500);
+  // Reject a misconfigured provider up front. Letting it through meant the failure only
+  // surfaced from deep inside callModel, where it was reported as "extract_failed" — a
+  // parsing problem — and the real cause (unset or unknown PROVIDER) stayed invisible.
+  const provider = resolveProvider();
+  if (!PROVIDER_KEYS[provider]) return json({ error: "unknown_provider", provider }, 500);
+  if (!process.env[PROVIDER_KEYS[provider]]) {
+    return json({ error: "missing_key", provider }, 500);
   }
 
   const match = input.match(/https?:\/\/[^\s"'<>]+/i);
@@ -1284,7 +1330,15 @@ export default async (request) => {
     try {
       car = normalizeCar(asJson(await callModel(EXTRACT, extractionInput, 700, 0, 8_000)));
     } catch (error) {
-      return json({ error: error.message === "missing_key" ? "missing_key" : "extract_failed" }, 502);
+      // Keep the provider's own failure distinguishable from a reply we could not parse.
+      // Collapsing both into "extract_failed" hid every key, quota and model-name problem.
+      const reason = String(error?.message || "unknown");
+      if (reason === "missing_key") return json({ error: "missing_key", provider }, 500);
+      if (reason.startsWith("provider_") || reason === "unknown_provider") {
+        console.error(`extraction provider call failed: ${provider} ${reason}`);
+        return json({ error: "provider_error", provider, detail: reason }, 502);
+      }
+      return json({ error: "extract_failed", detail: reason }, 502);
     }
   }
   if (!car.year || !car.make || !car.model) return json({ error: "no_vehicle", car }, 200);

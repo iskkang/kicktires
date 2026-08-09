@@ -132,6 +132,7 @@ const main = `<main class="rf-page">
           <div class="rf-input-wrap"><span>↗</span><textarea id="inp" autocomplete="off" spellcheck="false" placeholder="Paste a Cars.com, AutoTrader, CarGurus, or dealer listing"></textarea></div>
           <button class="rf-analyze" id="analyzeBtn" type="submit">Analyze This Car</button>
         </form>
+        <p id="hint" class="rf-hint" aria-live="polite"></p>
       </div>
     </div>
   </div>
@@ -183,6 +184,7 @@ body{background:#fff!important;color:#0b1c34!important;font-family:"Avenir Next"
 .rf-tabs button{position:relative;border:0;background:transparent;padding:0 14px;font-size:11px;font-weight:800;color:#5f7084;cursor:pointer}.rf-tabs button.on{color:#125fd4}.rf-tabs button.on:after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:#1767dd}
 .rf-input-wrap{height:42px;border:1px solid #dce4ed;border-radius:8px;display:grid;grid-template-columns:32px 1fr;align-items:center;padding:0 9px;background:#fff}.rf-input-wrap>span{font-size:15px;color:#73869a}.rf-input-wrap textarea{width:100%;height:38px;border:0;outline:0;resize:none;padding:11px 0 0;box-sizing:border-box;font:inherit;font-size:11px;color:#24384e;background:transparent;white-space:nowrap;overflow:hidden}
 .rf-analyze{width:100%;height:38px;margin-top:11px;border:0;border-radius:6px;background:#1767dd;color:#fff;font-size:11px;font-weight:850;cursor:pointer}
+.rf-hint{margin:9px 0 0;min-height:14px;font-size:11px;line-height:1.35;color:#a33a2a}.rf-hint:empty{display:none}
 .rf-trust-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;padding-top:10px;padding-bottom:10px}.rf-trust{height:52px;border:1px solid #e4eaf1;border-radius:9px;display:flex;align-items:center;gap:10px;padding:0 14px;box-shadow:0 4px 12px rgba(23,54,83,.035)}
 .rf-trust>span{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:#edf4ff;color:#1767dd;font-weight:800}.rf-trust b{display:block;font-size:10px}.rf-trust small{display:block;margin-top:2px;font-size:9px;color:#697b8e}
 .rf-section{padding-top:18px}.rf-section-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:13px}.rf-section-title h2{margin:0;font-size:16px;letter-spacing:-.025em}.rf-section-title a{color:#0b5ed3;text-decoration:none;font-size:9px;font-weight:800}

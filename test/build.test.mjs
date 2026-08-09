@@ -100,3 +100,23 @@ test("build emits GA4 and AdSense with privacy-safe analysis events", () => {
   assert.match(sitemap, /2018-ford-f150-problems/);
   assert.doesNotMatch(sitemap, /2018-ford-f-150-problems/);
 });
+
+// The homepage is regenerated several times after build.mjs. A rewrite that dropped an element
+// the analyzer script reads left the button stuck on "Checking…" forever: the null dereference
+// threw before the try block, so no request was sent and the finally never re-enabled the button.
+test("the rewritten homepage keeps every element the analyzer script needs", () => {
+  const run = script => execFileSync(process.execPath, [script], { cwd: ROOT, stdio: "pipe" });
+  for (const script of ["build.mjs", "homepage.mjs", "home-premium.mjs",
+    "home-reference.mjs", "home-reference-exact.mjs", "analyzer-safety.mjs"]) run(script);
+
+  const home = fs.readFileSync(path.join(ROOT, "dist/index.html"), "utf8");
+  for (const id of ["inp", "analyzeBtn", "live", "hint", "check"]) {
+    assert.match(home, new RegExp(`id="${id}"`), `homepage lost #${id}`);
+  }
+
+  // Nothing may throw between disabling the button and the try that re-enables it.
+  assert.match(home, /setBusy\(true\);\s*(?:\/\/[^\n]*\n\s*)*try \{/);
+  assert.match(home, /const hint = message => \{ const node = \$\("hint"\); if \(node\) node\.textContent = message; \};/);
+  assert.match(home, /signal: AbortSignal\.timeout\(35_000\)/);
+  assert.match(home, /fetch\("\/\.netlify\/functions\/analyze"/);
+});
