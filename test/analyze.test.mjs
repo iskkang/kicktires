@@ -677,8 +677,9 @@ test("separates a model missing from the NHTSA catalog from NHTSA being down", a
   globalThis.fetch = async url => {
     const parsed = new URL(String(url));
     if (parsed.pathname.includes("/products/vehicle/models")) {
-      return Response.json({ count: 4, results: [
-        { model: "330I XDRIVE" }, { model: "330E" }, { model: "M340I" }, { model: "3 SERIES" }
+      // No "3 SERIES" here, so the series fallback has nothing to reach for either.
+      return Response.json({ count: 3, results: [
+        { model: "330I XDRIVE" }, { model: "330E" }, { model: "M340I" }
       ] });
     }
     throw new Error(`unexpected fetch ${parsed.href}`);
@@ -699,7 +700,7 @@ test("separates a model missing from the NHTSA catalog from NHTSA being down", a
       `expected a catalog miss, got ${JSON.stringify(output.error)}`);
     assert.notEqual(output.error, "records_unavailable",
       "a catalog miss is still being reported as a service outage");
-    assert.deepEqual(output.catalogModels, ["330I XDRIVE", "330E", "M340I", "3 SERIES"],
+    assert.deepEqual(output.catalogModels, ["330I XDRIVE", "330E", "M340I"],
       "the reader is not told which names NHTSA does file this make and year under");
 
     // The listing itself parsed fine; only the federal lookup failed.
@@ -844,5 +845,47 @@ test("still returns a price verdict when the federal record cannot be read", asy
       ["MARKETCHECK_API_KEY", old.marketKey]]) {
       if (value == null) delete process.env[name]; else process.env[name] = value;
     }
+  }
+});
+
+// NHTSA files some makes by series rather than by trim designation. A real 2020 BMW catalog
+// is "Z4, 2 SERIES, M2 COMPETITION, 3 SERIES, 4 SERIES, M4, 4 SERIES GRAN, 5 SERIES" — no
+// 320I or 330I in it at all, so those checks died with model_not_in_catalog.
+test("reads a trim designation against the series NHTSA actually files", async () => {
+  const originalFetch = globalThis.fetch;
+  const catalog = ["Z4", "2 SERIES", "M2 COMPETITION", "3 SERIES", "4 SERIES", "M4",
+    "4 SERIES GRAN", "5 SERIES"].map(model => ({ model }));
+  globalThis.fetch = async url => {
+    const target = String(url);
+    if (target.includes("/products/vehicle/models")) {
+      return Response.json({ count: catalog.length, results: catalog });
+    }
+    if (target.includes("complaintsByVehicle")) {
+      return Response.json({ count: 1, results: [
+        { odiNumber: "1", components: "ENGINE", summary: "a" }] });
+    }
+    throw new Error(`unexpected fetch ${target}`);
+  };
+  try {
+    const resolved = async model =>
+      (await __test.lookupComplaints({ year: 2020, make: "bmw", model })).resolvedModels;
+
+    assert.deepEqual(await resolved("320i"), ["3 SERIES"]);
+    assert.deepEqual(await resolved("330i"), ["3 SERIES"]);
+    assert.deepEqual(await resolved("530i"), ["5 SERIES"]);
+
+    // The series fallback must not reach past the series it names.
+    assert.deepEqual(await resolved("430i"), ["4 SERIES"],
+      "a 430i picked up 4 SERIES GRAN, a separately filed model");
+
+    // An exact catalog entry still wins, so a name NHTSA does keep is read at that precision.
+    assert.deepEqual(await resolved("m4"), ["M4"],
+      "M4 is filed separately and must not be folded into 4 SERIES");
+    assert.deepEqual(await resolved("z4"), ["Z4"]);
+
+    // A designation with no series in the catalog stays unmatched rather than guessing.
+    assert.deepEqual(await resolved("740i"), []);
+  } finally {
+    globalThis.fetch = originalFetch;
   }
 });

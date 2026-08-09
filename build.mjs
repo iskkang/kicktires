@@ -572,8 +572,14 @@ function render(output){
   // A record we could not read has to say so on the face of the verdict, not just in the
   // body copy. "NHTSA model-year data" under a blank tile would read as a clean record.
   const federalUnread = facts && facts.source === "federal_unavailable";
+  // NHTSA files some makes by series, so a 320i's record is the 3 Series record. Naming the
+  // record we actually read keeps that from looking like data about the exact trim.
+  const filedAs = (facts && facts.resolvedModels && facts.resolvedModels.complaints || [])
+    .filter(function(name){ return String(name||"").replace(/[^a-z0-9]/gi,"").toLowerCase()
+      !== String(car.model||"").replace(/[^a-z0-9]/gi,"").toLowerCase(); });
   const federalNote = federalUnread
     ? (output.federalStatus === "model_not_in_catalog" ? "Not filed under that model name" : "Service did not respond")
+    : filedAs.length ? "NHTSA files this as "+filedAs.slice(0,2).join(", ")
     : "NHTSA model-year data";
   const tcoResult = output.tco ? totalCost(output.tco,Number(car.price),defaultState) : null;
   const tcoMetric = tcoResult ? dollars(tcoResult.total) : (car.price == null ? "Need price" : "Unavailable");

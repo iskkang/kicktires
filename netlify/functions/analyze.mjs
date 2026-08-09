@@ -857,6 +857,26 @@ function resolveNhtsaModels(requestedModel, catalogRows) {
 const catalogModelNames = catalog => [...new Set(asItems(catalog)
   .map(row => clipped(row?.model, 60)).filter(Boolean))].slice(0, 12);
 
+// NHTSA files some makes by series rather than by trim designation: a 2020 BMW catalog is
+// "Z4, 2 SERIES, M2 COMPETITION, 3 SERIES, 4 SERIES, M4, 4 SERIES GRAN, 5 SERIES" — no 320I
+// or 330I anywhere in it. A 320i's federal record is the 3 Series record, because that is
+// the only one the government keeps for it.
+//
+// Only reached when the exact designation matches nothing, so a catalog that does carry the
+// specific model is still read at that precision. M cars are excluded: NHTSA lists M2 and M4
+// separately, so they are their own records rather than members of a series.
+const seriesName = model => {
+  const match = norm(model).match(/^(\d)\d{2}[a-z]{0,2}$/);
+  return match ? `${match[1]} series` : null;
+};
+
+function resolveNhtsaModelsWithSeries(model, catalog) {
+  const exact = resolveNhtsaModels(model, catalog);
+  if (exact.length) return exact;
+  const series = seriesName(model);
+  return series ? resolveNhtsaModels(series, catalog) : [];
+}
+
 async function lookupIssueCatalog(car, issueType) {
   const make = MAKE_ALIAS[car.make] || car.make;
   const query = new URLSearchParams({
@@ -875,7 +895,7 @@ async function lookupComplaints(car) {
   const model = MODEL_ALIAS[car.model] || car.model;
   const catalog = await lookupIssueCatalog(car, "c");
   if (!catalog) return { status: "unresolved", count: null, resolvedModels: [], rows: [] };
-  const resolvedModels = resolveNhtsaModels(model, catalog);
+  const resolvedModels = resolveNhtsaModelsWithSeries(model, catalog);
   if (!resolvedModels.length) {
     return { status: "unmatched", count: null, resolvedModels: [], rows: [],
       catalogModels: catalogModelNames(catalog) };
@@ -911,7 +931,7 @@ async function lookupRecalls(car) {
   const model = MODEL_ALIAS[car.model] || car.model;
   const catalog = await lookupIssueCatalog(car, "r");
   if (!catalog) return { status: "unresolved", count: null, resolvedModels: [], rows: [] };
-  const resolvedModels = resolveNhtsaModels(model, catalog);
+  const resolvedModels = resolveNhtsaModelsWithSeries(model, catalog);
   if (!resolvedModels.length) {
     // Reporting zero recalls here claimed a federal fact we never checked: the model name
     // simply never matched the catalog. A vehicle we could not look up is not a clean one.
