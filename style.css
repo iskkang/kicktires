@@ -286,6 +286,9 @@ textarea:focus{outline:0;}
 .deal-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:26px;}
 .deal-metrics>div{min-width:0;padding:16px;background:rgba(255,255,255,.82);border:1px solid rgba(200,212,225,.9);border-radius:13px;}
 .deal-metrics span,.deal-metrics b,.deal-metrics small{display:block;}
+/* A federal record we could not read must not sit in the same neutral tile as one we did. */
+.deal-metrics>div.metric-unread{background:rgba(255,246,232,.9);border-color:rgba(214,164,76,.6);}
+.deal-metrics>div.metric-unread small{color:#8a6320;font-weight:700;}
 .deal-metrics span{font-size:11px;color:var(--ink-3);font-weight:720;text-transform:uppercase;letter-spacing:.07em;}
 .deal-metrics b{margin-top:5px;font-size:22px;line-height:1.15;letter-spacing:-.03em;font-variant-numeric:tabular-nums;}
 .deal-metrics small{margin-top:4px;color:var(--ink-3);font-size:11px;}

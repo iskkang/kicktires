@@ -776,3 +776,73 @@ test("analyzes a car submitted as fields without calling the extractor", async (
     }
   }
 });
+
+// A vehicle whose federal record we could not read is not a vehicle with nothing to say.
+// The comparable-listing statistics come from a different service, so a price verdict still
+// stands — provided the missing half is stated rather than papered over.
+test("still returns a price verdict when the federal record cannot be read", async () => {
+  const originalFetch = globalThis.fetch;
+  const old = { provider: process.env.PROVIDER, key: process.env.DEEPSEEK_API_KEY,
+    marketKey: process.env.MARKETCHECK_API_KEY };
+  process.env.PROVIDER = "deepseek";
+  process.env.DEEPSEEK_API_KEY = "test-key";
+  process.env.MARKETCHECK_API_KEY = "market-test-key";
+
+  let modelCalls = 0;
+  const respond = discount => async url => {
+    const target = String(url);
+    if (target.includes("deepseek")) { modelCalls++; throw new Error("model asked to invent risks"); }
+    if (target.includes("/products/vehicle/models")) {
+      // NHTSA answers, under names our model never matches.
+      return Response.json({ count: 2, results: [{ model: "330I XDRIVE" }, { model: "330E" }] });
+    }
+    if (target.startsWith("https://api.marketcheck.com/")) {
+      const median = Math.round(25000 / (1 + discount));
+      return Response.json({ num_found: 120, stats: {
+        price: { count: 120, median, percentiles: { "25.0": median, "75.0": median } },
+        miles: { count: 120, median: 42000 } } });
+    }
+    throw new Error(`unexpected fetch ${target}`);
+  };
+  const check = () => handler(new Request("https://kicktires.test/api/analyze", {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ car: { year: 2021, make: "BMW", model: "330i",
+      mileage: 42000, price: 25000, location: "San Diego, CA" } }) }));
+
+  try {
+    globalThis.fetch = respond(0.18);
+    const overpriced = await (await check()).json();
+    assert.equal(overpriced.error, undefined, "an unread federal record still killed the check");
+    assert.equal(overpriced.federalStatus, "model_not_in_catalog");
+    assert.equal(overpriced.facts.source, "federal_unavailable");
+    assert.equal(overpriced.facts.complaintStatus, "unresolved",
+      "a record we never read must not be reported as resolved");
+    assert.equal(overpriced.facts.complaintTotal, null);
+    assert.equal(overpriced.analysis.deal.grade, "walk");
+    assert.equal(modelCalls, 0, "with no evidence, the model must not be asked for risks");
+    assert.match(overpriced.analysis.risks[0].t, /not retrieved/);
+    assert.equal(overpriced.analysis.risks[0].e[0][1], "OUR TAKE");
+    assert.equal(overpriced.tco, null, "no federal or EPA data means no five-year cost");
+
+    // A price under the median must never read as safe-to-buy when the record is unread:
+    // applyMarketVerdict alone would answer "Smart buy candidate" here.
+    globalThis.fetch = respond(-0.10);
+    const cheap = await (await check()).json();
+    assert.equal(cheap.analysis.deal.grade, "inspect");
+    assert.equal(cheap.analysis.deal.label, "Good price, record unread");
+    assert.notEqual(cheap.analysis.deal.label, "Smart buy candidate");
+    assert.match(cheap.analysis.deal.reason, /unread record, not a clean one/);
+
+    // With neither source there is nothing honest to return, so the error stands.
+    delete process.env.MARKETCHECK_API_KEY;
+    const blind = await (await check()).json();
+    assert.equal(blind.error, "model_not_in_catalog");
+    assert.deepEqual(blind.catalogModels, ["330I XDRIVE", "330E"]);
+  } finally {
+    globalThis.fetch = originalFetch;
+    for (const [name, value] of [["PROVIDER", old.provider], ["DEEPSEEK_API_KEY", old.key],
+      ["MARKETCHECK_API_KEY", old.marketKey]]) {
+      if (value == null) delete process.env[name]; else process.env[name] = value;
+    }
+  }
+});

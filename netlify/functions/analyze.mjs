@@ -1308,6 +1308,54 @@ function liveModelEvidence(evidence) {
   };
 }
 
+// A vehicle whose federal record we could not read is not a vehicle with nothing to say.
+// The comparable-listing statistics are retrieved independently of NHTSA, so a price
+// verdict still stands on its own — as long as the missing half is stated rather than
+// papered over. No model call is made here: with no evidence to reason from, asking for
+// risks would be asking the model to invent them.
+function marketOnlyAnalysis(car, reason) {
+  const unmatched = reason === "model_not_in_catalog";
+  return {
+    deal: { grade: "inspect", label: "Price check only", reason: "" },
+    vline: "Priced against the market. Federal record not read.",
+    vsub: (unmatched
+      ? `NHTSA does not file a ${car.year} ${car.make} under the model name given, so its complaint and recall history was not read. `
+      : "The federal complaint and recall service did not answer, so this vehicle's history was not read. ")
+      + "This verdict weighs the asking price against comparable active listings only. "
+      + "Treat the safety record as unknown, not as clean.",
+    risks: [{
+      s: "warn", lbl: "WATCH",
+      t: "Federal safety record was not retrieved",
+      c: "Not estimated", cl: "no federal data",
+      b: unmatched
+        ? "We could not match this vehicle to NHTSA's model catalog, so no complaint or recall history was read for it. Run the exact VIN through NHTSA yourself before you commit."
+        : "NHTSA did not return this vehicle's complaint or recall history, so none was read. Run the exact VIN through NHTSA yourself before you commit.",
+      e: [["o", "OUR TAKE", "Absence of a record here means we did not read one, not that the vehicle has a clean one."]]
+    }],
+    chk: [
+      { lead: "Run the VIN through NHTSA yourself", detail: "Open recall remedies are VIN-specific and free to check at nhtsa.gov." },
+      { lead: "Pay for an independent pre-purchase inspection", detail: "It is the only step here that looks at this individual car." },
+      { lead: "Ask for the service history in writing", detail: "Compare it against the odometer for gaps or deferred maintenance." }
+    ],
+    estimates: { annualInsurance: null, annualRepairs: null }
+  };
+}
+
+// applyMarketVerdict reads an "inspect" ownership grade as nothing standing in the way, so
+// a cheap listing comes back "Smart buy candidate". That is a safe-to-buy signal, and it
+// must not be earned by a price alone when the safety record was never read.
+function capUnreadRecordVerdict(analysis, market) {
+  if (analysis.deal.grade !== "reasonable") return analysis;
+  analysis.deal = {
+    grade: "inspect",
+    label: "Good price, record unread",
+    reason: `The ask is under the median across ${market.sampleSize} comparable active `
+      + `${market.sellerType} listings, but this vehicle's federal complaint and recall `
+      + "history was not retrieved. That is an unread record, not a clean one."
+  };
+  return analysis;
+}
+
 function tcoFrom(profile, analysis, epa) {
   if (profile?.tco) {
     return {
@@ -1473,6 +1521,24 @@ export default async (request) => {
         getNhtsaFacts(car), within(getEpaFacts(car).catch(() => null), 7_000, null)
       ]); }
       catch (error) {
+        // Losing the federal half does not have to lose the check. The comparable-listing
+        // statistics come from a different service, so a price verdict can still stand —
+        // but only if there is one. With neither source, there is nothing honest to return.
+        const market = await marketPromise;
+        if (market?.status === "ready") {
+          const analysis = marketOnlyAnalysis(car, error?.message);
+          applyMarketVerdict(analysis, car, market);
+          capUnreadRecordVerdict(analysis, market);
+          const limitations = applyListingLimitations(analysis, car, market);
+          return json({
+            analysis, market, limitations, car,
+            facts: factsSummary(null, "federal_unavailable", null),
+            tco: null, profile: null, cached: false,
+            federalStatus: error?.message === "model_not_in_catalog"
+              ? "model_not_in_catalog" : "records_unavailable",
+            catalogModels: asItems(error?.catalogModels)
+          }, 200, { "Cache-Control": "no-store" });
+        }
         if (error?.message === "model_not_in_catalog") {
           return json({ error: "model_not_in_catalog", car,
             catalogModels: asItems(error.catalogModels) }, 200);
