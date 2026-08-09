@@ -63,20 +63,62 @@ async function searchTitle(target) {
   return hit?.title || `${target.make} ${target.model}`;
 }
 
+const PHOTO_DIR = path.join(OUT, "vehicle-photos");
+
+// The pages used to point straight at upload.wikimedia.org and, on top of that, refetch the
+// Wikipedia API from every visitor's browser. Both are someone else's service deciding at
+// read time whether our pages have pictures. The bytes are downloaded once here instead and
+// served from our own origin, so a page render depends on nothing but this deploy.
+async function storeLocally(slug, imageUrl) {
+  const response = await fetch(imageUrl, { headers: { "user-agent": UA } });
+  if (!response.ok) throw new Error(`image ${response.status} ${imageUrl}`);
+  const type = (response.headers.get("content-type") || "").toLowerCase();
+  const extension = type.includes("png") ? "png" : type.includes("webp") ? "webp"
+    : type.includes("svg") ? "svg" : "jpg";
+  const bytes = Buffer.from(await response.arrayBuffer());
+  if (bytes.length < 1_000) throw new Error(`image too small (${bytes.length}B) ${imageUrl}`);
+  fs.mkdirSync(PHOTO_DIR, { recursive: true });
+  fs.writeFileSync(path.join(PHOTO_DIR, `${slug}.${extension}`), bytes);
+  return { local: `/vehicle-photos/${slug}.${extension}`, bytes: bytes.length };
+}
+
 async function resolvePhoto(target) {
   const title = await searchTitle(target);
   const encoded = encodeURIComponent(title.replace(/ /g,"_"));
   const data = await getJson(`https://en.wikipedia.org/api/rest_v1/page/summary/${encoded}`);
   const source = data?.thumbnail?.source || data?.originalimage?.source;
   if (!source) throw new Error(`no page image for ${target.make} ${target.model} (${title})`);
-  const image = source.replace(/\/\d+px-/, "/900px-");
-  return { title, image, page: data?.content_urls?.desktop?.page || `https://en.wikipedia.org/wiki/${encoded}` };
+  // Only widen a thumbnail we know exists. Wikimedia refuses to upscale past the original
+  // width, so asking for a size the file does not have returns 404 instead of a picture.
+  const widened = source.replace(/\/(\d+)px-/, (match, width) =>
+    Number(width) >= 900 ? match : "/900px-");
+  const page = data?.content_urls?.desktop?.page || `https://en.wikipedia.org/wiki/${encoded}`;
+  let stored;
+  try { stored = await storeLocally(target.slug, widened); }
+  catch { stored = await storeLocally(target.slug, source); }
+  return { title, image: stored.local, remote: widened, bytes: stored.bytes, page };
+}
+
+// A photo that fails still has to leave a page that looks finished. This is the same card
+// the model library already shows for a vehicle with no picture.
+function placeholderMarkup(target, cls="rv-photo") {
+  return `<figure class="${cls} rv-photo-missing"><div class="rv-photo-fallback"><b>${esc(target.make)}</b><strong>${esc(target.model)}</strong><small>${esc(target.segment || "Used vehicle")}</small></div></figure>`;
 }
 
 function photoMarkup(target, photo, cls="rv-photo") {
+  if (!photo) return placeholderMarkup(target, cls);
   const name = `${target.make} ${target.model}`;
-  return `<figure class="${cls}"><img src="${esc(photo.image)}" alt="${esc(name)}" loading="lazy" decoding="async"><figcaption>${esc(name)} · <a href="${esc(photo.page)}" rel="nofollow noopener" target="_blank">vehicle photo source</a></figcaption></figure>`;
+  // onerror covers the deploy going stale or a file being pruned: the reader gets the card
+  // above rather than a broken-image icon.
+  return `<figure class="${cls}" data-make="${esc(target.make)}" data-model="${esc(target.model)}"><img src="${esc(photo.image)}" alt="${esc(name)}" loading="lazy" decoding="async" onerror="this.closest('figure').classList.add('rv-photo-missing');this.remove()"><div class="rv-photo-fallback"><b>${esc(target.make)}</b><strong>${esc(target.model)}</strong><small>${esc(target.segment || "Used vehicle")}</small></div><figcaption>${esc(name)} · <a href="${esc(photo.page)}" rel="nofollow noopener" target="_blank">vehicle photo source</a></figcaption></figure>`;
 }
+
+const FALLBACK_CSS = `.rv-photo-fallback{display:none;place-items:center;text-align:center;min-height:220px;background:linear-gradient(145deg,#f7f9fc,#edf3f9);padding:22px}`
+  + `.rv-photo-missing .rv-photo-fallback{display:grid}`
+  + `.rv-photo-missing figcaption{display:none}`
+  + `.rv-photo-fallback b{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#6c8197}`
+  + `.rv-photo-fallback strong{display:block;font-size:19px;color:#17324f;margin-top:3px}`
+  + `.rv-photo-fallback small{display:block;font-size:10px;color:#8497a8;margin-top:5px}`;
 
 function patchCarsIndex(photoBySlug) {
   const file = path.join(OUT,"cars","index.html");
@@ -91,7 +133,7 @@ function patchCarsIndex(photoBySlug) {
       html = html.replace(re, `$1${img}$2`); changed++;
     }
   }
-  const css = `<style id="realVehiclePhotoCss">.cp-image.cp-db-placeholder{display:block!important;background:#eef2f6!important;overflow:hidden}.rv-card-img{width:100%;height:100%;object-fit:cover;object-position:center;display:block}.rv-photo{margin:18px 0 28px;border:1px solid #dce5ef;border-radius:16px;overflow:hidden;background:#f4f7fa}.rv-photo img{display:block;width:100%;max-height:460px;object-fit:cover;object-position:center}.rv-photo figcaption{padding:8px 12px;font-size:9px;color:#718397;background:#fff}.rv-photo figcaption a{color:#1767dd;text-decoration:none}.sf-hero+.rv-photo{margin-top:18px}.research-hero+.rv-photo{margin-top:18px}</style>`;
+  const css = `<style id="realVehiclePhotoCss">.cp-image.cp-db-placeholder{display:block!important;background:#eef2f6!important;overflow:hidden}.rv-card-img{width:100%;height:100%;object-fit:cover;object-position:center;display:block}.rv-photo{margin:18px 0 28px;border:1px solid #dce5ef;border-radius:16px;overflow:hidden;background:#f4f7fa}.rv-photo img{display:block;width:100%;max-height:460px;object-fit:cover;object-position:center}.rv-photo figcaption{padding:8px 12px;font-size:9px;color:#718397;background:#fff}.rv-photo figcaption a{color:#1767dd;text-decoration:none}.sf-hero+.rv-photo{margin-top:18px}.research-hero+.rv-photo{margin-top:18px}${FALLBACK_CSS}</style>`;
   if (!html.includes("realVehiclePhotoCss")) html = html.replace("</head>",`${css}</head>`);
   fs.writeFileSync(file,html); return changed;
 }
@@ -99,7 +141,7 @@ function patchCarsIndex(photoBySlug) {
 function patchModelPages(photoBySlug) {
   let changed=0;
   for (const target of MODELS) {
-    const photo=photoBySlug.get(target.slug); if(!photo) continue;
+    const photo=photoBySlug.get(target.slug) || null;
     const base=path.join(OUT,"cars",target.slug);
     for (const rel of ["index.html",path.join("best-years","index.html"),path.join("problems-recalls","index.html"),path.join("ownership-cost","index.html")]) {
       const file=path.join(base,rel); if(!fs.existsSync(file)) continue;
@@ -107,7 +149,7 @@ function patchModelPages(photoBySlug) {
       const markup=photoMarkup(target,photo);
       if(/<\/section>\s*<div class="research-tabs"/i.test(html)) html=html.replace(/<\/section>\s*(<div class="research-tabs")/i,`</section>${markup}$1`);
       else html=html.replace(/<\/section>/i,`</section>${markup}`);
-      if(!html.includes("realVehiclePhotoCss")) html=html.replace("</head>",`<style id="realVehiclePhotoCss">.rv-photo{margin:18px 0 28px;border:1px solid #303945;border-radius:16px;overflow:hidden;background:#111820}.rv-photo img{display:block;width:100%;max-height:460px;object-fit:cover;object-position:center}.rv-photo figcaption{padding:8px 12px;font-size:9px;opacity:.7}.rv-photo figcaption a{color:inherit}</style></head>`);
+      if(!html.includes("realVehiclePhotoCss")) html=html.replace("</head>",`<style id="realVehiclePhotoCss">.rv-photo{margin:18px 0 28px;border:1px solid #303945;border-radius:16px;overflow:hidden;background:#111820}.rv-photo img{display:block;width:100%;max-height:460px;object-fit:cover;object-position:center}.rv-photo figcaption{padding:8px 12px;font-size:9px;opacity:.7}.rv-photo figcaption a{color:inherit}${FALLBACK_CSS}</style></head>`);
       fs.writeFileSync(file,html); changed++;
     }
   }
@@ -117,14 +159,14 @@ function patchModelPages(photoBySlug) {
 function patchYearPages(photoBySlug) {
   let changed=0;
   for(const target of MODELS){
-    const photo=photoBySlug.get(target.slug); if(!photo) continue;
+    const photo=photoBySlug.get(target.slug) || null;
     for(const year of target.years||[]){
       const file=path.join(OUT,"cars",`${year}-${target.slug}`,"index.html"); if(!fs.existsSync(file)) continue;
       let html=fs.readFileSync(file,"utf8"); if(html.includes("class=\"rv-photo\"")) continue;
       const markup=photoMarkup(target,photo);
       if(html.includes("</section><div class=\"sf-stats\"")) html=html.replace("</section><div class=\"sf-stats\"",`</section>${markup}<div class=\"sf-stats\"`);
       else html=html.replace(/<\/section>/i,`</section>${markup}`);
-      if(!html.includes("realVehiclePhotoCss")) html=html.replace("</head>",`<style id="realVehiclePhotoCss">.rv-photo{margin:18px 0 28px;border:1px solid #dce5ef;border-radius:16px;overflow:hidden;background:#f4f7fa}.rv-photo img{display:block;width:100%;max-height:460px;object-fit:cover;object-position:center}.rv-photo figcaption{padding:8px 12px;font-size:9px;color:#718397;background:#fff}.rv-photo figcaption a{color:#1767dd;text-decoration:none}</style></head>`);
+      if(!html.includes("realVehiclePhotoCss")) html=html.replace("</head>",`<style id="realVehiclePhotoCss">.rv-photo{margin:18px 0 28px;border:1px solid #dce5ef;border-radius:16px;overflow:hidden;background:#f4f7fa}.rv-photo img{display:block;width:100%;max-height:460px;object-fit:cover;object-position:center}.rv-photo figcaption{padding:8px 12px;font-size:9px;color:#718397;background:#fff}.rv-photo figcaption a{color:#1767dd;text-decoration:none}${FALLBACK_CSS}</style></head>`);
       fs.writeFileSync(file,html); changed++;
     }
   }
