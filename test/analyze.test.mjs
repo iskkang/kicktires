@@ -889,3 +889,46 @@ test("reads a trim designation against the series NHTSA actually files", async (
     globalThis.fetch = originalFetch;
   }
 });
+
+// The catalog NHTSA returns is the only input here. Nothing is hand-maintained, so a make
+// nobody has checked before resolves the same way as one that has — a reader hitting an
+// unseen model does not have to be the discovery mechanism for it.
+test("resolves a model against the live catalog without a hand-maintained table", async () => {
+  const originalFetch = globalThis.fetch;
+  const resolvedFor = async (make, model, catalog) => {
+    globalThis.fetch = async url => String(url).includes("/products/vehicle/models")
+      ? Response.json({ count: catalog.length, results: catalog.map(name => ({ model: name })) })
+      : Response.json({ count: 1, results: [{ odiNumber: "1", components: "ENGINE", summary: "a" }] });
+    return (await __test.lookupComplaints({ year: 2020, make, model })).resolvedModels;
+  };
+
+  try {
+    // Filed by engine designation with no bare entry — the whole line is the record.
+    assert.deepEqual(await resolvedFor("lexus", "rx", ["RX 350", "RX 450H", "RX 350L"]),
+      ["RX 350", "RX 450H", "RX 350L"]);
+    // Naming the designation keeps the precision.
+    assert.deepEqual(await resolvedFor("lexus", "es350", ["ES 350", "ES 300H"]), ["ES 350"]);
+    // Filed by series.
+    assert.deepEqual(await resolvedFor("bmw", "320i", ["Z4", "3 SERIES", "M4"]), ["3 SERIES"]);
+    // Filed by class.
+    assert.deepEqual(await resolvedFor("mercedes-benz", "c300",
+      ["C-CLASS", "GLC-CLASS", "E-CLASS"]), ["C-CLASS"]);
+    assert.deepEqual(await resolvedFor("mercedes-benz", "glc300",
+      ["C-CLASS", "GLC-CLASS"]), ["GLC-CLASS"]);
+
+    // A worded suffix marks a separately sold vehicle, not a trim. Folding any of these in
+    // would put another car's complaint counts in front of a buyer.
+    assert.deepEqual(await resolvedFor("ford", "f150",
+      ["F-150", "F-150 REGULAR CAB", "F-150 LIGHTNING"]), ["F-150", "F-150 REGULAR CAB"]);
+    assert.deepEqual(await resolvedFor("nissan", "rogue", ["ROGUE", "ROGUE SPORT"]), ["ROGUE"]);
+    assert.deepEqual(await resolvedFor("honda", "civic", ["CIVIC", "CIVIC TYPE R"]), ["CIVIC"]);
+    assert.deepEqual(await resolvedFor("toyota", "camry", ["CAMRY", "CAMRY HYBRID"]), ["CAMRY"]);
+    assert.deepEqual(await resolvedFor("audi", "a4", ["A4", "A4 ALLROAD"]), ["A4"]);
+
+    // Nothing plausible in the catalog still resolves to nothing rather than a guess.
+    assert.deepEqual(await resolvedFor("bmw", "740i", ["Z4", "3 SERIES"]), []);
+    assert.deepEqual(await resolvedFor("lexus", "rx", ["GX 460", "NX 300"]), []);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});

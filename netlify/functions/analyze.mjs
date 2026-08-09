@@ -870,11 +870,48 @@ const seriesName = model => {
   return match ? `${match[1]} series` : null;
 };
 
+// The mirror image, for makes that file by class: a Mercedes catalog carries "C-CLASS" and
+// "GLC-CLASS" with no "C 300" or "GLC 300" in it. Resolving through resolveNhtsaModels means
+// the class entry has to actually be in the catalog, so this cannot reach for a name NHTSA
+// does not already keep.
+const className = model => {
+  const match = norm(model).match(/^([a-z]{1,3})\d{2,3}[a-z]?$/);
+  return match ? `${match[1]} class` : null;
+};
+
+// NHTSA often files a model line under its engine or trim designations and keeps no bare
+// entry: a Lexus catalog carries "RX 350" and "RX 450H" but no "RX". Those are the same
+// vehicle line, so a bare "RX" should read them both.
+//
+// A worded suffix is a different matter. "F-150 LIGHTNING" and "ROGUE SPORT" are separately
+// marketed vehicles rather than trims of the base model, and folding them in would put
+// another car's complaint counts in front of a buyer. Only a numeric designator — 350,
+// 450H, 300 — is treated as the same line.
+function resolveModelLine(requested, catalogRows) {
+  const base = norm(requested);
+  if (base.length < 2) return [];
+  return [...new Set(asItems(catalogRows)
+    .map(row => clipped(row?.model, 120)).filter(Boolean)
+    .filter(official => {
+      const token = norm(official);
+      if (token === base || !token.startsWith(base)) return false;
+      return /^\d{2,4}[a-z]?$/.test(token.slice(base.length));
+    }))];
+}
+
+// Everything here reads the catalog NHTSA just returned. Nothing is hand-maintained, so a
+// make nobody has checked before resolves the same way as one that has.
 function resolveNhtsaModelsWithSeries(model, catalog) {
   const exact = resolveNhtsaModels(model, catalog);
   if (exact.length) return exact;
-  const series = seriesName(model);
-  return series ? resolveNhtsaModels(series, catalog) : [];
+  const line = resolveModelLine(model, catalog);
+  if (line.length) return line;
+  for (const derived of [seriesName(model), className(model)]) {
+    if (!derived) continue;
+    const match = resolveNhtsaModels(derived, catalog);
+    if (match.length) return match;
+  }
+  return [];
 }
 
 async function lookupIssueCatalog(car, issueType) {
