@@ -118,12 +118,17 @@ export function draftShapeProblems(draft) {
  * corrective turn fixes it far more cheaply than discarding the run.
  */
 export async function writeDraft(evidence, keyword, options = {}) {
+  const { reviewFailures = [], ...modelOptions } = options;
   const payload = {
     searchIntent: keyword.primaryKeyword,
     secondaryKeywords: keyword.secondaryKeywords,
     evidence: writerEvidence(evidence)
   };
-  let feedback = "";
+  // Rejections from a previous draft of this same post. They are the caller's, not this
+  // loop's, and they seed the first request rather than waiting for a shape error.
+  let feedback = reviewFailures.length
+    ? reviewFailures.map(item => `- ${item}`).join("\n")
+    : "";
   let lastProblems = [];
 
   for (let attempt = 0; attempt < 2; attempt++) {
@@ -132,7 +137,7 @@ export async function writeDraft(evidence, keyword, options = {}) {
         + `${feedback}\nReturn corrected JSON only.`
       : JSON.stringify(payload, null, 1);
     const reply = await callModel(SYSTEM, user, {
-      maxTokens: 4000, temperature: 0.3, seed: 7, ...options
+      maxTokens: 4000, temperature: 0.3, seed: 7, ...modelOptions
     });
     let draft;
     try { draft = parseJson(reply); }

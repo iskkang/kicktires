@@ -70,7 +70,12 @@ export async function generateOnce(options = {}) {
     let lastFailures = [];
 
     for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
-      const draft = await writeDraft(evidence, keyword, options.modelOptions || {});
+      // The rewrite has to carry what the review objected to, and a different seed. Without
+      // both, a retry is a verbatim replay of the request that just failed — which is what
+      // three identical rejections in a row looked like in the first live run.
+      const draft = await writeDraft(evidence, keyword, {
+        ...(options.modelOptions || {}), seed: 7 + attempt, reviewFailures: lastFailures
+      });
       const candidate = draftToPost(draft, {
         evidence, keyword, hero, related: relatedFor({ ...keyword.vehicle, slug }, posts)
       });
@@ -175,7 +180,10 @@ if (invoked) {
   const published = results.filter(report => report.status === "published").length;
   console.log(`[blog:generate] ${published}/${results.length} published`);
   if (fs.existsSync("blog/runs")) console.log("[blog:generate] run logs in blog/runs/");
-  const blocked = results.some(report =>
-    report.status === "failed" || report.status === "permanent_failure");
+  // Anything that is not a published post or a deliberate dry run is a failed run and has to
+  // exit non-zero. review_failed was missing from this list, so a run that wrote nothing three
+  // times over reported success and the schedule looked healthy while producing no posts.
+  const ok = new Set(["published", "dry_run"]);
+  const blocked = results.some(report => !ok.has(report.status));
   process.exit(blocked ? 1 : 0);
 }

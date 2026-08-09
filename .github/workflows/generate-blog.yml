@@ -103,8 +103,12 @@ jobs:
           git config user.name "kicktires-bot"
           git config user.email "bot@users.noreply.github.com"
           git add blog/
-          if git diff --cached --quiet; then
-            echo "nothing new to publish"
+          # A post file is what makes a run worth committing. Evidence, a hero image and a run
+          # log are all written before the review gates decide, so staging them alone produced
+          # a "Publish blog post: update" commit that published nothing.
+          if ! git diff --cached --name-only | grep -q '^blog/posts/'; then
+            echo "no post passed review — nothing to publish"
+            git reset -q
             exit 0
           fi
           SLUG=$(git diff --cached --name-only | grep 'blog/posts/' | head -1 | xargs -r basename | sed 's/\.json$//')
