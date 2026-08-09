@@ -18,7 +18,12 @@ const problems = [];
 // the try block, so the request was never sent and the finally never re-enabled the button.
 const REQUIRED_ELEMENTS = [
   ["inp", "listing textarea"],
-  ["analyzeBtn", "submit button"],
+  ["analyzeBtn", "paste submit button"],
+  ["pastePanel", "paste form"],
+  ["formPanel", "typed-details form"],
+  ["formBtn", "typed-details submit button"],
+  ["fYear", "year field"], ["fMake", "make field"], ["fModel", "model field"],
+  ["fMileage", "mileage field"], ["fPrice", "price field"], ["fState", "state field"],
   ["live", "results container"],
   ["hint", "inline hint line"],
   ["check", "analyzer scroll anchor"]
@@ -32,8 +37,19 @@ for (const [id, role] of REQUIRED_ELEMENTS) {
 for (const path of ["/api/analyze", "/.netlify/functions/analyze"]) {
   if (!html.includes(`"${path}"`)) problems.push(`analyzer never tries ${path}`);
 }
-if (!/const response = await postListing\(text\);/.test(html)) {
+if (!/const response = await postListing\(body\);/.test(html)) {
   problems.push("analyzer does not go through postListing (no 404 fallback)");
+}
+// Both entry points must reach the one request path, or a panel silently does nothing.
+for (const [handler, hook] of [["route", 'onsubmit="route(event);return false"'],
+  ["routeForm", 'onsubmit="routeForm(event);return false"']]) {
+  if (!html.includes(hook)) problems.push(`no form is wired to ${handler}()`);
+  if (!new RegExp(`function ${handler}\\(event\\)`).test(html)) {
+    problems.push(`${handler}() is missing from the shipped script`);
+  }
+}
+if (!/function runCheck\(event, body, buttonId\)/.test(html)) {
+  problems.push("runCheck is missing; the two panels no longer share one request path");
 }
 
 // An unbounded request is an unbounded "Checking…" state.

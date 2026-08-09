@@ -110,9 +110,16 @@ test("the rewritten homepage keeps every element the analyzer script needs", () 
     "home-reference.mjs", "home-reference-exact.mjs", "analyzer-safety.mjs"]) run(script);
 
   const home = fs.readFileSync(path.join(ROOT, "dist/index.html"), "utf8");
-  for (const id of ["inp", "analyzeBtn", "live", "hint", "check"]) {
+  for (const id of ["inp", "analyzeBtn", "pastePanel", "live", "hint", "check",
+    "formPanel", "formBtn", "fYear", "fMake", "fModel", "fMileage", "fPrice", "fState"]) {
     assert.match(home, new RegExp(`id="${id}"`), `homepage lost #${id}`);
   }
+
+  // Both panels must reach the one request path, or a tab silently does nothing.
+  assert.match(home, /onsubmit="route\(event\);return false"/);
+  assert.match(home, /onsubmit="routeForm\(event\);return false"/);
+  assert.match(home, /function runCheck\(event, body, buttonId\)/);
+  assert.match(home, /function carFromForm\(\)/);
 
   // Nothing may throw between disabling the button and the try that re-enables it.
   assert.match(home, /setBusy\(true\);\s*(?:\/\/[^\n]*\n\s*)*try \{/);
@@ -122,6 +129,6 @@ test("the rewritten homepage keeps every element the analyzer script needs", () 
   // Both routes must ship. The page POSTed only to /.netlify/functions/analyze, which
   // Netlify does not serve for a function that declares its own path, so every check 404'd.
   assert.match(home, /const ANALYZE_ROUTES = \["\/api\/analyze", "\/\.netlify\/functions\/analyze"\]/);
-  assert.match(home, /const response = await postListing\(text\);/);
+  assert.match(home, /const response = await postListing\(body\);/);
   assert.match(home, /error\.name === "TimeoutError"/);
 });

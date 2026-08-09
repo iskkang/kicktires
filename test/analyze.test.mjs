@@ -713,3 +713,66 @@ test("separates a model missing from the NHTSA catalog from NHTSA being down", a
     }
   }
 });
+
+// Typed fields need no guessing. Everything the parser had to infer from prose — the price
+// format, where the trim ends, the city and state — arrives already separated, so the
+// extraction model call is skipped entirely.
+test("analyzes a car submitted as fields without calling the extractor", async () => {
+  const originalFetch = globalThis.fetch;
+  const old = { provider: process.env.PROVIDER, key: process.env.DEEPSEEK_API_KEY,
+    marketKey: process.env.MARKETCHECK_API_KEY };
+  process.env.PROVIDER = "deepseek";
+  process.env.DEEPSEEK_API_KEY = "test-key";
+  delete process.env.MARKETCHECK_API_KEY;
+
+  const prompts = [];
+  globalThis.fetch = async (url, options = {}) => {
+    if (!String(url).includes("deepseek")) throw new Error(`unexpected fetch ${url}`);
+    const system = JSON.parse(options.body).messages[0].content;
+    prompts.push(system.includes("extract structured data") ? "extract" : "assess");
+    return Response.json({ choices: [{ message: { content: JSON.stringify({
+      deal: { grade: "caution", label: "Cheap for a reason", reason: "r" },
+      vline: "v", vsub: "s" }) } }] });
+  };
+
+  const submit = car => handler(new Request("https://kicktires.test/api/analyze", {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ car }) }));
+
+  try {
+    const output = await (await submit({
+      year: 2019, make: "Nissan", model: "Altima", trim: "S", mileage: 91000,
+      price: 7900, location: "Columbus, OH", seller: "private", notes: ["as is"]
+    })).json();
+
+    assert.deepEqual(prompts, ["assess"], "the extraction model call was not skipped");
+    assert.equal(output.error, undefined);
+    assert.equal(output.profile, "/cars/2019-nissan-altima-problems/");
+    assert.equal(output.car.price, 7900);
+    assert.equal(output.car.mileage, 91000);
+    assert.equal(output.car.trim, "S", "a typed trim must survive untouched");
+    assert.equal(output.car.seller, "private");
+    assert.deepEqual(output.car.notes, ["as is"]);
+
+    // Fields are still normalised, not trusted: out-of-range and unknown values are dropped.
+    const junk = await (await submit({
+      year: 1200, make: "Nissan", model: "Altima", price: 5, seller: "auction",
+      notes: ["x".repeat(400)] })).json();
+    assert.equal(junk.error, "no_vehicle", "an impossible year must not become a check");
+    assert.equal(junk.car.year, null);
+    assert.equal(junk.car.price, null);
+    assert.equal(junk.car.seller, null);
+
+    // A submitted car must never be treated as pasted text to fetch.
+    const withUrl = await (await submit({
+      year: 2019, make: "Nissan", model: "Altima",
+      trim: "https://example.com/listing", mileage: 91000, price: 7900 })).json();
+    assert.equal(withUrl.error, undefined, "a URL in a field must not trigger a page fetch");
+  } finally {
+    globalThis.fetch = originalFetch;
+    for (const [name, value] of [["PROVIDER", old.provider], ["DEEPSEEK_API_KEY", old.key],
+      ["MARKETCHECK_API_KEY", old.marketKey]]) {
+      if (value == null) delete process.env[name]; else process.env[name] = value;
+    }
+  }
+});

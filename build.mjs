@@ -614,8 +614,12 @@ function render(output){
   $("live").scrollIntoView({behavior:"smooth",block:"start"});
 }
 
+// Which submit button started the current check. Both panels have one, and the wrong one
+// left disabled reads exactly like the stuck "Checking…" this used to ship.
+let busyButton = "analyzeBtn";
+
 function setBusy(busy){
-  const button = $("analyzeBtn");
+  const button = $(busyButton) || $("analyzeBtn");
   if (!button) return;
   // Homepage layouts label this button differently, so restore whatever it started as
   // rather than renaming it to a fixed string once the first check finishes.
@@ -687,12 +691,12 @@ function stopLoading(){
 // the analyzer down on its own.
 const ANALYZE_ROUTES = ["/api/analyze", "/.netlify/functions/analyze"];
 
-async function postListing(text){
+async function postListing(body){
   let lastResponse = null;
   for (const path of ANALYZE_ROUTES) {
     const response = await fetch(path, {
       method:"POST", headers:{"Content-Type":"application/json"},
-      body: JSON.stringify({text:text}),
+      body: JSON.stringify(body),
       signal: AbortSignal.timeout(35_000)
     });
     if (response.status !== 404) return response;
@@ -701,11 +705,51 @@ async function postListing(text){
   return lastResponse;
 }
 
-async function route(event){
-  event.preventDefault();
+// Typed fields need no guessing, so the server skips the parser and the extraction model
+// call entirely. Everything the parser had to infer from prose — the price format, where
+// the trim ends, the city and state — arrives already separated.
+function carFromForm(){
+  const field = id => { const node = $(id); return node ? String(node.value || "").trim() : ""; };
+  const ticked = id => { const node = $(id); return !!(node && node.checked); };
+  const notes = [];
+  if (ticked("fAsIs")) notes.push("as is");
+  if (ticked("fAccident")) notes.push("accident mentioned");
+  if (ticked("fTitle")) notes.push("title issue disclosed");
+  const place = [field("fCity"), field("fState")].filter(Boolean).join(", ");
+  return {
+    year: field("fYear") || null,
+    make: field("fMake") || null,
+    model: field("fModel") || null,
+    trim: field("fTrim") || null,
+    mileage: field("fMileage") || null,
+    price: field("fPrice") || null,
+    location: place || null,
+    seller: field("fSeller") || null,
+    certified: ticked("fCertified") ? true : null,
+    notes: notes
+  };
+}
+
+function routeForm(event){
+  const car = carFromForm();
+  if (!car.year || !car.make || !car.model) {
+    event.preventDefault();
+    hint("Year, make and model are needed before we can check anything.");
+    return false;
+  }
+  return runCheck(event, {car:car}, "formBtn");
+}
+
+function route(event){
   const text = $("inp").value.trim();
-  if (!text) return false;
+  if (!text) { event.preventDefault(); return false; }
+  return runCheck(event, {text:text}, "analyzeBtn");
+}
+
+async function runCheck(event, body, buttonId){
+  event.preventDefault();
   track("listing_check_started");
+  busyButton = buttonId;
   setBusy(true);
   // Everything after setBusy must sit inside the try. A throw between the two
   // (a missing optional element, a blocked analytics call) would otherwise skip
@@ -713,7 +757,7 @@ async function route(event){
   try {
     hint("");
     startLoading();
-    const response = await postListing(text);
+    const response = await postListing(body);
     if (response.status === 404) {
       return fail("function_missing", "The analysis service is not reachable at any known address. This is a deployment problem on our side, not a problem with your listing.");
     }
