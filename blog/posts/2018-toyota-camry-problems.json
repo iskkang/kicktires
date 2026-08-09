@@ -1,0 +1,190 @@
+{
+  "title": "2018 Toyota Camry Used Car Research: Recalls and Complaints",
+  "slug": "2018-toyota-camry-problems",
+  "description": "Review the federal record for the 2018 Toyota Camry: 8 recalls and 731 consumer complaints. Learn what to check before buying.",
+  "datePublished": "2026-08-09T15:07:33.247Z",
+  "dateModified": "2026-08-09T15:07:33.247Z",
+  "author": "KickTires Editorial",
+  "make": "Toyota",
+  "model": "Camry",
+  "year": 2018,
+  "primaryKeyword": "2018 Toyota Camry problems",
+  "secondaryKeywords": [
+    "Toyota Camry common issues",
+    "2018 Toyota Camry complaints"
+  ],
+  "heroImage": {
+    "src": "/blog-images/2018-toyota-camry-problems/2018-toyota-camry-problems-hero.jpg",
+    "alt": "Toyota Camry of the same generation as the 2018 car",
+    "ogSrc": "/blog-images/2018-toyota-camry-problems/2018-toyota-camry-problems-hero.jpg",
+    "squareSrc": "/blog-images/2018-toyota-camry-problems/2018-toyota-camry-problems-hero.jpg",
+    "kind": "licensed_photo"
+  },
+  "imageCredit": "JLaw45 via flickr",
+  "imageLicense": "CC BY 2.0",
+  "imageSourceUrl": "https://www.flickr.com/photos/27665395@N05/14380191350",
+  "imageLicenseUrl": "https://creativecommons.org/licenses/by/2.0/",
+  "sourceIds": [
+    "nhtsa-catalog",
+    "nhtsa-complaints-camry",
+    "nhtsa-recalls-camry"
+  ],
+  "sources": [
+    {
+      "id": "nhtsa-catalog",
+      "url": "https://api.nhtsa.gov/products/vehicle/models?modelYear=2018&make=Toyota&issueType=c",
+      "retrievedAt": "2026-08-09T15:06:47.253Z",
+      "note": "NHTSA model catalog for this make and model year"
+    },
+    {
+      "id": "nhtsa-complaints-camry",
+      "url": "https://api.nhtsa.gov/complaints/complaintsByVehicle?make=Toyota&model=CAMRY&modelYear=2018",
+      "retrievedAt": "2026-08-09T15:06:47.253Z",
+      "note": "Consumer complaints filed with NHTSA for 2018 Toyota CAMRY"
+    },
+    {
+      "id": "nhtsa-recalls-camry",
+      "url": "https://api.nhtsa.gov/recalls/recallsByVehicle?make=Toyota&model=CAMRY&modelYear=2018",
+      "retrievedAt": "2026-08-09T15:06:47.253Z",
+      "note": "Recall campaigns issued for 2018 Toyota CAMRY"
+    }
+  ],
+  "sourceSnapshotHash": "bf3c1269dea98ec5aab39a142fdc9a92",
+  "evidenceFigures": {
+    "complaintTotal": 731,
+    "complaintCrashes": 46,
+    "complaintFires": 4,
+    "complaintInjuries": 45,
+    "recallTotal": 8,
+    "componentCounts": {
+      "POWER TRAIN": 190,
+      "SERVICE BRAKES": 162,
+      "ENGINE": 135,
+      "UNKNOWN OR OTHER": 97,
+      "VEHICLE SPEED CONTROL": 72,
+      "FUEL/PROPULSION SYSTEM": 71,
+      "ELECTRICAL SYSTEM": 65,
+      "STEERING": 60
+    }
+  },
+  "qualityReport": {
+    "status": "passed",
+    "reviewedAt": "2026-08-09T15:07:35.248Z",
+    "attempt": 2,
+    "words": 943,
+    "warnings": [],
+    "editorialNotes": "The article accurately reflects the evidence, clearly distinguishes recalls from complaints, and provides actionable advice for buyers.",
+    "checks": {
+      "code": "passed",
+      "editorial": "passed"
+    }
+  },
+  "body": [
+    {
+      "heading": "The short answer",
+      "paragraphs": [
+        "Check if all recalls, especially fuel pump and brake booster, have been completed before buying a 2018 Camry."
+      ],
+      "sourceIds": []
+    },
+    {
+      "heading": "What the federal record shows",
+      "paragraphs": [
+        "The federal record for the 2018 Toyota Camry includes 8 recall campaigns and 731 consumer complaints filed with NHTSA. These are the two main sources of information for this model year. The recalls are official actions by Toyota to address specific safety concerns. The complaints are reports from owners describing issues they experienced; they are allegations, not confirmed defects.",
+        "The complaints cover various components, with the most frequently mentioned being the powertrain (190 complaints), service brakes (162), and engine (135). Other areas include vehicle speed control (72) and fuel/propulsion system (71). The record also notes 46 reported crashes and 4 fires in connection with these complaints. These numbers give a sense of what owners have reported, but they do not indicate how common these issues are across all 2018 Camrys, since we don't have sales data to compare against."
+      ],
+      "bullets": [],
+      "sourceIds": [
+        "nhtsa-complaints-camry",
+        "nhtsa-recalls-camry"
+      ]
+    },
+    {
+      "heading": "Recall campaigns",
+      "paragraphs": [
+        "The 2018 Camry has 8 recall campaigns. Some are for serious safety issues. For example, one recall (18V200000) addresses a possible engine stall due to oversized pistons in 2.5L engines. Another (18V211000) involves a brake booster vacuum pump that could cause sudden loss of brake assist. There are also multiple recalls for fuel pump failures (20V012000, 20V682000, 25V028000) that can cause the engine to stall while driving.",
+        "Other recalls include a fuel delivery pipe issue on V6 models (18V108000) that could lead to a fuel leak and fire risk, and a label error on floor mats (19V503000). A later recall (21V890000) addresses a vane cap in the vacuum pump that could break, again causing loss of brake assist. All recalls are free to fix at a dealership.",
+        "Before buying, confirm that all recalls have been performed. You can check with a Toyota dealer using the VIN. Uncompleted recalls are a red flag and should be addressed immediately after purchase."
+      ],
+      "bullets": [
+        "Engine stall due to pistons (18V200000)",
+        "Brake booster vacuum pump failure (18V211000, 21V890000)",
+        "Fuel pump failure causing stall (20V012000, 20V682000, 25V028000)",
+        "Fuel leak on V6 models (18V108000)",
+        "Incorrect load capacity label (19V503000)"
+      ],
+      "sourceIds": [
+        "nhtsa-recalls-camry"
+      ]
+    },
+    {
+      "heading": "What owners reported",
+      "paragraphs": [
+        "Consumer complaints to NHTSA describe a range of issues. The most common are related to the powertrain, with owners reporting transmission slipping, jerky shifting, and hesitation during acceleration. Some mention the car going into 'limp mode' and being stuck in second gear. These are allegations from individual owners, not confirmed defects.",
+        "Brake complaints often describe a sudden loss of braking power or a soft brake pedal. Engine complaints include the check engine light coming on and the car stalling. Fuel system complaints mention hesitation when starting from a stop, which could be related to the fuel pump recalls.",
+        "It's important to remember that these complaints are not evidence of a widespread problem. They represent the experiences of some owners. However, they do highlight areas to inspect and ask about when buying a used 2018 Camry."
+      ],
+      "bullets": [
+        "Powertrain: 190 complaints, including transmission slipping and jerky shifts",
+        "Service brakes: 162 complaints, including loss of braking power",
+        "Engine: 135 complaints, including stalling and check engine light",
+        "Vehicle speed control: 72 complaints, including limp mode",
+        "Fuel/propulsion system: 71 complaints, including hesitation"
+      ],
+      "sourceIds": [
+        "nhtsa-complaints-camry"
+      ]
+    },
+    {
+      "heading": "What to check before you buy",
+      "paragraphs": [
+        "Before buying a 2018 Camry, have a trusted mechanic inspect the car, focusing on the systems that appear in recalls and complaints. Verify that all recalls have been completed by checking the VIN with a Toyota dealer. Ask for service records to see if any repairs were done for transmission, brakes, or engine issues.",
+        "During a test drive, pay attention to how the transmission shifts, especially from a stop. Listen for any unusual engine noises and check for warning lights. Test the brakes at various speeds to ensure they feel firm and responsive. If possible, have the fuel pump and brake booster inspected, as these are subject to recalls."
+      ],
+      "bullets": [
+        "Check for open recalls using the VIN",
+        "Inspect transmission for smooth shifting",
+        "Test brakes for firm pedal and no pulling",
+        "Look for check engine light or other warnings",
+        "Ask for maintenance and repair history"
+      ],
+      "sourceIds": [
+        "nhtsa-recalls-camry",
+        "nhtsa-complaints-camry"
+      ]
+    },
+    {
+      "heading": "How we read this",
+      "paragraphs": [
+        "The federal record provides two types of information: official recalls and consumer complaints. Recalls are confirmed safety defects that Toyota has agreed to fix. Complaints are owner reports that may or may not indicate a common problem. We do not have sales data, so we cannot say how widespread these issues are.",
+        "For a buyer, the recalls are the most actionable: ensure they are done. The complaints suggest areas to inspect, but they are not proof of defects. Use this information to make an informed decision and negotiate if needed."
+      ],
+      "bullets": [],
+      "sourceIds": [
+        "nhtsa-recalls-camry",
+        "nhtsa-complaints-camry"
+      ]
+    },
+    {
+      "heading": "Before you make an offer",
+      "paragraphs": [
+        "The 2018 Camry has a significant number of recalls, some for serious safety issues like stalling and brake failure. While recalls are free to fix, they indicate potential problems. Consumer complaints align with these areas, but they are allegations, not confirmed defects. Before buying, ensure all recalls are done and have the car inspected by a mechanic. If you find an unrepaired recall, use it as a negotiating point or have the seller fix it before purchase."
+      ],
+      "bullets": [
+        "Verify recall completion. Use the VIN with a Toyota dealer to ensure all 8 recalls, especially fuel pump and brake booster, have been performed.",
+        "Test transmission behavior. Drive at various speeds and note any slipping, jerking, or hesitation, which owners have reported.",
+        "Check brake response. Press the brake pedal firmly at low and high speeds to ensure it feels firm and stops the car promptly.",
+        "Look for warning lights. Start the engine and check for any illuminated warning lights, such as check engine or brake system.",
+        "Inspect fuel system. Ask if the fuel pump has been replaced under recall, and listen for any hesitation when accelerating from a stop."
+      ],
+      "sourceIds": []
+    }
+  ],
+  "relatedArticles": [
+    {
+      "href": "/cars/",
+      "title": "All model-year research on KickTires"
+    }
+  ],
+  "status": "published"
+}

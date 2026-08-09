@@ -7,24 +7,24 @@
       "CAMRY"
     ]
   },
-  "retrievedAt": "2026-08-09T14:51:16.043Z",
+  "retrievedAt": "2026-08-09T15:06:47.253Z",
   "sources": [
     {
       "id": "nhtsa-catalog",
       "url": "https://api.nhtsa.gov/products/vehicle/models?modelYear=2018&make=Toyota&issueType=c",
-      "retrievedAt": "2026-08-09T14:51:16.043Z",
+      "retrievedAt": "2026-08-09T15:06:47.253Z",
       "note": "NHTSA model catalog for this make and model year"
     },
     {
       "id": "nhtsa-complaints-camry",
       "url": "https://api.nhtsa.gov/complaints/complaintsByVehicle?make=Toyota&model=CAMRY&modelYear=2018",
-      "retrievedAt": "2026-08-09T14:51:16.043Z",
+      "retrievedAt": "2026-08-09T15:06:47.253Z",
       "note": "Consumer complaints filed with NHTSA for 2018 Toyota CAMRY"
     },
     {
       "id": "nhtsa-recalls-camry",
       "url": "https://api.nhtsa.gov/recalls/recallsByVehicle?make=Toyota&model=CAMRY&modelYear=2018",
-      "retrievedAt": "2026-08-09T14:51:16.043Z",
+      "retrievedAt": "2026-08-09T15:06:47.253Z",
       "note": "Recall campaigns issued for 2018 Toyota CAMRY"
     }
   ],
