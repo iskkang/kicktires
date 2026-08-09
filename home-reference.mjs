@@ -104,7 +104,7 @@ const trust = [
 
 const header = `<nav class="rf-nav"><div class="rf-navin">
   <a class="rf-logo" href="/"><span>K</span><b>KickTires</b></a>
-  <div class="rf-menu"><a href="/#check">Analyze a Car</a><a href="/cars/">Research⌄</a><a href="/cars/">Compare</a><a href="/cars/">Best Years</a><a href="/cars/">Common Problems</a><a href="/about/">About</a></div>
+  <div class="rf-menu"><a href="/#check">Analyze a Car</a><a href="/cars/">Research⌄</a><a href="/cars/">Compare</a><a href="/cars/">Best Years</a><a href="/cars/">Common Problems</a><a href="/blog/">Blog</a><a href="/about/">About</a></div>
   <div class="rf-actions"><a class="rf-saved" href="/cars/">♡ Saved</a><a class="rf-primary" href="/#check">Analyze a Car</a></div>
 </div></nav>`;
 

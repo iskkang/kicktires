@@ -93,7 +93,7 @@ ${blocks}
 </head><body>
 <nav><div class="navin"><a class="logo" href="/"><i></i>${NAME}</a>
 <div class="navlinks"><a class="navlink navcheck" href="/#check">Check a listing</a>
-<a class="navlink" href="/cars/">Model guides</a><a class="navlink" href="/blog/">Research</a></div>
+<a class="navlink" href="/cars/">Model guides</a><a class="navlink" href="/blog/">Blog</a></div>
 </div></nav>`;
 }
 
