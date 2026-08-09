@@ -141,9 +141,11 @@ function permanent(code, detail) {
 
 function finish(report, options) {
   report.finishedAt = new Date().toISOString();
-  if (options.dryRun !== true) {
-    report.logFile = writeRunLog(report.startedAt.replace(/[:.]/g, "-"), report);
-  }
+  report.dryRun = options.dryRun === true;
+  // The log is written for every run, including dry ones. A dry run that stopped at review is
+  // exactly the run whose reason matters, and CI uploads blog/runs/ as the report artifact —
+  // skipping the write here is what made that artifact empty.
+  report.logFile = writeRunLog(report.startedAt.replace(/[:.]/g, "-"), report);
   return report;
 }
 
