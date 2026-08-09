@@ -857,6 +857,63 @@ function resolveNhtsaModels(requestedModel, catalogRows) {
 const catalogModelNames = catalog => [...new Set(asItems(catalog)
   .map(row => clipped(row?.model, 60)).filter(Boolean))].slice(0, 12);
 
+// NHTSA files some makes by series rather than by trim designation: a 2020 BMW catalog is
+// "Z4, 2 SERIES, M2 COMPETITION, 3 SERIES, 4 SERIES, M4, 4 SERIES GRAN, 5 SERIES" — no 320I
+// or 330I anywhere in it. A 320i's federal record is the 3 Series record, because that is
+// the only one the government keeps for it.
+//
+// Only reached when the exact designation matches nothing, so a catalog that does carry the
+// specific model is still read at that precision. M cars are excluded: NHTSA lists M2 and M4
+// separately, so they are their own records rather than members of a series.
+const seriesName = model => {
+  const match = norm(model).match(/^(\d)\d{2}[a-z]{0,2}$/);
+  return match ? `${match[1]} series` : null;
+};
+
+// The mirror image, for makes that file by class: a Mercedes catalog carries "C-CLASS" and
+// "GLC-CLASS" with no "C 300" or "GLC 300" in it. Resolving through resolveNhtsaModels means
+// the class entry has to actually be in the catalog, so this cannot reach for a name NHTSA
+// does not already keep.
+const className = model => {
+  const match = norm(model).match(/^([a-z]{1,3})\d{2,3}[a-z]?$/);
+  return match ? `${match[1]} class` : null;
+};
+
+// NHTSA often files a model line under its engine or trim designations and keeps no bare
+// entry: a Lexus catalog carries "RX 350" and "RX 450H" but no "RX". Those are the same
+// vehicle line, so a bare "RX" should read them both.
+//
+// A worded suffix is a different matter. "F-150 LIGHTNING" and "ROGUE SPORT" are separately
+// marketed vehicles rather than trims of the base model, and folding them in would put
+// another car's complaint counts in front of a buyer. Only a numeric designator — 350,
+// 450H, 300 — is treated as the same line.
+function resolveModelLine(requested, catalogRows) {
+  const base = norm(requested);
+  if (base.length < 2) return [];
+  return [...new Set(asItems(catalogRows)
+    .map(row => clipped(row?.model, 120)).filter(Boolean)
+    .filter(official => {
+      const token = norm(official);
+      if (token === base || !token.startsWith(base)) return false;
+      return /^\d{2,4}[a-z]?$/.test(token.slice(base.length));
+    }))];
+}
+
+// Everything here reads the catalog NHTSA just returned. Nothing is hand-maintained, so a
+// make nobody has checked before resolves the same way as one that has.
+function resolveNhtsaModelsWithSeries(model, catalog) {
+  const exact = resolveNhtsaModels(model, catalog);
+  if (exact.length) return exact;
+  const line = resolveModelLine(model, catalog);
+  if (line.length) return line;
+  for (const derived of [seriesName(model), className(model)]) {
+    if (!derived) continue;
+    const match = resolveNhtsaModels(derived, catalog);
+    if (match.length) return match;
+  }
+  return [];
+}
+
 async function lookupIssueCatalog(car, issueType) {
   const make = MAKE_ALIAS[car.make] || car.make;
   const query = new URLSearchParams({
@@ -875,7 +932,7 @@ async function lookupComplaints(car) {
   const model = MODEL_ALIAS[car.model] || car.model;
   const catalog = await lookupIssueCatalog(car, "c");
   if (!catalog) return { status: "unresolved", count: null, resolvedModels: [], rows: [] };
-  const resolvedModels = resolveNhtsaModels(model, catalog);
+  const resolvedModels = resolveNhtsaModelsWithSeries(model, catalog);
   if (!resolvedModels.length) {
     return { status: "unmatched", count: null, resolvedModels: [], rows: [],
       catalogModels: catalogModelNames(catalog) };
@@ -911,7 +968,7 @@ async function lookupRecalls(car) {
   const model = MODEL_ALIAS[car.model] || car.model;
   const catalog = await lookupIssueCatalog(car, "r");
   if (!catalog) return { status: "unresolved", count: null, resolvedModels: [], rows: [] };
-  const resolvedModels = resolveNhtsaModels(model, catalog);
+  const resolvedModels = resolveNhtsaModelsWithSeries(model, catalog);
   if (!resolvedModels.length) {
     // Reporting zero recalls here claimed a federal fact we never checked: the model name
     // simply never matched the catalog. A vehicle we could not look up is not a clean one.
@@ -1308,6 +1365,54 @@ function liveModelEvidence(evidence) {
   };
 }
 
+// A vehicle whose federal record we could not read is not a vehicle with nothing to say.
+// The comparable-listing statistics are retrieved independently of NHTSA, so a price
+// verdict still stands on its own — as long as the missing half is stated rather than
+// papered over. No model call is made here: with no evidence to reason from, asking for
+// risks would be asking the model to invent them.
+function marketOnlyAnalysis(car, reason) {
+  const unmatched = reason === "model_not_in_catalog";
+  return {
+    deal: { grade: "inspect", label: "Price check only", reason: "" },
+    vline: "Priced against the market. Federal record not read.",
+    vsub: (unmatched
+      ? `NHTSA does not file a ${car.year} ${car.make} under the model name given, so its complaint and recall history was not read. `
+      : "The federal complaint and recall service did not answer, so this vehicle's history was not read. ")
+      + "This verdict weighs the asking price against comparable active listings only. "
+      + "Treat the safety record as unknown, not as clean.",
+    risks: [{
+      s: "warn", lbl: "WATCH",
+      t: "Federal safety record was not retrieved",
+      c: "Not estimated", cl: "no federal data",
+      b: unmatched
+        ? "We could not match this vehicle to NHTSA's model catalog, so no complaint or recall history was read for it. Run the exact VIN through NHTSA yourself before you commit."
+        : "NHTSA did not return this vehicle's complaint or recall history, so none was read. Run the exact VIN through NHTSA yourself before you commit.",
+      e: [["o", "OUR TAKE", "Absence of a record here means we did not read one, not that the vehicle has a clean one."]]
+    }],
+    chk: [
+      { lead: "Run the VIN through NHTSA yourself", detail: "Open recall remedies are VIN-specific and free to check at nhtsa.gov." },
+      { lead: "Pay for an independent pre-purchase inspection", detail: "It is the only step here that looks at this individual car." },
+      { lead: "Ask for the service history in writing", detail: "Compare it against the odometer for gaps or deferred maintenance." }
+    ],
+    estimates: { annualInsurance: null, annualRepairs: null }
+  };
+}
+
+// applyMarketVerdict reads an "inspect" ownership grade as nothing standing in the way, so
+// a cheap listing comes back "Smart buy candidate". That is a safe-to-buy signal, and it
+// must not be earned by a price alone when the safety record was never read.
+function capUnreadRecordVerdict(analysis, market) {
+  if (analysis.deal.grade !== "reasonable") return analysis;
+  analysis.deal = {
+    grade: "inspect",
+    label: "Good price, record unread",
+    reason: `The ask is under the median across ${market.sampleSize} comparable active `
+      + `${market.sellerType} listings, but this vehicle's federal complaint and recall `
+      + "history was not retrieved. That is an unread record, not a clean one."
+  };
+  return analysis;
+}
+
 function tcoFrom(profile, analysis, epa) {
   if (profile?.tco) {
     return {
@@ -1473,6 +1578,24 @@ export default async (request) => {
         getNhtsaFacts(car), within(getEpaFacts(car).catch(() => null), 7_000, null)
       ]); }
       catch (error) {
+        // Losing the federal half does not have to lose the check. The comparable-listing
+        // statistics come from a different service, so a price verdict can still stand —
+        // but only if there is one. With neither source, there is nothing honest to return.
+        const market = await marketPromise;
+        if (market?.status === "ready") {
+          const analysis = marketOnlyAnalysis(car, error?.message);
+          applyMarketVerdict(analysis, car, market);
+          capUnreadRecordVerdict(analysis, market);
+          const limitations = applyListingLimitations(analysis, car, market);
+          return json({
+            analysis, market, limitations, car,
+            facts: factsSummary(null, "federal_unavailable", null),
+            tco: null, profile: null, cached: false,
+            federalStatus: error?.message === "model_not_in_catalog"
+              ? "model_not_in_catalog" : "records_unavailable",
+            catalogModels: asItems(error?.catalogModels)
+          }, 200, { "Cache-Control": "no-store" });
+        }
         if (error?.message === "model_not_in_catalog") {
           return json({ error: "model_not_in_catalog", car,
             catalogModels: asItems(error.catalogModels) }, 200);

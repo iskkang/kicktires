@@ -677,8 +677,9 @@ test("separates a model missing from the NHTSA catalog from NHTSA being down", a
   globalThis.fetch = async url => {
     const parsed = new URL(String(url));
     if (parsed.pathname.includes("/products/vehicle/models")) {
-      return Response.json({ count: 4, results: [
-        { model: "330I XDRIVE" }, { model: "330E" }, { model: "M340I" }, { model: "3 SERIES" }
+      // No "3 SERIES" here, so the series fallback has nothing to reach for either.
+      return Response.json({ count: 3, results: [
+        { model: "330I XDRIVE" }, { model: "330E" }, { model: "M340I" }
       ] });
     }
     throw new Error(`unexpected fetch ${parsed.href}`);
@@ -699,7 +700,7 @@ test("separates a model missing from the NHTSA catalog from NHTSA being down", a
       `expected a catalog miss, got ${JSON.stringify(output.error)}`);
     assert.notEqual(output.error, "records_unavailable",
       "a catalog miss is still being reported as a service outage");
-    assert.deepEqual(output.catalogModels, ["330I XDRIVE", "330E", "M340I", "3 SERIES"],
+    assert.deepEqual(output.catalogModels, ["330I XDRIVE", "330E", "M340I"],
       "the reader is not told which names NHTSA does file this make and year under");
 
     // The listing itself parsed fine; only the federal lookup failed.
@@ -774,5 +775,160 @@ test("analyzes a car submitted as fields without calling the extractor", async (
       ["MARKETCHECK_API_KEY", old.marketKey]]) {
       if (value == null) delete process.env[name]; else process.env[name] = value;
     }
+  }
+});
+
+// A vehicle whose federal record we could not read is not a vehicle with nothing to say.
+// The comparable-listing statistics come from a different service, so a price verdict still
+// stands — provided the missing half is stated rather than papered over.
+test("still returns a price verdict when the federal record cannot be read", async () => {
+  const originalFetch = globalThis.fetch;
+  const old = { provider: process.env.PROVIDER, key: process.env.DEEPSEEK_API_KEY,
+    marketKey: process.env.MARKETCHECK_API_KEY };
+  process.env.PROVIDER = "deepseek";
+  process.env.DEEPSEEK_API_KEY = "test-key";
+  process.env.MARKETCHECK_API_KEY = "market-test-key";
+
+  let modelCalls = 0;
+  const respond = discount => async url => {
+    const target = String(url);
+    if (target.includes("deepseek")) { modelCalls++; throw new Error("model asked to invent risks"); }
+    if (target.includes("/products/vehicle/models")) {
+      // NHTSA answers, under names our model never matches.
+      return Response.json({ count: 2, results: [{ model: "330I XDRIVE" }, { model: "330E" }] });
+    }
+    if (target.startsWith("https://api.marketcheck.com/")) {
+      const median = Math.round(25000 / (1 + discount));
+      return Response.json({ num_found: 120, stats: {
+        price: { count: 120, median, percentiles: { "25.0": median, "75.0": median } },
+        miles: { count: 120, median: 42000 } } });
+    }
+    throw new Error(`unexpected fetch ${target}`);
+  };
+  const check = () => handler(new Request("https://kicktires.test/api/analyze", {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ car: { year: 2021, make: "BMW", model: "330i",
+      mileage: 42000, price: 25000, location: "San Diego, CA" } }) }));
+
+  try {
+    globalThis.fetch = respond(0.18);
+    const overpriced = await (await check()).json();
+    assert.equal(overpriced.error, undefined, "an unread federal record still killed the check");
+    assert.equal(overpriced.federalStatus, "model_not_in_catalog");
+    assert.equal(overpriced.facts.source, "federal_unavailable");
+    assert.equal(overpriced.facts.complaintStatus, "unresolved",
+      "a record we never read must not be reported as resolved");
+    assert.equal(overpriced.facts.complaintTotal, null);
+    assert.equal(overpriced.analysis.deal.grade, "walk");
+    assert.equal(modelCalls, 0, "with no evidence, the model must not be asked for risks");
+    assert.match(overpriced.analysis.risks[0].t, /not retrieved/);
+    assert.equal(overpriced.analysis.risks[0].e[0][1], "OUR TAKE");
+    assert.equal(overpriced.tco, null, "no federal or EPA data means no five-year cost");
+
+    // A price under the median must never read as safe-to-buy when the record is unread:
+    // applyMarketVerdict alone would answer "Smart buy candidate" here.
+    globalThis.fetch = respond(-0.10);
+    const cheap = await (await check()).json();
+    assert.equal(cheap.analysis.deal.grade, "inspect");
+    assert.equal(cheap.analysis.deal.label, "Good price, record unread");
+    assert.notEqual(cheap.analysis.deal.label, "Smart buy candidate");
+    assert.match(cheap.analysis.deal.reason, /unread record, not a clean one/);
+
+    // With neither source there is nothing honest to return, so the error stands.
+    delete process.env.MARKETCHECK_API_KEY;
+    const blind = await (await check()).json();
+    assert.equal(blind.error, "model_not_in_catalog");
+    assert.deepEqual(blind.catalogModels, ["330I XDRIVE", "330E"]);
+  } finally {
+    globalThis.fetch = originalFetch;
+    for (const [name, value] of [["PROVIDER", old.provider], ["DEEPSEEK_API_KEY", old.key],
+      ["MARKETCHECK_API_KEY", old.marketKey]]) {
+      if (value == null) delete process.env[name]; else process.env[name] = value;
+    }
+  }
+});
+
+// NHTSA files some makes by series rather than by trim designation. A real 2020 BMW catalog
+// is "Z4, 2 SERIES, M2 COMPETITION, 3 SERIES, 4 SERIES, M4, 4 SERIES GRAN, 5 SERIES" — no
+// 320I or 330I in it at all, so those checks died with model_not_in_catalog.
+test("reads a trim designation against the series NHTSA actually files", async () => {
+  const originalFetch = globalThis.fetch;
+  const catalog = ["Z4", "2 SERIES", "M2 COMPETITION", "3 SERIES", "4 SERIES", "M4",
+    "4 SERIES GRAN", "5 SERIES"].map(model => ({ model }));
+  globalThis.fetch = async url => {
+    const target = String(url);
+    if (target.includes("/products/vehicle/models")) {
+      return Response.json({ count: catalog.length, results: catalog });
+    }
+    if (target.includes("complaintsByVehicle")) {
+      return Response.json({ count: 1, results: [
+        { odiNumber: "1", components: "ENGINE", summary: "a" }] });
+    }
+    throw new Error(`unexpected fetch ${target}`);
+  };
+  try {
+    const resolved = async model =>
+      (await __test.lookupComplaints({ year: 2020, make: "bmw", model })).resolvedModels;
+
+    assert.deepEqual(await resolved("320i"), ["3 SERIES"]);
+    assert.deepEqual(await resolved("330i"), ["3 SERIES"]);
+    assert.deepEqual(await resolved("530i"), ["5 SERIES"]);
+
+    // The series fallback must not reach past the series it names.
+    assert.deepEqual(await resolved("430i"), ["4 SERIES"],
+      "a 430i picked up 4 SERIES GRAN, a separately filed model");
+
+    // An exact catalog entry still wins, so a name NHTSA does keep is read at that precision.
+    assert.deepEqual(await resolved("m4"), ["M4"],
+      "M4 is filed separately and must not be folded into 4 SERIES");
+    assert.deepEqual(await resolved("z4"), ["Z4"]);
+
+    // A designation with no series in the catalog stays unmatched rather than guessing.
+    assert.deepEqual(await resolved("740i"), []);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+// The catalog NHTSA returns is the only input here. Nothing is hand-maintained, so a make
+// nobody has checked before resolves the same way as one that has — a reader hitting an
+// unseen model does not have to be the discovery mechanism for it.
+test("resolves a model against the live catalog without a hand-maintained table", async () => {
+  const originalFetch = globalThis.fetch;
+  const resolvedFor = async (make, model, catalog) => {
+    globalThis.fetch = async url => String(url).includes("/products/vehicle/models")
+      ? Response.json({ count: catalog.length, results: catalog.map(name => ({ model: name })) })
+      : Response.json({ count: 1, results: [{ odiNumber: "1", components: "ENGINE", summary: "a" }] });
+    return (await __test.lookupComplaints({ year: 2020, make, model })).resolvedModels;
+  };
+
+  try {
+    // Filed by engine designation with no bare entry — the whole line is the record.
+    assert.deepEqual(await resolvedFor("lexus", "rx", ["RX 350", "RX 450H", "RX 350L"]),
+      ["RX 350", "RX 450H", "RX 350L"]);
+    // Naming the designation keeps the precision.
+    assert.deepEqual(await resolvedFor("lexus", "es350", ["ES 350", "ES 300H"]), ["ES 350"]);
+    // Filed by series.
+    assert.deepEqual(await resolvedFor("bmw", "320i", ["Z4", "3 SERIES", "M4"]), ["3 SERIES"]);
+    // Filed by class.
+    assert.deepEqual(await resolvedFor("mercedes-benz", "c300",
+      ["C-CLASS", "GLC-CLASS", "E-CLASS"]), ["C-CLASS"]);
+    assert.deepEqual(await resolvedFor("mercedes-benz", "glc300",
+      ["C-CLASS", "GLC-CLASS"]), ["GLC-CLASS"]);
+
+    // A worded suffix marks a separately sold vehicle, not a trim. Folding any of these in
+    // would put another car's complaint counts in front of a buyer.
+    assert.deepEqual(await resolvedFor("ford", "f150",
+      ["F-150", "F-150 REGULAR CAB", "F-150 LIGHTNING"]), ["F-150", "F-150 REGULAR CAB"]);
+    assert.deepEqual(await resolvedFor("nissan", "rogue", ["ROGUE", "ROGUE SPORT"]), ["ROGUE"]);
+    assert.deepEqual(await resolvedFor("honda", "civic", ["CIVIC", "CIVIC TYPE R"]), ["CIVIC"]);
+    assert.deepEqual(await resolvedFor("toyota", "camry", ["CAMRY", "CAMRY HYBRID"]), ["CAMRY"]);
+    assert.deepEqual(await resolvedFor("audi", "a4", ["A4", "A4 ALLROAD"]), ["A4"]);
+
+    // Nothing plausible in the catalog still resolves to nothing rather than a guess.
+    assert.deepEqual(await resolvedFor("bmw", "740i", ["Z4", "3 SERIES"]), []);
+    assert.deepEqual(await resolvedFor("lexus", "rx", ["GX 460", "NX 300"]), []);
+  } finally {
+    globalThis.fetch = originalFetch;
   }
 });

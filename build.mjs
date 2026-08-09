@@ -569,6 +569,18 @@ function render(output){
     : missing.includes("mileage") ? "Need mileage" : missing.includes("asking price") ? "Need price" : "Risk only";
   const marketNote = market.status === "ready" ? Math.abs(Number(market.deltaPercent || 0)).toFixed(1)+"% vs median" : "No deal grade";
   const federalMetric = complaintHeadline(facts);
+  // A record we could not read has to say so on the face of the verdict, not just in the
+  // body copy. "NHTSA model-year data" under a blank tile would read as a clean record.
+  const federalUnread = facts && facts.source === "federal_unavailable";
+  // NHTSA files some makes by series, so a 320i's record is the 3 Series record. Naming the
+  // record we actually read keeps that from looking like data about the exact trim.
+  const filedAs = (facts && facts.resolvedModels && facts.resolvedModels.complaints || [])
+    .filter(function(name){ return String(name||"").replace(/[^a-z0-9]/gi,"").toLowerCase()
+      !== String(car.model||"").replace(/[^a-z0-9]/gi,"").toLowerCase(); });
+  const federalNote = federalUnread
+    ? (output.federalStatus === "model_not_in_catalog" ? "Not filed under that model name" : "Service did not respond")
+    : filedAs.length ? "NHTSA files this as "+filedAs.slice(0,2).join(", ")
+    : "NHTSA model-year data";
   const tcoResult = output.tco ? totalCost(output.tco,Number(car.price),defaultState) : null;
   const tcoMetric = tcoResult ? dollars(tcoResult.total) : (car.price == null ? "Need price" : "Unavailable");
   const missingAction = missing.length ? '<div class="missing-action"><span><b>Needed:</b> '+html(missingLabel)+
@@ -579,7 +591,7 @@ function render(output){
       '<p class="deal-car">'+html(title)+'</p></div><button class="text-button" type="button" onclick="resetCheck()">Check another</button></div>'+
       '<h2 class="deal-title">'+html(displayLabel)+'</h2><p class="deal-reason">'+html(displayReason)+'</p>'+missingAction+
       '<div class="deal-metrics"><div><span>Market position</span><b>'+html(marketMetric)+'</b><small>'+html(marketNote)+'</small></div>'+
-      '<div><span>Federal record</span><b>'+html(federalMetric)+'</b><small>NHTSA model-year data</small></div>'+
+      '<div'+(federalUnread ? ' class="metric-unread"' : '')+'><span>Federal record</span><b>'+html(federalMetric)+'</b><small>'+html(federalNote)+'</small></div>'+
       '<div><span>Five-year cost</span><b id="dealTcoMetric">'+html(tcoMetric)+'</b><small id="dealTcoState">'+html(STATES[defaultState].n)+' estimate</small></div></div></section>'+
     marketCard(market,grade)+
     '<section class="panel"><div class="carid"><p class="micro">'+html(source)+'</p><p class="cname">'+html(title)+'</p>'+
