@@ -29,7 +29,9 @@ const D = Object.fromEntries([...mergedProfiles.values()].map(profile=>[profile.
     || a[1].meta.mk.localeCompare(b[1].meta.mk)
     || a[1].meta.md.localeCompare(b[1].meta.md)
     || b[1].meta.y - a[1].meta.y));
-const OUT = "dist";
+// Defaults to dist/ — the override exists so a test can build into its own directory instead
+// of racing the other test files for the shared one. Nothing in the build chain sets it.
+const OUT = process.env.KICKTIRES_OUT || "dist";
 const TODAY = process.env.BUILD_DATE || new Date().toISOString().slice(0, 10);
 
 const css = fs.readFileSync("style.css", "utf8");

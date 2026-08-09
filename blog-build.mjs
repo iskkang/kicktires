@@ -9,7 +9,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { readPosts, IMAGES_DIR } from "./scripts/blog/schema.mjs";
 
-const OUT = "dist";
+const OUT = process.env.KICKTIRES_OUT || "dist";
 const SITE = "https://kicktires.netlify.app";
 const NAME = "KickTires";
 const AUTHOR = "KickTires Editorial";

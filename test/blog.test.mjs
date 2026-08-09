@@ -1,7 +1,12 @@
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
 import test from "node:test";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const ROOT = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 
 import { validatePost, slugify, normalizeKeyword, wordCount } from "../scripts/blog/schema.mjs";
 import { codeReview, unsupportedNumbers, similarity } from "../scripts/blog/review.mjs";
@@ -272,14 +277,31 @@ test("keyword ranking skips what is published and never invents search volume", 
 });
 
 /* ── rendered output ──────────────────────────────────────────── */
-test("a published post is served as static HTML with its metadata", { skip: !fs.existsSync("dist/blog") }, () => {
-  const list = fs.readFileSync("dist/blog/index.html", "utf8");
+// Builds its own fixture into its own directory. Test files run as parallel processes, so
+// sharing dist/ with build.test.mjs meant reading a directory the other process was midway
+// through rewriting — the test either exploded on a missing file or skipped itself into being
+// worthless. KICKTIRES_OUT keeps the two apart.
+test("a published post is served as static HTML with its metadata", () => {
+  const out = fs.mkdtempSync(path.join(os.tmpdir(), "kicktires-blog-"));
+  const run = script => execFileSync(process.execPath, [script],
+    { cwd: ROOT, stdio: "pipe", env: { ...process.env, KICKTIRES_OUT: out } });
+  try {
+    run("build.mjs");
+    run("blog-build.mjs");
+    assertBlogOutput(out);
+  } finally {
+    fs.rmSync(out, { recursive: true, force: true });
+  }
+});
+
+function assertBlogOutput(dir) {
+  const list = fs.readFileSync(path.join(dir, "blog", "index.html"), "utf8");
   assert.match(list, /Used car research/);
 
-  const slugs = fs.readdirSync("dist/blog", { withFileTypes: true })
+  const slugs = fs.readdirSync(path.join(dir, "blog"), { withFileTypes: true })
     .filter(entry => entry.isDirectory()).map(entry => entry.name);
   for (const slug of slugs) {
-    const html = fs.readFileSync(path.join("dist/blog", slug, "index.html"), "utf8");
+    const html = fs.readFileSync(path.join(dir, "blog", slug, "index.html"), "utf8");
     const blocks = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)];
     const types = blocks.map(block => JSON.parse(block[1])["@type"]);
     assert.equal(types.includes("BlogPosting"), true, `${slug} has no BlogPosting`);
@@ -291,10 +313,11 @@ test("a published post is served as static HTML with its metadata", { skip: !fs.
     assert.equal(html.includes('<div class="bl-body">'), true);
     assert.equal(html.length > 4000, true, `${slug} looks empty`);
   }
-  assert.match(fs.readFileSync("dist/methodology/index.html", "utf8"), /How we research a used car/);
-  assert.match(fs.readFileSync("dist/author/kicktires-editorial/index.html", "utf8"), /KickTires Editorial/);
-  assert.match(fs.readFileSync("dist/blog/rss.xml", "utf8"), /<rss version="2.0"/);
-});
+  const read = (...parts) => fs.readFileSync(path.join(dir, ...parts), "utf8");
+  assert.match(read("methodology", "index.html"), /How we research a used car/);
+  assert.match(read("author", "kicktires-editorial", "index.html"), /KickTires Editorial/);
+  assert.match(read("blog", "rss.xml"), /<rss version="2.0"/);
+}
 
 test("word counting reads the body a reader actually sees", () => {
   assert.equal(wordCount({ body: [{ paragraphs: ["one two three"], bullets: ["four five"] }] }), 5);
