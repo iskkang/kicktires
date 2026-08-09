@@ -1,0 +1,175 @@
+{
+  "vehicle": {
+    "year": 2018,
+    "make": "Toyota",
+    "model": "Camry",
+    "resolvedModels": [
+      "CAMRY"
+    ]
+  },
+  "retrievedAt": "2026-08-09T14:51:16.043Z",
+  "sources": [
+    {
+      "id": "nhtsa-catalog",
+      "url": "https://api.nhtsa.gov/products/vehicle/models?modelYear=2018&make=Toyota&issueType=c",
+      "retrievedAt": "2026-08-09T14:51:16.043Z",
+      "note": "NHTSA model catalog for this make and model year"
+    },
+    {
+      "id": "nhtsa-complaints-camry",
+      "url": "https://api.nhtsa.gov/complaints/complaintsByVehicle?make=Toyota&model=CAMRY&modelYear=2018",
+      "retrievedAt": "2026-08-09T14:51:16.043Z",
+      "note": "Consumer complaints filed with NHTSA for 2018 Toyota CAMRY"
+    },
+    {
+      "id": "nhtsa-recalls-camry",
+      "url": "https://api.nhtsa.gov/recalls/recallsByVehicle?make=Toyota&model=CAMRY&modelYear=2018",
+      "retrievedAt": "2026-08-09T14:51:16.043Z",
+      "note": "Recall campaigns issued for 2018 Toyota CAMRY"
+    }
+  ],
+  "complaints": {
+    "kind": "consumer_submitted",
+    "total": 731,
+    "crashes": 46,
+    "fires": 4,
+    "injuries": 45,
+    "topComponents": [
+      {
+        "component": "POWER TRAIN",
+        "count": 190,
+        "examples": [
+          "My transmission is experiencing slipping, which causes the engine to rev up without delivering power to the wheels when I accelerate. This delay in gear engagement creates a high-safety risk during merges and passes because my vehicle cannot match traffic speeds predictably. Also, when pulling out onto a busy road I am",
+          "The transmission in my 2018 Toyota Camry XSE with 124k miles went out even after getting regular maintenance. There is currently a class action law suit for this issue and a recall needs to be initiated."
+        ]
+      },
+      {
+        "component": "SERVICE BRAKES",
+        "count": 162,
+        "examples": [
+          "The contact owns a 2018 Toyota Camry. The contact stated while drivng at an undisclosed speed, the brake pedal was depressed, however the vehicle failed to stop as intended. The vehicle was towed to the dealer ted after several attempts, the vehicle eventually started. The contact stated while driving at an undisclosed",
+          "2018 Camry XSE, Vacuum pump went on my car less then a year ago. I had my car towed to the dealership for the recall to be fixed. Since that incident my car hasn’t been the same. While stopped at a light my dash board lite up with every issue the car could possibly have. Lane departure assist, secondary breaking system"
+        ]
+      },
+      {
+        "component": "ENGINE",
+        "count": 135,
+        "examples": [
+          "The contact owns a 2018 Toyota Camry. The contact stated that while her son was driving at an undisclosed speed, the check engine warning light illuminated, and the message “See Dealer” was displayed. The vehicle was taken to a dealer, but the dealer was unable to determine the cause of the failure. The vehicle was the",
+          "The contact owns a 2018 Toyota Camry. The contact stated while driving 40 MPH, the vehicle chugged, and the check engine warning light illuminated. The contact drove to her destination, where an acquaintance used a vehicle diagnostic scanner to retrieve DTC: P26CB, indicating a malfunction with the electric engine cool"
+        ]
+      },
+      {
+        "component": "UNKNOWN OR OTHER",
+        "count": 97,
+        "examples": [
+          "I am writing to report two serious safety incidents involving my Tesla Model 3 Full Self-Driving (FSD). First Incident: On XXX at approximately 8:00 a.m., I was traveling on [XXX], with Full Self-Driving engaged. Without any warning, the vehicle suddenly steered to the right, struck a mailbox, broke the right-side mirr",
+          "When driving, the car would go into limp mode and wouldn’t get out of 2nd gear. it was super jerky as well. when taken to a mechanic, it was diagnosed with malfunctioning transmission among some other things such as brakes and tires. we take fairly great care of our vehicles and get them seen for regular maintenance. o"
+        ]
+      },
+      {
+        "component": "VEHICLE SPEED CONTROL",
+        "count": 72,
+        "examples": [
+          "When driving, the car would go into limp mode and wouldn’t get out of 2nd gear. it was super jerky as well. when taken to a mechanic, it was diagnosed with malfunctioning transmission among some other things such as brakes and tires. we take fairly great care of our vehicles and get them seen for regular maintenance. o",
+          "On March 19, 2026, I was driving to work when traffic began to slow, and I reduced my speed accordingly. As traffic started to return to normal speed, I pressed the accelerator; however, although the engine revved, the vehicle did not accelerate beyond approximately 15 mph. I safely moved to the side of the road and tu"
+        ]
+      },
+      {
+        "component": "FUEL/PROPULSION SYSTEM",
+        "count": 71,
+        "examples": [
+          "Toyota has recognized a problem with the low pressure fuel pump on some 2018 Camry cars which causes a hesitation when driving from a stop creating a rear danger of a rear-end collision. It has been happening intermitantly everysince car was new.. Toyota claimed that my vin was not one of the ones recalled even though ",
+          "Car stalled while driving and needed to be towed to dealership. Dealership confirmed that there was coolant intrusion into the engine that clogged the fuel injector causing the car to stall while driving. Dealership informed us that car will need a new engine and transmission because of the coolant intrusion. The car s"
+        ]
+      },
+      {
+        "component": "ELECTRICAL SYSTEM",
+        "count": 65,
+        "examples": [
+          "ICS malfunction error light and check engine light came on. I received a recall notice that this was being looked into but now the water pump has went out. The car is overheating.",
+          "Odometer Fraud. The contact purchased a 2018 Toyota Camry. It was discovered that there was a mileage discrepancy. The vehicle was a private sale. At the time of purchase, the vehicle mileage was 90,328, and at the time of registration, it was discovered that the mileage was 294,568."
+        ]
+      },
+      {
+        "component": "STEERING",
+        "count": 60,
+        "examples": [
+          "The steering has become hard. There are no lights showing on my dashboard. The steering is hitching, catching, and hard to return to the center during slow and fast speeds. I feel it is very unsafe to drive. I have called the toyota service and they said there is an active warranty/recall for this specific issue (custo",
+          "The contact owns a 2018 Toyota Camry. The contact stated while driving, especially at slower speeds, the steering when is difficult to returned back to the center. The vehicle was taken to an independent, mechanic where it was not diagnosed or repaired; however, the steering shaft was sprayed with WD-40. The manufactur"
+        ]
+      }
+    ]
+  },
+  "recalls": {
+    "kind": "official_campaign",
+    "total": 8,
+    "campaigns": [
+      {
+        "campaign": "19V503000",
+        "component": "EQUIPMENT:OTHER:LABELS",
+        "summary": "Southeast Toyota Distributors, LLC (SET) is recalling certain 2017-2019 Toyota Camry, Corolla, Rav4, Sienna, and Yaris iA vehicles equipped with factory-installed floor mats. The load carrying capacity modification label may be incorrect. As such, these vehicles fail to comply with the requirements of Federal Motor Vehicle Safety Standard (FMVSS) number 110, \"Tire Selection and Rims.\"",
+        "consequence": "An incorrect label may lead to unintentionally overloading the vehicle, increasing the risk of a crash.",
+        "remedy": "SET will notify owners and provide a corrected label for placement over the inaccurate label, free of charge. The recall began August 23, 2019. Owners may contact Toyota customer service at 1-888-270-9371. SET's number for this recall is SET19A.",
+        "reportReceivedDate": "28/06/2019"
+      },
+      {
+        "campaign": "18V108000",
+        "component": "FUEL SYSTEM, GASOLINE:DELIVERY:HOSES, LINES/PIPING, AND FITTINGS",
+        "summary": "Toyota Motor Engineering & Manufacturing (Toyota) is recalling certain 2018 Toyota Camry vehicles equipped with V6 engines. These vehicles have fuel delivery pipes that may not be properly connected to the fuel hoses in the engine compartment.",
+        "consequence": "The improperly connected hoses may leak fuel, which, in the presence of an ignition source, can increase the risk of a fire.",
+        "remedy": "Toyota will notify owners, and dealers will inspect the fuel pipes for the correct installation, correcting them as necessary, free of charge. The recall is expected to begin March 30, 2018. Owners may contact Toyota customer service at 1-888-270-9371. Toyota's number for this recall is J0G.",
+        "reportReceivedDate": "14/02/2018"
+      },
+      {
+        "campaign": "18V200000",
+        "component": "ENGINE AND ENGINE COOLING:ENGINE",
+        "summary": "Toyota Motor Engineering & Manufacturing (Toyota) is recalling certain 2018 Toyota Camry vehicles equipped with a 2.5L, four-cylinder engine. The pistons on these vehicles may be larger than specified, possibly causing the engine to stall.",
+        "consequence": "An engine stall can increase the risk of a crash.",
+        "remedy": "Toyota will notify owners, and dealers will inspect the production date codes of the pistons and, if an engine contains a piston from the affected production period, the engine assembly will be replaced, free of charge. The recall is expected to begin May 25, 2018. Owners may contact Toyota customer service at 1-888-270-9371. Toyota's number for this recall is J1M/J0M.",
+        "reportReceivedDate": "28/03/2018"
+      },
+      {
+        "campaign": "18V211000",
+        "component": "SERVICE BRAKES, HYDRAULIC:POWER ASSIST:VACUUM",
+        "summary": "Toyota Motor Engineering & Manufacturing (Toyota) is recalling certain 2018 Toyota Camry and Highlander vehicles, 2017 Toyota Sienna and Tacoma vehicles and 2017 Lexus RX350 vehicles. During the manufacturing process, the oil galley in the rotor for the brake booster vacuum pump assembly may have been improperly machined possibly resulting in a sudden loss of brake assist.",
+        "consequence": "A sudden loss of braking assist can increase the risk of a crash.",
+        "remedy": "Toyota will notify owners, and dealers will replace the brake booster vacuum pump, free of charge. The recall began on May 9, 2018. Owners may contact Toyota customer service at 1-888-270-9371, or Lexus customer service at 1-800-255-3987. Toyota's numbers for this recall are J0K/JLD.",
+        "reportReceivedDate": "03/04/2018"
+      },
+      {
+        "campaign": "20V682000",
+        "component": "FUEL SYSTEM, GASOLINE:DELIVERY:FUEL PUMP",
+        "summary": "Toyota Motor Engineering & Manufacturing (Toyota) is recalling certain 2018-2019 4Runner, 2019-2020 Avalon, 2019 Corolla Hatchback, 2017-2019 Highlander, 2018-2020 Camry, 2020 Corolla, 2018-2019 Land Cruiser, 2017-2020 Tacoma, 2019-2020 RAV4, 2019-2020 Sequoia, 2017-2020 Sienna, 2019-2020 Tundra, 2018-2020 Lexus ES350, 2017 Lexus GS200t, 2017-2019 Lexus GS350, 2019 Lexus GS300, 2018-2020 Lexus LC500h, 2019-2020 Lexus LS500, 2018-2019 Lexus GX460, 2017 Lexus IS200t, 2019 Lexus IS300, 2019 Lexus IS350, 2018-2020 Lexus LC500, 2018 Lexus LS500, 2019 Lexus LS500h, 2018-2019 Lexus LX570, 2017 Lexus ",
+        "consequence": "If the fuel pump fails, the engine can stall while driving, increasing the risk of a crash.",
+        "remedy": "Toyota will notify owners, and dealers will replace the fuel pump assembly with an improved one, free of charge. Owners of specific models were notified that remedy parts were available starting January 21, 2021. Owners of other models will be notified as remedy parts become available. Remedy parts should be available for all affected vehicles by late March 2021. Owners may contact Toyota customer service at 1-888-270-9371 or Lexus customer service at 1-800-255-3987. Note: This recall is an expansion of recall 20V-012. Toyota's number for this recall is 20TA02. Lexus' number for this recall is",
+        "reportReceivedDate": "04/11/2020"
+      },
+      {
+        "campaign": "21V890000",
+        "component": "SERVICE BRAKES, HYDRAULIC:POWER ASSIST:VACUUM",
+        "summary": "Toyota Motor Engineering & Manufacturing (Toyota) is recalling certain 2018-2019 Camry vehicles. The vane cap inside the vacuum pump may break, causing the pump to fail, which could result in a sudden loss of braking assist.",
+        "consequence": "A sudden loss of braking assist can increase the risk of a crash.",
+        "remedy": "Dealers will repair or replace the vacuum pump, as necessary, free of charge. Owner notification letters were mailed May 16, 2022. Owners may contact Toyota customer service at 1-800-331-4331.",
+        "reportReceivedDate": "17/11/2021"
+      },
+      {
+        "campaign": "20V012000",
+        "component": "FUEL SYSTEM, GASOLINE:DELIVERY:FUEL PUMP",
+        "summary": "Toyota Motor Engineering & Manufacturing (Toyota) recalled certain 2018-2019 4Runner, Highlander, Camry, Land Cruiser, Sequoia, Sienna, Tacoma and Tundra, and Lexus RC 300, RC 350, GS 350, GX 460, IS 300, LC 500, LS 500, LX 570, RX 350L, and 2019 Toyota Avalon and Corolla, and certain Lexus NX 300, and ES 350 vehicles on January 13, 2020. On March 4, 2020, Toyota expanded the recall to include certain 2014-2015 Toyota 4Runner and Land Cruiser, 2018 Avalon, Corolla, 2014 FJ Cruiser, 2017 Sienna and Lexus 2018 ES 350, 2018-2019 GS 300, 2013-2014 GS350, 2014-2015 GX 460, IS 350 and LX 570, 2014 I",
+        "consequence": "If the fuel pump fails, the engine can stall while driving, increasing the risk of a crash.",
+        "remedy": "Toyota will notify owners, and dealers will replace the fuel pump, free of charge. The recall began May 4, 2020. Owners may contact Toyota customer service at 1-888-270-9371 or Lexus customer service at 1-800-255-3987. Toyota's numbers for this recall are 20TB02 and 20TA02 for Toyota vehicles and 20LB01 and 20LA01 for Lexus vehicles.",
+        "reportReceivedDate": "13/01/2020"
+      },
+      {
+        "campaign": "25V028000",
+        "component": "FUEL SYSTEM, GASOLINE:DELIVERY:FUEL PUMP",
+        "summary": "Toyota Motor Engineering & Manufacturing (Toyota) is recalling certain 2018 Camry, 2019 Lexus NX300, and 2019 RX350L vehicles. The low-pressure fuel pump inside the fuel tank may fail.",
+        "consequence": "Fuel pump failure can cause an engine stall, increasing the risk of a crash.",
+        "remedy": "Dealers will replace the fuel pump assembly, free of charge. Owner notification letters were mailed March 12, 2025. Owners may contact Toyota's customer service at 1-800-331-4331. Toyota's numbers for this recall are 25TA01 and 25LA01.",
+        "reportReceivedDate": "22/01/2025"
+      }
+    ]
+  },
+  "snapshotHash": "bf3c1269dea98ec5aab39a142fdc9a92"
+}

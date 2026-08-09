@@ -1,0 +1,70 @@
+{
+  "startedAt": "2026-08-09T14:51:16.036Z",
+  "stages": [
+    {
+      "name": "keyword",
+      "at": "2026-08-09T14:51:16.042Z",
+      "detail": "2018 Toyota Camry problems"
+    },
+    {
+      "name": "evidence",
+      "at": "2026-08-09T14:51:18.696Z",
+      "detail": "731 complaints, 8 recalls, resolved as CAMRY"
+    },
+    {
+      "name": "image",
+      "at": "2026-08-09T14:51:19.789Z",
+      "detail": "licensed_photo: /blog-images/2018-toyota-camry-problems/2018-toyota-camry-problems-hero.jpg"
+    },
+    {
+      "name": "review",
+      "at": "2026-08-09T14:51:33.793Z",
+      "detail": "attempt 1 failed code review (1)"
+    },
+    {
+      "name": "review",
+      "at": "2026-08-09T14:51:48.765Z",
+      "detail": "attempt 2 failed code review (1)"
+    },
+    {
+      "name": "review",
+      "at": "2026-08-09T14:52:01.669Z",
+      "detail": "attempt 3 failed code review (1)"
+    },
+    {
+      "name": "publish",
+      "at": "2026-08-09T14:52:01.669Z",
+      "detail": "not published: review failed after all attempts"
+    }
+  ],
+  "status": "review_failed",
+  "keyword": {
+    "primaryKeyword": "2018 Toyota Camry problems",
+    "intent": "problems",
+    "score": 145,
+    "reasons": [
+      "intent \"problems\" sits 10/10 on purchase proximity",
+      "federal record: 731 complaints, 8 recall campaigns",
+      "no post covers this vehicle yet"
+    ],
+    "vehicle": {
+      "year": 2018,
+      "make": "Toyota",
+      "model": "Camry",
+      "slug": "2018-toyota-camry-problems",
+      "complaints": 731,
+      "recalls": 8
+    }
+  },
+  "slug": null,
+  "failures": [
+    "complaint_as_defect: \"confirmed defect\""
+  ],
+  "provider": {
+    "provider": "deepseek",
+    "envVar": "DEEPSEEK_API_KEY",
+    "configured": true
+  },
+  "finishedAt": "2026-08-09T14:52:01.669Z",
+  "dryRun": false
+}
