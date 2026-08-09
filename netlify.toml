@@ -10,6 +10,8 @@
 [build.environment]
   NODE_VERSION = "20"
 
+# The function must NOT declare a `path` of its own, or this rewrite target stops
+# existing and every check 404s. See the config block in netlify/functions/analyze.mjs.
 [[redirects]]
   from = "/api/analyze"
   to = "/.netlify/functions/analyze"

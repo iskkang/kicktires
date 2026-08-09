@@ -285,14 +285,17 @@ function parseObviousPastedListing(input) {
     const phrase = FAST_MODEL_PHRASES.find(value => lowerAfterMake === value
       || lowerAfterMake.startsWith(value + " "));
     const token = afterMake.match(/^([a-z0-9]+(?:[-/][a-z0-9]+)*)\b/i)?.[1] || "";
-    const model = phrase || (/\d|-/.test(token) ? token : "");
+    // A clear listing title may use an alphabetic-only model name (Frontier, Altima, Camry, Accord, etc.).
+    // The old rule incorrectly required a digit or hyphen and forced these obvious listings through the LLM extractor.
+    const model = phrase || token;
     if (!model) continue;
 
     const trim = afterMake.slice(model.length).replace(/^[\s:|,;\-–—]+/, "").trim() || null;
     const priceMatch = source.match(/(?:\$\s*|USD\s*)(\d{1,3}(?:,\d{3})+|\d{3,7})(?:\.\d{2})?/i);
     const mileageMatch = source.match(/\b(\d{1,3}(?:,\d{3})+|\d{1,6})\s*(?:miles?|mi)\b/i);
     const vinMatch = source.toUpperCase().match(/\b[A-HJ-NPR-Z0-9]{17}\b/);
-    const location = lines.find(value => /^[A-Za-z .'-]+,\s*[A-Z]{2}(?:\s+\d{5})?$/.test(value)) || null;
+    const locationLine = lines.find(value => /^[A-Za-z .'-]+,\s*[A-Z]{2}(?:\s+\d{5})?(?:\s+\(\d+\s*mi\))?$/.test(value)) || null;
+    const location = locationLine?.replace(/\s+\(\d+\s*mi\)$/i, "") || null;
     const notes = [];
     if (/\bas[ -]?is\b/i.test(source)) notes.push("as is");
     if (/\b(?:salvage|rebuilt) title\b/i.test(source)) notes.push("title issue disclosed");
@@ -1442,9 +1445,13 @@ const json = (value, status = 200, extra = {}) => new Response(JSON.stringify(va
   headers: { "Content-Type": "application/json; charset=utf-8", ...extra }
 });
 
+// Deliberately no `path` here. Declaring one stops Netlify serving the function at its
+// default /.netlify/functions/analyze endpoint, and netlify.toml force-rewrites
+// /api/analyze to exactly that endpoint — so both addresses 404'd and the function was
+// unreachable despite bundling cleanly. Without `path`, the default endpoint exists again
+// and the rewrite has something real to point at, so both addresses work.
+// `method` is dropped with it; the handler already answers non-POST with 405.
 export const config = {
-  path: "/api/analyze",
-  method: "POST",
   rateLimit: {
     windowLimit: 10,
     windowSize: 60,
