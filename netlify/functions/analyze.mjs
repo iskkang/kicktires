@@ -601,9 +601,14 @@ function resolveProvider() {
 // older shape to them fails the whole check with an opaque 400.
 const isReasoningModel = model => /^(?:o\d|gpt-5)/i.test(String(model || ""));
 
-async function callModel(system, user, maxTokens = 2400, temperature = 0.2, timeoutMs = 11_000) {
+// A verdict is not a place for sampling variety: the same listing against the same fixed
+// evidence must not come back "Walk away" one minute and "Price needs explaining" the next.
+// Both grading calls run at temperature 0 with a seed derived from the listing, so repeated
+// checks land on the same answer as far as the provider allows.
+async function callModel(system, user, maxTokens = 2400, temperature = 0.2, timeoutMs = 11_000, seed = null) {
   const timeout = Math.max(1_000,Math.min(20_000,Math.round(timeoutMs)));
   const provider = resolveProvider();
+  const stableSeed = Number.isInteger(seed) ? { seed } : {};
   if (provider === "openai") {
     if (!process.env.OPENAI_API_KEY) throw new Error("missing_key");
     const model = process.env.OPENAI_MODEL || "gpt-4o-mini";
@@ -621,7 +626,7 @@ async function callModel(system, user, maxTokens = 2400, temperature = 0.2, time
         response_format: { type: "json_object" },
         ...(reasoning
           ? { max_completion_tokens: maxTokens }
-          : { max_tokens: maxTokens, temperature })
+          : { max_tokens: maxTokens, temperature, ...stableSeed })
       })
     });
     if (!response.ok) throw new Error(`provider_${response.status}`);
@@ -664,7 +669,8 @@ async function callModel(system, user, maxTokens = 2400, temperature = 0.2, time
       messages: [{ role: "system", content: system }, { role: "user", content: user }],
       response_format: { type: "json_object" },
       temperature,
-      max_tokens: maxTokens
+      max_tokens: maxTokens,
+      ...stableSeed
     })
   });
   if (!response.ok) throw new Error(`provider_${response.status}`);
@@ -1165,8 +1171,20 @@ async function getMarketComparison(car) {
 }
 
 /* ── cache helpers ────────────────────────────────────────────── */
+// A store that cannot be opened disables caching silently, which costs a model call on
+// every check and lets the same listing be graded fresh — and differently — each time.
+// Report it once per container so the reason is visible in the function log instead of
+// being inferred from verdicts that will not sit still.
+const reportedStoreFailures = new Set();
 function openStore(name) {
-  try { return getStore(name); } catch { return null; }
+  try { return getStore(name); } catch (error) {
+    if (!reportedStoreFailures.has(name)) {
+      reportedStoreFailures.add(name);
+      console.error(`blob store "${name}" unavailable; caching disabled for it: `
+        + `${error?.message || "unknown"}`);
+    }
+    return null;
+  }
 }
 
 async function readCache(store, key, days) {
@@ -1355,6 +1373,9 @@ export default async (request) => {
     seller: car.seller, notes: car.notes,
     profile: profile ? hash(JSON.stringify(profile)) : null
   }));
+  // Same listing, same seed. Providers treat this as best-effort, but combined with
+  // temperature 0 it stops identical checks drifting between verdicts.
+  const verdictSeed = Number.parseInt(listingFingerprint.slice(0, 8), 16);
   const analysisStore = openStore("deal-analyses");
   const cached = await readCache(analysisStore, listingFingerprint, ANALYSIS_CACHE_DAYS);
   if (cached) {
@@ -1389,7 +1410,7 @@ export default async (request) => {
             risks: profile.risks,
             annualCostEstimates: profile.tco
           }
-        }, null, 1), 900, 0.15, budget));
+        }, null, 1), 900, 0, budget, verdictSeed));
       } catch (error) {
         console.error("reviewed assessment timed out; using reviewed profile", error?.message || "unknown");
       }
@@ -1421,7 +1442,7 @@ export default async (request) => {
         rawAnalysis = asJson(await callModel(ANALYZE_LIVE, JSON.stringify({
           vehicle: car,
           ...liveModelEvidence(evidence)
-        }), 1300, 0.15, budget));
+        }), 1300, 0, budget, verdictSeed));
       } catch (error) {
         console.error("live analysis timed out; using federal-record fallback", error?.message || "unknown");
       }

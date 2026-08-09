@@ -540,3 +540,65 @@ test("the function keeps the default endpoint that netlify.toml rewrites to", as
   assert.match(toml, /from = "\/api\/analyze"\s*\n\s*to = "\/\.netlify\/functions\/analyze"/,
     "netlify.toml no longer maps /api/analyze to the function");
 });
+
+// The same listing against the same fixed evidence came back "Walk away" on one call and
+// "Price needs explaining" on the next: applyMarketVerdict lets the model's ownership grade
+// short-circuit every market branch, so one sampled token flipped the headline verdict.
+test("grades a listing deterministically across repeated checks", async () => {
+  const originalFetch = globalThis.fetch;
+  const old = {
+    provider: process.env.PROVIDER, openaiKey: process.env.OPENAI_API_KEY,
+    deepseekKey: process.env.DEEPSEEK_API_KEY, marketKey: process.env.MARKETCHECK_API_KEY
+  };
+  process.env.PROVIDER = "openai";
+  process.env.OPENAI_API_KEY = "sk-test-key";
+  delete process.env.DEEPSEEK_API_KEY;
+  process.env.MARKETCHECK_API_KEY = "market-test-key";
+
+  const grading = [];
+  globalThis.fetch = async (url, options = {}) => {
+    const target = String(url);
+    if (target === "https://api.openai.com/v1/chat/completions") {
+      const body = JSON.parse(options.body);
+      grading.push({ temperature: body.temperature, seed: body.seed });
+      return Response.json({ choices: [{ message: { content: JSON.stringify({
+        deal: { grade: "caution", label: "Cheap for a reason", reason: "r" },
+        vline: "v", vsub: "s" }) } }] });
+    }
+    if (target.startsWith("https://api.marketcheck.com/")) {
+      return Response.json({ num_found: 133, stats: {
+        price: { count: 133, median: 13776, percentiles: { "25.0": 11994, "75.0": 14995 } },
+        miles: { count: 133, median: 91000 } } });
+    }
+    throw new Error(`unexpected fetch ${target}`);
+  };
+
+  const check = text => handler(new Request("https://kicktires.test/api/analyze", {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ text }) }));
+
+  try {
+    const listing = "2019 Nissan Altima S, 91,000 miles, $7,900, sold as is";
+    const verdicts = [];
+    for (let run = 0; run < 3; run++) verdicts.push((await (await check(listing)).json()).analysis.deal);
+
+    assert.equal(new Set(verdicts.map(v => `${v.grade}|${v.label}`)).size, 1,
+      `verdict drifted across identical checks: ${JSON.stringify(verdicts)}`);
+    assert.equal(grading.every(call => call.temperature === 0), true,
+      "a grading call still samples at a non-zero temperature");
+    assert.equal(new Set(grading.map(call => call.seed)).size, 1,
+      "the same listing did not reuse one seed");
+
+    // A shared seed across every car would be a different bug: the seed must follow the listing.
+    const before = grading.length;
+    await check("2019 Nissan Altima S, 60,000 miles, $11,200");
+    assert.notEqual(grading.at(-1).seed, grading[before - 1].seed,
+      "a different listing reused the previous listing's seed");
+  } finally {
+    globalThis.fetch = originalFetch;
+    for (const [name, value] of [["PROVIDER", old.provider], ["OPENAI_API_KEY", old.openaiKey],
+      ["DEEPSEEK_API_KEY", old.deepseekKey], ["MARKETCHECK_API_KEY", old.marketKey]]) {
+      if (value == null) delete process.env[name]; else process.env[name] = value;
+    }
+  }
+});
