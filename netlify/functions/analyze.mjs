@@ -265,6 +265,9 @@ function normalizeCar(raw) {
   };
 }
 
+// Where the trim name ends and the listing's own numbers begin, on a single-line paste.
+const LISTING_DATA = /\b\d[\d,]*\s*(?:mi|miles?)\b|\$\s*\d|\b\d[\d,]*(?:\.\d{2})?\s*(?:usd|dollars?)\b/i;
+
 function parseObviousPastedListing(input) {
   const source = String(input || "");
   const lines = source.split(/\r?\n/).map(line => clipped(line, 260)).filter(Boolean);
@@ -290,8 +293,18 @@ function parseObviousPastedListing(input) {
     const model = phrase || token;
     if (!model) continue;
 
-    const trim = afterMake.slice(model.length).replace(/^[\s:|,;\-–—]+/, "").trim() || null;
-    const priceMatch = source.match(/(?:\$\s*|USD\s*)(\d{1,3}(?:,\d{3})+|\d{3,7})(?:\.\d{2})?/i);
+    // A one-line paste puts mileage, price and city on the same line as the title. Keeping
+    // everything after the model as the trim made the heading read
+    // "2019 nissan altima S, 91,000 miles, $7,900, sold as is", and fed that noise into the
+    // cache key, so the same car parsed differently depending on how it was typed.
+    const rawTrim = afterMake.slice(model.length).replace(/^[\s:|,;\-–—]+/, "");
+    const dataStart = rawTrim.search(LISTING_DATA);
+    const trim = (dataStart >= 0 ? rawTrim.slice(0, dataStart) : rawTrim)
+      .replace(/[\s:|,;\-–—]+$/, "").trim() || null;
+    // A price can be written either way round. Only the leading form was recognised, so
+    // "25000usd" silently became no price at all and the check reported missing data.
+    const priceMatch = source.match(/(?:\$\s*|USD\s*)(\d{1,3}(?:,\d{3})+|\d{3,7})(?:\.\d{2})?/i)
+      || source.match(/\b(\d{1,3}(?:,\d{3})+|\d{3,7})(?:\.\d{2})?\s*(?:usd|dollars?)\b/i);
     const mileageMatch = source.match(/\b(\d{1,3}(?:,\d{3})+|\d{1,6})\s*(?:miles?|mi)\b/i);
     const vinMatch = source.toUpperCase().match(/\b[A-HJ-NPR-Z0-9]{17}\b/);
     const locationLine = lines.find(value => /^[A-Za-z .'-]+,\s*[A-Z]{2}(?:\s+\d{5})?(?:\s+\(\d+\s*mi\))?$/.test(value)) || null;

@@ -602,3 +602,53 @@ test("grades a listing deterministically across repeated checks", async () => {
     }
   }
 });
+
+// These fixtures used to live inside analyzer-parser-fix.mjs, a build step that patched this
+// parser and then checked its own reimplementation of the patched logic — so it could pass
+// while the shipped parser did something else. They belong against the real parser.
+test("reads one-line pastes without swallowing the listing data into the trim", () => {
+  // The reported failure: a price written as "25000usd" produced no price at all, and the
+  // trim kept the rest of the line, which then reached the vehicle heading and the cache key.
+  const bmw = __test.parseObviousPastedListing("2021 bmw 330i 42000mi 25000usd, san diego");
+  assert.deepEqual(
+    { year: bmw.year, make: bmw.make, model: bmw.model, trim: bmw.trim,
+      mileage: bmw.mileage, price: bmw.price },
+    { year: 2021, make: "bmw", model: "330i", trim: null, mileage: 42000, price: 25000 }
+  );
+
+  const altima = __test.parseObviousPastedListing(
+    "2019 Nissan Altima S, 91,000 miles, $7,900, sold as is");
+  assert.equal(altima.trim, "S", "the trim kept the mileage, price and disclosure text");
+  assert.equal(altima.price, 7900);
+  assert.equal(altima.mileage, 91000);
+  assert.deepEqual(altima.notes, ["as is"]);
+
+  // Leading and trailing currency must both read as the same price.
+  for (const text of ["2021 BMW 330i, 42,000 miles, $25,000", "2021 BMW 330i 42,000 mi 25000 USD",
+    "2021 BMW 330i 42,000 mi 25,000 dollars"]) {
+    assert.equal(__test.parseObviousPastedListing(text).price, 25000, text);
+  }
+});
+
+test("keeps a real trim name that is not listing data", () => {
+  const frontier = __test.parseObviousPastedListing(`Used 2023 Nissan Frontier PRO-4X
+
+$37,640
+Mileage
+29,891 mi
+Glendale Nissan
+Glendale Heights, IL (23 mi)`);
+  assert.deepEqual(
+    { year: frontier.year, make: frontier.make, model: frontier.model, trim: frontier.trim,
+      price: frontier.price, mileage: frontier.mileage, location: frontier.location },
+    { year: 2023, make: "nissan", model: "frontier", trim: "PRO-4X",
+      price: 37640, mileage: 29891, location: "Glendale Heights, IL" }
+  );
+
+  assert.equal(__test.parseObviousPastedListing(
+    "Certified 2025 Cadillac XT6 Premium Luxury AWD/4WD\nBradenton, FL\n$52,988").trim,
+    "Premium Luxury AWD/4WD");
+  assert.equal(__test.parseObviousPastedListing(
+    "Used 2023 Tesla Model Y Performance AWD/4WD\nSterling, VA\n$24,986").trim,
+    "Performance AWD/4WD");
+});
