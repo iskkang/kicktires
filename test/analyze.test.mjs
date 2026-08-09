@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { readFile } from "node:fs/promises";
 
 import handler, { __test } from "../netlify/functions/analyze.mjs";
 
@@ -522,4 +523,20 @@ test("analyzes a listing through the OpenAI provider", async () => {
       if (value == null) delete process.env[name]; else process.env[name] = value;
     }
   }
+});
+
+// Declaring a `path` in the function config stops Netlify serving the default
+// /.netlify/functions/analyze endpoint, and netlify.toml force-rewrites /api/analyze to
+// exactly that endpoint. With both in place the function bundled cleanly but was
+// unreachable at every address, and every check 404'd.
+test("the function keeps the default endpoint that netlify.toml rewrites to", async () => {
+  const source = await readFile(new URL("../netlify/functions/analyze.mjs", import.meta.url), "utf8");
+  const configBlock = source.slice(source.indexOf("export const config"));
+  assert.equal(/^\s*path:/m.test(configBlock), false,
+    "analyze.mjs declares a custom path; that unregisters /.netlify/functions/analyze, "
+    + "which netlify.toml force-rewrites /api/analyze to — both addresses would 404");
+
+  const toml = await readFile(new URL("../netlify.toml", import.meta.url), "utf8");
+  assert.match(toml, /from = "\/api\/analyze"\s*\n\s*to = "\/\.netlify\/functions\/analyze"/,
+    "netlify.toml no longer maps /api/analyze to the function");
 });
