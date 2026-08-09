@@ -122,13 +122,20 @@ export function codeReview(post, evidence, options = {}) {
   // A consumer complaint is an allegation. Calling it a defect is the single most damaging
   // thing this pipeline could publish, so it is a code check rather than a model opinion.
   const defectClaims = [
-    /complaints?\s+(?:prove|confirm|show that the .{0,40}is defective)/i,
-    /known\s+defect/i, /confirmed\s+defect/i, /documented\s+defect/i,
-    /widespread\s+failure\s+rate/i, /\d+\s*%\s*of\s+(?:owners|vehicles|cars)/i
+    /complaints?\s+(?:prove|confirm|show that the .{0,40}is defective)/gi,
+    /known\s+defects?/gi, /confirmed\s+defects?/gi, /documented\s+defects?/gi,
+    /widespread\s+failure\s+rate/gi, /\d+\s*%\s*of\s+(?:owners|vehicles|cars)/gi
   ];
+  // "allegations, not confirmed defects" is the framing the writer prompt asks for by name.
+  // Matching the bare phrase failed the disclaimer as if it were the claim, which rejected
+  // every correctly-written post. Only an unnegated occurrence is the thing worth blocking.
+  const NEGATED = /\b(?:not|never|nor|rather\s+than|instead\s+of|aren['’]?t|isn['’]?t|wasn['’]?t|weren['’]?t|don['’]?t|doesn['’]?t|cannot|can['’]?t)\b[^.;:]{0,24}$/i;
   for (const pattern of defectClaims) {
-    const hit = prose.match(pattern);
-    if (hit) fail("complaint_as_defect", `"${hit[0]}"`);
+    for (const hit of prose.matchAll(pattern)) {
+      if (NEGATED.test(prose.slice(Math.max(0, hit.index - 40), hit.index))) continue;
+      fail("complaint_as_defect", `"${hit[0]}"`);
+      break;
+    }
   }
   const falseExperience = /\b(?:I|we)\s+(?:drove|owned|tested|inspected|took delivery)/i;
   const experienceHit = prose.match(falseExperience);

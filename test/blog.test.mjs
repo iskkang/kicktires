@@ -104,6 +104,28 @@ test("presenting a complaint as a confirmed defect is refused", () => {
   }
 });
 
+// The writer prompt tells the model to say complaints are "allegations, not confirmed
+// defects". Matching the bare phrase failed that disclaimer as though it were the claim, so
+// the first live run rejected its own correctly-written draft three times and published
+// nothing. Negated mentions have to survive; a real claim after one still must not.
+test("the disclaimer the writer is asked for is not read as the claim", () => {
+  for (const sentence of [
+    "Consumer complaints are allegations, not confirmed defects, and are not failure rates.",
+    "These reports are never a known defect until NHTSA adjudicates them.",
+    "Treat them as screening signals rather than documented defects."
+  ]) {
+    const post = basePost();
+    post.body[1].paragraphs = [sentence];
+    const failures = codeReview(post, EVIDENCE, { existingPosts: [] }).failures.map(item => item.check);
+    assert.equal(failures.includes("complaint_as_defect"), false, `false positive: ${sentence}`);
+  }
+
+  const post = basePost();
+  post.body[1].paragraphs = ["They are not confirmed defects. But the brake fault is a documented defect."];
+  const failures = codeReview(post, EVIDENCE, { existingPosts: [] }).failures.map(item => item.check);
+  assert.equal(failures.includes("complaint_as_defect"), true, "a real claim after a negated one must still fail");
+});
+
 test("claimed first-hand experience is refused", () => {
   const post = basePost();
   post.body[1].paragraphs = ["I drove this car for a week and the screen failed twice."];
