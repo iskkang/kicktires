@@ -153,11 +153,12 @@ function finish(report, options) {
 const invoked = process.argv[1] && process.argv[1].endsWith("generate.mjs");
 if (invoked) {
   const count = Math.max(1, Math.min(5, Number(process.env.BLOG_POSTS_PER_RUN || arg("count") || 1)));
-  const autoPublish = String(process.env.BLOG_AUTO_PUBLISH || "").toLowerCase() === "true";
-  // Writing to the repo takes an explicit opt-in. Until BLOG_AUTO_PUBLISH is set the
-  // pipeline runs end to end and reports, which is what the first runs are for.
+  // Publishing is the default: this pipeline exists to run unattended. The kill switch is
+  // BLOG_AUTO_PUBLISH=false, which still runs the whole pipeline and reports but writes
+  // nothing. What stops a bad post is the review gates, not this flag.
+  const autoPublish = String(process.env.BLOG_AUTO_PUBLISH ?? "").toLowerCase() !== "false";
   const dryRun = arg("dry-run") === "true" || !autoPublish;
-  if (dryRun) console.log("[blog:generate] dry run (set BLOG_AUTO_PUBLISH=true to write posts)");
+  if (dryRun) console.log("[blog:generate] dry run (BLOG_AUTO_PUBLISH=false — nothing will be written)");
 
   const results = [];
   for (let index = 0; index < count; index++) {

@@ -127,13 +127,15 @@ a failure can be inspected without being discoverable.
 
 ```bash
 npm run blog:dry-run    # whole pipeline, writes nothing
-npm run blog:generate   # generate and publish (needs BLOG_AUTO_PUBLISH=true)
+npm run blog:generate   # generate and publish
 npm run blog:validate   # re-check every post on disk against its stored snapshot
 npm run blog:build      # render /blog into dist (also part of npm run build)
 ```
 
-`npm run blog:generate` is a dry run unless `BLOG_AUTO_PUBLISH=true`. That is deliberate:
-writing to the repository takes an explicit opt-in.
+`npm run blog:generate` publishes. Set `BLOG_AUTO_PUBLISH=false` to run the whole pipeline
+and report without writing anything — the same thing `npm run blog:dry-run` does for one run.
+What keeps a bad post out is the review gates, not that switch: every stated figure is checked
+against the stored snapshot, and a draft that fails twice is logged and abandoned.
 
 ### Environment
 
@@ -142,7 +144,7 @@ writing to the repository takes an explicit opt-in.
 | `DEEPSEEK_API_KEY` / `OPENAI_API_KEY` / `ANTHROPIC_API_KEY` | Actions **secret** | Drafting and review. Same keys the analyzer uses; whichever is set is used. |
 | `PROVIDER` | Actions variable | Optional override — `openai`, `deepseek` or `claude`. Inferred from the key when unset. |
 | `DEEPSEEK_MODEL` / `OPENAI_MODEL` / `ANTHROPIC_MODEL` | Actions variable | Optional model override. |
-| `BLOG_AUTO_PUBLISH` | Actions variable | `true` to write posts. Anything else runs as a dry run. |
+| `BLOG_AUTO_PUBLISH` | Actions variable | Kill switch. Unset means publish; `false` runs the pipeline and reports without writing. |
 | `BLOG_POSTS_PER_RUN` | Actions variable | Posts per run, default `1`, capped at 5. |
 | `GA_MEASUREMENT_ID`, `ADSENSE_CLIENT` | Actions variable | Passed to the build, same as Netlify. |
 
