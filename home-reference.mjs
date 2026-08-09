@@ -119,6 +119,21 @@ const compareTable = `<div class="rf-compare">
   ${row("EPA Snapshot", p=>`<div>${p?.tco?.mpg || p?.epa?.mpg ? `${Math.round(p?.tco?.mpg || p?.epa?.mpg)} mpg` : "Analyzer"}</div>`)}
 </div>`;
 
+// The market comparison keys off state, so every state is offered. The five-year cost panel
+// keeps its own selector and falls back where it has no table, exactly as it does for a
+// pasted listing.
+const US_STATES = [["AL","Alabama"],["AK","Alaska"],["AZ","Arizona"],["AR","Arkansas"],["CA","California"],
+  ["CO","Colorado"],["CT","Connecticut"],["DE","Delaware"],["DC","District of Columbia"],["FL","Florida"],
+  ["GA","Georgia"],["HI","Hawaii"],["ID","Idaho"],["IL","Illinois"],["IN","Indiana"],["IA","Iowa"],
+  ["KS","Kansas"],["KY","Kentucky"],["LA","Louisiana"],["ME","Maine"],["MD","Maryland"],["MA","Massachusetts"],
+  ["MI","Michigan"],["MN","Minnesota"],["MS","Mississippi"],["MO","Missouri"],["MT","Montana"],["NE","Nebraska"],
+  ["NV","Nevada"],["NH","New Hampshire"],["NJ","New Jersey"],["NM","New Mexico"],["NY","New York"],
+  ["NC","North Carolina"],["ND","North Dakota"],["OH","Ohio"],["OK","Oklahoma"],["OR","Oregon"],
+  ["PA","Pennsylvania"],["RI","Rhode Island"],["SC","South Carolina"],["SD","South Dakota"],["TN","Tennessee"],
+  ["TX","Texas"],["UT","Utah"],["VT","Vermont"],["VA","Virginia"],["WA","Washington"],["WV","West Virginia"],
+  ["WI","Wisconsin"],["WY","Wyoming"]];
+const STATE_OPTIONS = US_STATES.map(([code, name]) => `<option value="${code}">${esc(name)}</option>`).join("");
+
 const main = `<main class="rf-page">
 <section class="rf-hero" id="check">
   <div class="rf-hero-bg"></div>
@@ -127,10 +142,30 @@ const main = `<main class="rf-page">
       <h1>Research Any Used Car<br>Before You Buy</h1>
       <p>KickTires gives you the data you need to buy with confidence.<br>Problems. Recalls. Costs. Price context.</p>
       <div class="rf-analyzer">
-        <div class="rf-tabs"><button class="on" type="button" data-mode="listing">Paste a Listing</button><button type="button" data-mode="car">Search by Car</button></div>
-        <form onsubmit="route(event);return false">
-          <div class="rf-input-wrap"><span>↗</span><textarea id="inp" autocomplete="off" spellcheck="false" placeholder="Paste a Cars.com, AutoTrader, CarGurus, or dealer listing"></textarea></div>
+        <div class="rf-tabs"><button class="on" type="button" data-mode="listing">Paste a Listing</button><button type="button" data-mode="form">Enter Details</button><button type="button" data-mode="car">Search by Car</button></div>
+        <form id="pastePanel" onsubmit="route(event);return false">
+          <div class="rf-input-wrap"><span>↗</span><textarea id="inp" autocomplete="off" spellcheck="false" placeholder="Paste a Cars.com, AutoTrader, CarGurus, or dealer listing — link or text"></textarea></div>
           <button class="rf-analyze" id="analyzeBtn" type="submit">Analyze This Car</button>
+        </form>
+        <form id="formPanel" hidden onsubmit="routeForm(event);return false">
+          <div class="rf-grid">
+            <label class="rf-f rf-f-year">Year<input id="fYear" type="number" min="1981" max="${new Date().getUTCFullYear() + 2}" inputmode="numeric" placeholder="2021"></label>
+            <label class="rf-f rf-f-make">Make<input id="fMake" autocomplete="off" placeholder="BMW"></label>
+            <label class="rf-f rf-f-model">Model<input id="fModel" autocomplete="off" placeholder="330i"></label>
+            <label class="rf-f rf-f-trim">Trim <em>optional</em><input id="fTrim" autocomplete="off" placeholder="xDrive"></label>
+            <label class="rf-f">Mileage<input id="fMileage" type="number" min="0" max="1000000" inputmode="numeric" placeholder="42000"></label>
+            <label class="rf-f">Asking price<input id="fPrice" type="number" min="100" max="2000000" inputmode="numeric" placeholder="25000"></label>
+            <label class="rf-f">City <em>optional</em><input id="fCity" autocomplete="off" placeholder="San Diego"></label>
+            <label class="rf-f">State<select id="fState"><option value="">—</option>${STATE_OPTIONS}</select></label>
+            <label class="rf-f rf-f-seller">Seller<select id="fSeller"><option value="">Not sure</option><option value="dealer">Dealer</option><option value="private">Private party</option></select></label>
+          </div>
+          <div class="rf-checks">
+            <label><input type="checkbox" id="fAsIs"> Sold as is</label>
+            <label><input type="checkbox" id="fAccident"> Accident history</label>
+            <label><input type="checkbox" id="fTitle"> Title issue</label>
+            <label><input type="checkbox" id="fCertified"> Certified</label>
+          </div>
+          <button class="rf-analyze" id="formBtn" type="submit">Analyze This Car</button>
         </form>
         <p id="hint" class="rf-hint" aria-live="polite"></p>
       </div>
@@ -185,6 +220,16 @@ body{background:#fff!important;color:#0b1c34!important;font-family:"Avenir Next"
 .rf-input-wrap{height:42px;border:1px solid #dce4ed;border-radius:8px;display:grid;grid-template-columns:32px 1fr;align-items:center;padding:0 9px;background:#fff}.rf-input-wrap>span{font-size:15px;color:#73869a}.rf-input-wrap textarea{width:100%;height:38px;border:0;outline:0;resize:none;padding:11px 0 0;box-sizing:border-box;font:inherit;font-size:11px;color:#24384e;background:transparent;white-space:nowrap;overflow:hidden}
 .rf-analyze{width:100%;height:38px;margin-top:11px;border:0;border-radius:6px;background:#1767dd;color:#fff;font-size:11px;font-weight:850;cursor:pointer}
 .rf-hint{margin:9px 0 0;min-height:14px;font-size:11px;line-height:1.35;color:#a33a2a}.rf-hint:empty{display:none}
+.rf-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+.rf-f{grid-column:span 3;display:flex;flex-direction:column;gap:3px;font-size:9px;font-weight:800;letter-spacing:.02em;color:#5f7084;text-transform:uppercase}
+.rf-f em{font-style:normal;font-weight:600;text-transform:none;color:#93a2b3}
+.rf-f input,.rf-f select{height:32px;border:1px solid #dce4ed;border-radius:6px;padding:0 8px;font:inherit;font-size:11px;font-weight:500;color:#24384e;background:#fff;text-transform:none;letter-spacing:0}
+.rf-f input:focus,.rf-f select:focus{outline:2px solid #1767dd;outline-offset:-1px;border-color:#1767dd}
+.rf-f input::placeholder{color:#b3bfcc}
+.rf-f-year{grid-column:span 2}.rf-f-make,.rf-f-model{grid-column:span 2}.rf-f-trim{grid-column:span 6}.rf-f-seller{grid-column:span 6}
+.rf-checks{display:flex;flex-wrap:wrap;gap:10px;margin-top:9px}
+.rf-checks label{display:flex;align-items:center;gap:5px;font-size:10px;font-weight:600;color:#4b5d70;text-transform:none}
+.rf-checks input{width:13px;height:13px;accent-color:#1767dd}
 .rf-trust-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;padding-top:10px;padding-bottom:10px}.rf-trust{height:52px;border:1px solid #e4eaf1;border-radius:9px;display:flex;align-items:center;gap:10px;padding:0 14px;box-shadow:0 4px 12px rgba(23,54,83,.035)}
 .rf-trust>span{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:#edf4ff;color:#1767dd;font-weight:800}.rf-trust b{display:block;font-size:10px}.rf-trust small{display:block;margin-top:2px;font-size:9px;color:#697b8e}
 .rf-section{padding-top:18px}.rf-section-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:13px}.rf-section-title h2{margin:0;font-size:16px;letter-spacing:-.025em}.rf-section-title a{color:#0b5ed3;text-decoration:none;font-size:9px;font-weight:800}
@@ -204,7 +249,7 @@ const mainPattern=/<main[^>]*>[\s\S]*?<\/main>/i;
 if(!mainPattern.test(html)) throw new Error("homepage main not found");
 html=html.replace(mainPattern,main);
 if(!html.includes("screenshot-reference homepage")) html=html.replace("</head>",`<style>${css}</style></head>`);
-const tabsScript=`<script id="rfHomeTabs">document.querySelectorAll('.rf-tabs button').forEach(function(b){b.addEventListener('click',function(){document.querySelectorAll('.rf-tabs button').forEach(function(x){x.classList.remove('on')});b.classList.add('on');if(b.dataset.mode==='car'){location.href='/cars/';}})});</script>`;
+const tabsScript=`<script id="rfHomeTabs">document.querySelectorAll('.rf-tabs button').forEach(function(b){b.addEventListener('click',function(){if(b.dataset.mode==='car'){location.href='/cars/';return;}document.querySelectorAll('.rf-tabs button').forEach(function(x){x.classList.remove('on')});b.classList.add('on');var form=b.dataset.mode==='form';var paste=document.getElementById('pastePanel'),fields=document.getElementById('formPanel');if(paste)paste.hidden=form;if(fields)fields.hidden=!form;var hint=document.getElementById('hint');if(hint)hint.textContent='';var first=document.getElementById(form?'fYear':'inp');if(first)first.focus();if(window.gtag)gtag('event','analyzer_mode_selected',{mode:b.dataset.mode});})});</script>`;
 if(!html.includes("rfHomeTabs")) html=html.replace("</body>",`${tabsScript}</body>`);
 fs.writeFileSync(FILE,html);
 console.log("[home-reference] homepage rebuilt to match approved reference screenshot");

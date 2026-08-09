@@ -1348,11 +1348,20 @@ export default async (request) => {
     REQUEST_BUDGET_MS - (Date.now() - requestStartedAt) - 1_500));
   if (request.method !== "POST") return json({ error: "POST only" }, 405);
 
-  let input = "";
-  try { ({ text: input = "" } = await request.json()); }
+  // Two ways in. Pasted text has to be guessed at — which is where the price format, the
+  // trim boundary and the model name all went wrong. A car the reader typed into fields
+  // needs no guessing, so it skips both the parser and the extraction model call.
+  let payload;
+  try { payload = await request.json(); }
   catch { return json({ error: "bad_json" }, 400); }
-  input = String(input).trim().slice(0, 12_000);
-  if (input.length < 8) return json({ error: "too_short" }, 400);
+
+  const submitted = payload?.car && typeof payload.car === "object" && !Array.isArray(payload.car)
+    ? normalizeCar(payload.car) : null;
+  const input = String(payload?.text ?? "").trim().slice(0, 12_000);
+  if (!submitted && input.length < 8) return json({ error: "too_short" }, 400);
+  if (submitted && (!submitted.year || !submitted.make || !submitted.model)) {
+    return json({ error: "no_vehicle", car: submitted }, 200);
+  }
 
   // Reject a misconfigured provider up front. Letting it through meant the failure only
   // surfaced from deep inside callModel, where it was reported as "extract_failed" — a
@@ -1363,7 +1372,7 @@ export default async (request) => {
     return json({ error: "missing_key", provider }, 500);
   }
 
-  const match = input.match(/https?:\/\/[^\s"'<>]+/i);
+  const match = submitted ? null : input.match(/https?:\/\/[^\s"'<>]+/i);
   const listingUrl = match?.[0]?.replace(/[),.;]+$/, "") || null;
   const leftover = listingUrl ? input.replace(match[0], "").trim() : input;
   let page = null;
@@ -1379,7 +1388,7 @@ export default async (request) => {
   const extractionInput = page
     ? `LISTING URL: ${listingUrl}\n\n${page}${leftover ? `\n\nPASTED CONTEXT:\n${leftover}` : ""}`
     : input;
-  let car = page ? null : parseObviousPastedListing(input);
+  let car = submitted || (page ? null : parseObviousPastedListing(input));
   if (!car) {
     try {
       car = normalizeCar(asJson(await callModel(EXTRACT, extractionInput, 700, 0, 8_000)));
