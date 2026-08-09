@@ -265,6 +265,9 @@ function normalizeCar(raw) {
   };
 }
 
+// Where the trim name ends and the listing's own numbers begin, on a single-line paste.
+const LISTING_DATA = /\b\d[\d,]*\s*(?:mi|miles?)\b|\$\s*\d|\b\d[\d,]*(?:\.\d{2})?\s*(?:usd|dollars?)\b/i;
+
 function parseObviousPastedListing(input) {
   const source = String(input || "");
   const lines = source.split(/\r?\n/).map(line => clipped(line, 260)).filter(Boolean);
@@ -290,8 +293,18 @@ function parseObviousPastedListing(input) {
     const model = phrase || token;
     if (!model) continue;
 
-    const trim = afterMake.slice(model.length).replace(/^[\s:|,;\-–—]+/, "").trim() || null;
-    const priceMatch = source.match(/(?:\$\s*|USD\s*)(\d{1,3}(?:,\d{3})+|\d{3,7})(?:\.\d{2})?/i);
+    // A one-line paste puts mileage, price and city on the same line as the title. Keeping
+    // everything after the model as the trim made the heading read
+    // "2019 nissan altima S, 91,000 miles, $7,900, sold as is", and fed that noise into the
+    // cache key, so the same car parsed differently depending on how it was typed.
+    const rawTrim = afterMake.slice(model.length).replace(/^[\s:|,;\-–—]+/, "");
+    const dataStart = rawTrim.search(LISTING_DATA);
+    const trim = (dataStart >= 0 ? rawTrim.slice(0, dataStart) : rawTrim)
+      .replace(/[\s:|,;\-–—]+$/, "").trim() || null;
+    // A price can be written either way round. Only the leading form was recognised, so
+    // "25000usd" silently became no price at all and the check reported missing data.
+    const priceMatch = source.match(/(?:\$\s*|USD\s*)(\d{1,3}(?:,\d{3})+|\d{3,7})(?:\.\d{2})?/i)
+      || source.match(/\b(\d{1,3}(?:,\d{3})+|\d{3,7})(?:\.\d{2})?\s*(?:usd|dollars?)\b/i);
     const mileageMatch = source.match(/\b(\d{1,3}(?:,\d{3})+|\d{1,6})\s*(?:miles?|mi)\b/i);
     const vinMatch = source.toUpperCase().match(/\b[A-HJ-NPR-Z0-9]{17}\b/);
     const locationLine = lines.find(value => /^[A-Za-z .'-]+,\s*[A-Z]{2}(?:\s+\d{5})?(?:\s+\(\d+\s*mi\))?$/.test(value)) || null;
@@ -601,9 +614,14 @@ function resolveProvider() {
 // older shape to them fails the whole check with an opaque 400.
 const isReasoningModel = model => /^(?:o\d|gpt-5)/i.test(String(model || ""));
 
-async function callModel(system, user, maxTokens = 2400, temperature = 0.2, timeoutMs = 11_000) {
+// A verdict is not a place for sampling variety: the same listing against the same fixed
+// evidence must not come back "Walk away" one minute and "Price needs explaining" the next.
+// Both grading calls run at temperature 0 with a seed derived from the listing, so repeated
+// checks land on the same answer as far as the provider allows.
+async function callModel(system, user, maxTokens = 2400, temperature = 0.2, timeoutMs = 11_000, seed = null) {
   const timeout = Math.max(1_000,Math.min(20_000,Math.round(timeoutMs)));
   const provider = resolveProvider();
+  const stableSeed = Number.isInteger(seed) ? { seed } : {};
   if (provider === "openai") {
     if (!process.env.OPENAI_API_KEY) throw new Error("missing_key");
     const model = process.env.OPENAI_MODEL || "gpt-4o-mini";
@@ -621,7 +639,7 @@ async function callModel(system, user, maxTokens = 2400, temperature = 0.2, time
         response_format: { type: "json_object" },
         ...(reasoning
           ? { max_completion_tokens: maxTokens }
-          : { max_tokens: maxTokens, temperature })
+          : { max_tokens: maxTokens, temperature, ...stableSeed })
       })
     });
     if (!response.ok) throw new Error(`provider_${response.status}`);
@@ -664,7 +682,8 @@ async function callModel(system, user, maxTokens = 2400, temperature = 0.2, time
       messages: [{ role: "system", content: system }, { role: "user", content: user }],
       response_format: { type: "json_object" },
       temperature,
-      max_tokens: maxTokens
+      max_tokens: maxTokens,
+      ...stableSeed
     })
   });
   if (!response.ok) throw new Error(`provider_${response.status}`);
@@ -832,6 +851,12 @@ function resolveNhtsaModels(requestedModel, catalogRows) {
   return [...new Set(matches)];
 }
 
+// The names NHTSA actually files this make and year under. When our model never matches one
+// of them, these are what the reader needs to see — the catalog was retrieved, so they cost
+// nothing and turn a dead end into something the reader can retype.
+const catalogModelNames = catalog => [...new Set(asItems(catalog)
+  .map(row => clipped(row?.model, 60)).filter(Boolean))].slice(0, 12);
+
 async function lookupIssueCatalog(car, issueType) {
   const make = MAKE_ALIAS[car.make] || car.make;
   const query = new URLSearchParams({
@@ -852,7 +877,8 @@ async function lookupComplaints(car) {
   if (!catalog) return { status: "unresolved", count: null, resolvedModels: [], rows: [] };
   const resolvedModels = resolveNhtsaModels(model, catalog);
   if (!resolvedModels.length) {
-    return { status: "unresolved", count: null, resolvedModels: [], rows: [] };
+    return { status: "unmatched", count: null, resolvedModels: [], rows: [],
+      catalogModels: catalogModelNames(catalog) };
   }
 
   const payloads = await Promise.all(resolvedModels.map(officialModel => {
@@ -887,7 +913,10 @@ async function lookupRecalls(car) {
   if (!catalog) return { status: "unresolved", count: null, resolvedModels: [], rows: [] };
   const resolvedModels = resolveNhtsaModels(model, catalog);
   if (!resolvedModels.length) {
-    return { status: "none", count: 0, resolvedModels: [], rows: [] };
+    // Reporting zero recalls here claimed a federal fact we never checked: the model name
+    // simply never matched the catalog. A vehicle we could not look up is not a clean one.
+    return { status: "unmatched", count: null, resolvedModels: [], rows: [],
+      catalogModels: catalogModelNames(catalog) };
   }
 
   const payloads = await Promise.all(resolvedModels.map(officialModel => {
@@ -920,6 +949,16 @@ async function getNhtsaFacts(car) {
     lookupComplaints(car),
     lookupRecalls(car)
   ]);
+  // "We could not find this model in NHTSA's catalog" and "NHTSA did not answer" are
+  // different failures. Reporting the first as the second sent the reader off to wait out
+  // an outage that was not happening, while the catalog sat there naming the vehicle.
+  if (complaints.status === "unmatched" || recalls.status === "unmatched") {
+    const error = new Error("model_not_in_catalog");
+    error.catalogModels = [...new Set([
+      ...asItems(complaints.catalogModels), ...asItems(recalls.catalogModels)
+    ])].slice(0, 12);
+    throw error;
+  }
   if (complaints.status === "unresolved" || recalls.status === "unresolved") {
     throw new Error(`records_unavailable:${complaints.status}:${recalls.status}`);
   }
@@ -1165,8 +1204,20 @@ async function getMarketComparison(car) {
 }
 
 /* ── cache helpers ────────────────────────────────────────────── */
+// A store that cannot be opened disables caching silently, which costs a model call on
+// every check and lets the same listing be graded fresh — and differently — each time.
+// Report it once per container so the reason is visible in the function log instead of
+// being inferred from verdicts that will not sit still.
+const reportedStoreFailures = new Set();
 function openStore(name) {
-  try { return getStore(name); } catch { return null; }
+  try { return getStore(name); } catch (error) {
+    if (!reportedStoreFailures.has(name)) {
+      reportedStoreFailures.add(name);
+      console.error(`blob store "${name}" unavailable; caching disabled for it: `
+        + `${error?.message || "unknown"}`);
+    }
+    return null;
+  }
 }
 
 async function readCache(store, key, days) {
@@ -1355,6 +1406,9 @@ export default async (request) => {
     seller: car.seller, notes: car.notes,
     profile: profile ? hash(JSON.stringify(profile)) : null
   }));
+  // Same listing, same seed. Providers treat this as best-effort, but combined with
+  // temperature 0 it stops identical checks drifting between verdicts.
+  const verdictSeed = Number.parseInt(listingFingerprint.slice(0, 8), 16);
   const analysisStore = openStore("deal-analyses");
   const cached = await readCache(analysisStore, listingFingerprint, ANALYSIS_CACHE_DAYS);
   if (cached) {
@@ -1389,7 +1443,7 @@ export default async (request) => {
             risks: profile.risks,
             annualCostEstimates: profile.tco
           }
-        }, null, 1), 900, 0.15, budget));
+        }, null, 1), 900, 0, budget, verdictSeed));
       } catch (error) {
         console.error("reviewed assessment timed out; using reviewed profile", error?.message || "unknown");
       }
@@ -1409,7 +1463,13 @@ export default async (request) => {
       try { [nhtsa, epa] = await Promise.all([
         getNhtsaFacts(car), within(getEpaFacts(car).catch(() => null), 7_000, null)
       ]); }
-      catch { return json({ error: "records_unavailable", car }, 502); }
+      catch (error) {
+        if (error?.message === "model_not_in_catalog") {
+          return json({ error: "model_not_in_catalog", car,
+            catalogModels: asItems(error.catalogModels) }, 200);
+        }
+        return json({ error: "records_unavailable", car }, 502);
+      }
       evidence = { nhtsa, epa };
       await writeCache(factsStore, vehicleKey, evidence);
     }
@@ -1421,7 +1481,7 @@ export default async (request) => {
         rawAnalysis = asJson(await callModel(ANALYZE_LIVE, JSON.stringify({
           vehicle: car,
           ...liveModelEvidence(evidence)
-        }), 1300, 0.15, budget));
+        }), 1300, 0, budget, verdictSeed));
       } catch (error) {
         console.error("live analysis timed out; using federal-record fallback", error?.message || "unknown");
       }
@@ -1468,6 +1528,7 @@ export const __test = {
   getNhtsaFacts,
   isPrivateAddress,
   lookupComplaints,
+  lookupRecalls,
   normalizeCar,
   resolveNhtsaModels,
   normalizeChecklist,

@@ -192,14 +192,22 @@ test("resolves NHTSA pickup variants and deduplicates complaints by ODI number",
   }
 });
 
-test("returns unresolved instead of a silent zero when the NHTSA model dictionary cannot match", async () => {
+test("returns unmatched instead of a silent zero when the NHTSA model dictionary cannot match", async () => {
   const originalFetch = globalThis.fetch;
   globalThis.fetch = async () => Response.json({ count: 1, results: [{ model: "SOMETHING ELSE" }] });
   try {
-    const result = await __test.lookupComplaints({ year: 2020, make: "ford", model: "f150" });
-    assert.equal(result.status, "unresolved");
-    assert.equal(result.count, null);
-    assert.deepEqual(result.resolvedModels, []);
+    const complaints = await __test.lookupComplaints({ year: 2020, make: "ford", model: "f150" });
+    assert.equal(complaints.status, "unmatched");
+    assert.equal(complaints.count, null);
+    assert.deepEqual(complaints.resolvedModels, []);
+    assert.deepEqual(complaints.catalogModels, ["SOMETHING ELSE"]);
+
+    // Recalls used to answer "none" here — a federal fact, zero recall campaigns, asserted
+    // about a vehicle we never managed to look up.
+    const recalls = await __test.lookupRecalls({ year: 2020, make: "ford", model: "f150" });
+    assert.equal(recalls.status, "unmatched");
+    assert.equal(recalls.count, null);
+    assert.notEqual(recalls.status, "none");
   } finally {
     globalThis.fetch = originalFetch;
   }
@@ -539,4 +547,169 @@ test("the function keeps the default endpoint that netlify.toml rewrites to", as
   const toml = await readFile(new URL("../netlify.toml", import.meta.url), "utf8");
   assert.match(toml, /from = "\/api\/analyze"\s*\n\s*to = "\/\.netlify\/functions\/analyze"/,
     "netlify.toml no longer maps /api/analyze to the function");
+});
+
+// The same listing against the same fixed evidence came back "Walk away" on one call and
+// "Price needs explaining" on the next: applyMarketVerdict lets the model's ownership grade
+// short-circuit every market branch, so one sampled token flipped the headline verdict.
+test("grades a listing deterministically across repeated checks", async () => {
+  const originalFetch = globalThis.fetch;
+  const old = {
+    provider: process.env.PROVIDER, openaiKey: process.env.OPENAI_API_KEY,
+    deepseekKey: process.env.DEEPSEEK_API_KEY, marketKey: process.env.MARKETCHECK_API_KEY
+  };
+  process.env.PROVIDER = "openai";
+  process.env.OPENAI_API_KEY = "sk-test-key";
+  delete process.env.DEEPSEEK_API_KEY;
+  process.env.MARKETCHECK_API_KEY = "market-test-key";
+
+  const grading = [];
+  globalThis.fetch = async (url, options = {}) => {
+    const target = String(url);
+    if (target === "https://api.openai.com/v1/chat/completions") {
+      const body = JSON.parse(options.body);
+      grading.push({ temperature: body.temperature, seed: body.seed });
+      return Response.json({ choices: [{ message: { content: JSON.stringify({
+        deal: { grade: "caution", label: "Cheap for a reason", reason: "r" },
+        vline: "v", vsub: "s" }) } }] });
+    }
+    if (target.startsWith("https://api.marketcheck.com/")) {
+      return Response.json({ num_found: 133, stats: {
+        price: { count: 133, median: 13776, percentiles: { "25.0": 11994, "75.0": 14995 } },
+        miles: { count: 133, median: 91000 } } });
+    }
+    throw new Error(`unexpected fetch ${target}`);
+  };
+
+  const check = text => handler(new Request("https://kicktires.test/api/analyze", {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ text }) }));
+
+  try {
+    const listing = "2019 Nissan Altima S, 91,000 miles, $7,900, sold as is";
+    const verdicts = [];
+    for (let run = 0; run < 3; run++) verdicts.push((await (await check(listing)).json()).analysis.deal);
+
+    assert.equal(new Set(verdicts.map(v => `${v.grade}|${v.label}`)).size, 1,
+      `verdict drifted across identical checks: ${JSON.stringify(verdicts)}`);
+    assert.equal(grading.every(call => call.temperature === 0), true,
+      "a grading call still samples at a non-zero temperature");
+    assert.equal(new Set(grading.map(call => call.seed)).size, 1,
+      "the same listing did not reuse one seed");
+
+    // A shared seed across every car would be a different bug: the seed must follow the listing.
+    const before = grading.length;
+    await check("2019 Nissan Altima S, 60,000 miles, $11,200");
+    assert.notEqual(grading.at(-1).seed, grading[before - 1].seed,
+      "a different listing reused the previous listing's seed");
+  } finally {
+    globalThis.fetch = originalFetch;
+    for (const [name, value] of [["PROVIDER", old.provider], ["OPENAI_API_KEY", old.openaiKey],
+      ["DEEPSEEK_API_KEY", old.deepseekKey], ["MARKETCHECK_API_KEY", old.marketKey]]) {
+      if (value == null) delete process.env[name]; else process.env[name] = value;
+    }
+  }
+});
+
+// These fixtures used to live inside analyzer-parser-fix.mjs, a build step that patched this
+// parser and then checked its own reimplementation of the patched logic — so it could pass
+// while the shipped parser did something else. They belong against the real parser.
+test("reads one-line pastes without swallowing the listing data into the trim", () => {
+  // The reported failure: a price written as "25000usd" produced no price at all, and the
+  // trim kept the rest of the line, which then reached the vehicle heading and the cache key.
+  const bmw = __test.parseObviousPastedListing("2021 bmw 330i 42000mi 25000usd, san diego");
+  assert.deepEqual(
+    { year: bmw.year, make: bmw.make, model: bmw.model, trim: bmw.trim,
+      mileage: bmw.mileage, price: bmw.price },
+    { year: 2021, make: "bmw", model: "330i", trim: null, mileage: 42000, price: 25000 }
+  );
+
+  const altima = __test.parseObviousPastedListing(
+    "2019 Nissan Altima S, 91,000 miles, $7,900, sold as is");
+  assert.equal(altima.trim, "S", "the trim kept the mileage, price and disclosure text");
+  assert.equal(altima.price, 7900);
+  assert.equal(altima.mileage, 91000);
+  assert.deepEqual(altima.notes, ["as is"]);
+
+  // Leading and trailing currency must both read as the same price.
+  for (const text of ["2021 BMW 330i, 42,000 miles, $25,000", "2021 BMW 330i 42,000 mi 25000 USD",
+    "2021 BMW 330i 42,000 mi 25,000 dollars"]) {
+    assert.equal(__test.parseObviousPastedListing(text).price, 25000, text);
+  }
+});
+
+test("keeps a real trim name that is not listing data", () => {
+  const frontier = __test.parseObviousPastedListing(`Used 2023 Nissan Frontier PRO-4X
+
+$37,640
+Mileage
+29,891 mi
+Glendale Nissan
+Glendale Heights, IL (23 mi)`);
+  assert.deepEqual(
+    { year: frontier.year, make: frontier.make, model: frontier.model, trim: frontier.trim,
+      price: frontier.price, mileage: frontier.mileage, location: frontier.location },
+    { year: 2023, make: "nissan", model: "frontier", trim: "PRO-4X",
+      price: 37640, mileage: 29891, location: "Glendale Heights, IL" }
+  );
+
+  assert.equal(__test.parseObviousPastedListing(
+    "Certified 2025 Cadillac XT6 Premium Luxury AWD/4WD\nBradenton, FL\n$52,988").trim,
+    "Premium Luxury AWD/4WD");
+  assert.equal(__test.parseObviousPastedListing(
+    "Used 2023 Tesla Model Y Performance AWD/4WD\nSterling, VA\n$24,986").trim,
+    "Performance AWD/4WD");
+});
+
+// "We could not find this model in NHTSA's catalog" was reported two different wrong ways:
+// complaints called it "unresolved", which the reader saw as "the federal data service did
+// not respond" and was told to wait out an outage that was not happening; recalls called it
+// "none", which claimed a federal fact — zero recalls — that was never checked.
+test("separates a model missing from the NHTSA catalog from NHTSA being down", async () => {
+  const originalFetch = globalThis.fetch;
+  const old = { provider: process.env.PROVIDER, key: process.env.DEEPSEEK_API_KEY,
+    marketKey: process.env.MARKETCHECK_API_KEY };
+  process.env.PROVIDER = "deepseek";
+  process.env.DEEPSEEK_API_KEY = "test-key";
+  delete process.env.MARKETCHECK_API_KEY;
+
+  // NHTSA answers, and lists this make and year — under names our model never matches.
+  globalThis.fetch = async url => {
+    const parsed = new URL(String(url));
+    if (parsed.pathname.includes("/products/vehicle/models")) {
+      return Response.json({ count: 4, results: [
+        { model: "330I XDRIVE" }, { model: "330E" }, { model: "M340I" }, { model: "3 SERIES" }
+      ] });
+    }
+    throw new Error(`unexpected fetch ${parsed.href}`);
+  };
+
+  try {
+    assert.deepEqual(__test.resolveNhtsaModels("330i",
+      [{ model: "330I XDRIVE" }, { model: "330E" }]), [],
+      "the matcher is expected to reject variant-only catalog names");
+
+    const response = await handler(new Request("https://kicktires.test/api/analyze", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: "2021 bmw 330i 42000mi 25000usd" })
+    }));
+    const output = await response.json();
+
+    assert.equal(output.error, "model_not_in_catalog",
+      `expected a catalog miss, got ${JSON.stringify(output.error)}`);
+    assert.notEqual(output.error, "records_unavailable",
+      "a catalog miss is still being reported as a service outage");
+    assert.deepEqual(output.catalogModels, ["330I XDRIVE", "330E", "M340I", "3 SERIES"],
+      "the reader is not told which names NHTSA does file this make and year under");
+
+    // The listing itself parsed fine; only the federal lookup failed.
+    assert.equal(output.car.model, "330i");
+    assert.equal(output.car.price, 25000);
+  } finally {
+    globalThis.fetch = originalFetch;
+    for (const [name, value] of [["PROVIDER", old.provider], ["DEEPSEEK_API_KEY", old.key],
+      ["MARKETCHECK_API_KEY", old.marketKey]]) {
+      if (value == null) delete process.env[name]; else process.env[name] = value;
+    }
+  }
 });
