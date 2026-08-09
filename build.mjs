@@ -681,6 +681,26 @@ function stopLoading(){
   if (live) live.setAttribute("aria-busy","false");
 }
 
+// The function declares its own path, and the legacy /.netlify/functions/ URL is not
+// guaranteed to be served alongside it — pointing the page at the wrong one 404s every
+// check. Try the declared route first and fall back once, so neither choice can take
+// the analyzer down on its own.
+const ANALYZE_ROUTES = ["/api/analyze", "/.netlify/functions/analyze"];
+
+async function postListing(text){
+  let lastResponse = null;
+  for (const path of ANALYZE_ROUTES) {
+    const response = await fetch(path, {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({text:text}),
+      signal: AbortSignal.timeout(35_000)
+    });
+    if (response.status !== 404) return response;
+    lastResponse = response;
+  }
+  return lastResponse;
+}
+
 async function route(event){
   event.preventDefault();
   const text = $("inp").value.trim();
@@ -693,10 +713,10 @@ async function route(event){
   try {
     hint("");
     startLoading();
-    const response = await fetch("/api/analyze", {
-      method:"POST", headers:{"Content-Type":"application/json"},
-      body: JSON.stringify({text:text})
-    });
+    const response = await postListing(text);
+    if (response.status === 404) {
+      return fail("function_missing", "The analysis service is not reachable at any known address. This is a deployment problem on our side, not a problem with your listing.");
+    }
     if (response.status === 429) {
       return fail("rate_limited", "Too many checks from this connection. Try again in a minute.");
     }
@@ -737,6 +757,9 @@ async function route(event){
     }
     return fail(output.error || "unknown", "We could not finish that analysis. Try pasting the listing text instead of the link.");
   } catch (error) {
+    if (error && (error.name === "TimeoutError" || error.name === "AbortError")) {
+      return fail("timeout", "This check took too long and was stopped after 35 seconds. The listing site may be blocking our reader — paste the listing text instead.");
+    }
     return fail("network_error", "Could not reach the analysis service. Try again in a moment.");
   } finally {
     stopLoading();
