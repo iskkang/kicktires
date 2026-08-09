@@ -138,7 +138,7 @@ ${noindex?'<meta name="robots" content="noindex,follow">':''}<meta property="og:
 <script async src="https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag("js",new Date());gtag("config","${GA_MEASUREMENT_ID}");</script>
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE}" crossorigin="anonymous"></script>
 <style>${css}${extraCss}</style>${jsonld?`<script type="application/ld+json">${JSON.stringify(jsonld).replace(/</g,"\\u003c")}</script>`:""}</head><body>
-<nav><div class="navin"><a class="logo" href="/"><i></i>${NAME}</a><div class="navlinks"><a class="navlink navcheck" href="/#check">Check a listing</a><a class="navlink" href="/cars/">Research</a></div></div></nav>`;
+<nav><div class="navin"><a class="logo" href="/"><i></i>${NAME}</a><div class="navlinks"><a class="navlink navcheck" href="/#check">Check a listing</a><a class="navlink" href="/cars/">Research</a><a class="navlink" href="/blog/">Blog</a></div></div></nav>`;
 }
 
 const foot = `<footer class="site"><div class="shell"><p>Sources: NHTSA complaint and recall records · EPA fuel economy data where available · KickTires cost estimates.</p><p class="fine"><b>Raw complaint totals are screening signals, not failure rates.</b> Sales volume, vehicle age and reporting behavior differ by model year. Always run the VIN and get an independent pre-purchase inspection.</p><p class="fine"><a href="/privacy/">Privacy &amp; cookies</a> · <a href="/about/">About</a></p></div></footer></body></html>`;
