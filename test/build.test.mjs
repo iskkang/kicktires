@@ -118,5 +118,10 @@ test("the rewritten homepage keeps every element the analyzer script needs", () 
   assert.match(home, /setBusy\(true\);\s*(?:\/\/[^\n]*\n\s*)*try \{/);
   assert.match(home, /const hint = message => \{ const node = \$\("hint"\); if \(node\) node\.textContent = message; \};/);
   assert.match(home, /signal: AbortSignal\.timeout\(35_000\)/);
-  assert.match(home, /fetch\("\/\.netlify\/functions\/analyze"/);
+
+  // Both routes must ship. The page POSTed only to /.netlify/functions/analyze, which
+  // Netlify does not serve for a function that declares its own path, so every check 404'd.
+  assert.match(home, /const ANALYZE_ROUTES = \["\/api\/analyze", "\/\.netlify\/functions\/analyze"\]/);
+  assert.match(home, /const response = await postListing\(text\);/);
+  assert.match(home, /error\.name === "TimeoutError"/);
 });
