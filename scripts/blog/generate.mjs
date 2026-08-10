@@ -12,10 +12,11 @@ import { codeReview, modelReview } from "./review.mjs";
 import { pickKeyword } from "./keywords.mjs";
 import { providerStatus } from "./model-client.mjs";
 import {
-  appendLedger, readPosts, writePost, writeRunLog, readLedger, POSTS_DIR
+  appendLedger, appendLedgerFailure, readPosts, writePost, writeRunLog, readLedger, POSTS_DIR
 } from "./schema.mjs";
 
 const MAX_ATTEMPTS = 3;   // one draft plus two rewrites
+const MAX_SUBJECTS = 2;   // and if a subject cannot be placed, one alternative before giving up
 
 const arg = name => {
   const hit = process.argv.find(value => value === `--${name}` || value.startsWith(`--${name}=`));
@@ -48,10 +49,11 @@ export async function generateOnce(options = {}) {
   const stage = (name, detail) => { report.stages.push({ name, at: new Date().toISOString(), detail }); };
 
   try {
-    const keyword = options.keyword || pickKeyword();
+    const keyword = options.keyword || pickKeyword({ excludeSlugs: options.excludeSlugs });
     if (!keyword) throw permanent("no_keyword_available", "every candidate is already published");
+    report.attemptedSlug = keyword.slug;
     report.keyword = {
-      primaryKeyword: keyword.primaryKeyword, intent: keyword.intent,
+      primaryKeyword: keyword.primaryKeyword, intent: keyword.intent, slug: keyword.slug,
       score: keyword.score, reasons: keyword.reasons, vehicle: keyword.vehicle
     };
     stage("keyword", keyword.primaryKeyword);
@@ -111,6 +113,9 @@ export async function generateOnce(options = {}) {
     if (!post) {
       report.failures = lastFailures;
       report.status = "review_failed";
+      // Recorded so the next scheduled run does not open with the subject that just failed.
+      // Only on a real run: a dry run must leave the repository alone.
+      if (!options.dryRun) appendLedgerFailure(keyword, lastFailures[0]);
       stage("publish", "not published: review failed after all attempts");
       return finish(report, options);
     }
@@ -166,14 +171,26 @@ if (invoked) {
   if (dryRun) console.log("[blog:generate] dry run (BLOG_AUTO_PUBLISH=false — nothing will be written)");
 
   const results = [];
+  // Subjects this run has already tried. A rejected draft says something about that draft,
+  // not about the schedule, so the run moves to the next candidate instead of going home
+  // empty-handed. Capped: a run that cannot place two subjects has a problem worth failing on.
+  const tried = new Set();
   for (let index = 0; index < count; index++) {
-    // eslint-disable-next-line no-await-in-loop
-    const report = await generateOnce({ dryRun });
+    let report = null;
+    for (let subject = 1; subject <= MAX_SUBJECTS; subject++) {
+      // eslint-disable-next-line no-await-in-loop
+      report = await generateOnce({ dryRun, excludeSlugs: tried });
+      if (report.attemptedSlug) tried.add(report.attemptedSlug);
+      console.log(`[blog:generate] ${report.status}`
+        + (report.keyword ? ` · ${report.keyword.primaryKeyword}` : "")
+        + (report.slug ? ` · ${report.slug}` : ""));
+      for (const failure of report.failures) console.error(`  ! ${failure}`);
+      // Only a rejected draft is worth another subject. A missing key or an unreachable
+      // NHTSA will fail identically on the next one.
+      if (report.status !== "review_failed") break;
+      if (subject < MAX_SUBJECTS) console.log("[blog:generate] trying the next candidate");
+    }
     results.push(report);
-    console.log(`[blog:generate] ${report.status}`
-      + (report.keyword ? ` · ${report.keyword.primaryKeyword}` : "")
-      + (report.slug ? ` · ${report.slug}` : ""));
-    for (const failure of report.failures) console.error(`  ! ${failure}`);
     if (report.status !== "published" && report.status !== "dry_run") break;
   }
 

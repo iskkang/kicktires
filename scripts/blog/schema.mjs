@@ -90,11 +90,13 @@ export const wordCount = post => (post?.body || [])
 
 /* ── ledger ───────────────────────────────────────────────────── */
 // Published slugs and primary keywords, so a scheduled run cannot quietly republish a
-// subject under a new filename. Read before keyword selection, written only on publish.
+// subject under a new filename. Also the subjects that were tried and rejected, so the
+// schedule does not spend every run re-attempting the same one — see appendLedgerFailure.
 export function readLedger() {
-  if (!fs.existsSync(LEDGER_FILE)) return { posts: [] };
-  try { return JSON.parse(fs.readFileSync(LEDGER_FILE, "utf8")); }
-  catch { return { posts: [] }; }
+  const empty = { posts: [], failures: [] };
+  if (!fs.existsSync(LEDGER_FILE)) return empty;
+  try { return { ...empty, ...JSON.parse(fs.readFileSync(LEDGER_FILE, "utf8")) }; }
+  catch { return empty; }
 }
 
 export function ledgerHas(ledger, { slug, primaryKeyword }) {
@@ -112,6 +114,27 @@ export function appendLedger(post) {
     title: post.title,
     year: post.year, make: post.make, model: post.model,
     datePublished: post.datePublished
+  });
+  fs.mkdirSync(BLOG_DIR, { recursive: true });
+  fs.writeFileSync(LEDGER_FILE, JSON.stringify(ledger, null, 2) + "\n");
+  return ledger;
+}
+
+/**
+ * A subject that reached review and was rejected. Ranking is deterministic, so without this
+ * the same candidate comes back top of the list every run and the schedule spends itself
+ * re-attempting one vehicle while nothing else gets written. Recorded rather than banned:
+ * the penalty in rankKeywords expires, because a rejection is usually about one draft.
+ */
+export function appendLedgerFailure(subject, reason) {
+  const ledger = readLedger();
+  ledger.failures = (ledger.failures || []).filter(entry => entry.slug !== subject.slug);
+  ledger.failures.push({
+    slug: subject.slug,
+    primaryKeyword: subject.primaryKeyword,
+    year: subject.vehicle?.year, make: subject.vehicle?.make, model: subject.vehicle?.model,
+    reason: String(reason || "review_failed").slice(0, 200),
+    failedAt: new Date().toISOString()
   });
   fs.mkdirSync(BLOG_DIR, { recursive: true });
   fs.writeFileSync(LEDGER_FILE, JSON.stringify(ledger, null, 2) + "\n");

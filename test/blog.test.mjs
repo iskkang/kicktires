@@ -13,7 +13,7 @@ import { codeReview, unsupportedNumbers, similarity } from "../scripts/blog/revi
 import { resolveCatalogModels, collectEvidence, statedFigures } from "../scripts/blog/evidence.mjs";
 import { dataGraphicSvg, ALLOWED_LICENSES, licenseLabel } from "../scripts/blog/images.mjs";
 import { draftShapeProblems, REQUIRED_HEADINGS, writerEvidence } from "../scripts/blog/write.mjs";
-import { rankKeywords } from "../scripts/blog/keywords.mjs";
+import { rankKeywords, pickKeyword } from "../scripts/blog/keywords.mjs";
 
 const EVIDENCE = {
   vehicle: { year: 2021, make: "Honda", model: "Civic", resolvedModels: ["CIVIC"] },
@@ -296,6 +296,51 @@ test("keyword ranking skips what is published and never invents search volume", 
     assert.equal(item.opportunity, "estimated_only_no_keyword_api");
     assert.equal(item.reasons.length >= 2, true);
   }
+});
+
+// Ranking is deterministic, so a subject that fails review comes back top of the list on the
+// next run and the schedule spends itself re-attempting one vehicle. Rejections are recorded
+// and penalised — heavily enough to sit behind anything untried, temporarily enough that the
+// subject is not lost, since a rejection is usually about one draft.
+test("a subject rejected at review waits behind untried ones, then comes back", () => {
+  const vehicles = [
+    { year: 2018, make: "Toyota", model: "Camry", complaints: 731, recalls: 8 },
+    { year: 2020, make: "Honda", model: "Accord", complaints: 90, recalls: 2 }
+  ];
+  const camry = "2018-toyota-camry-problems";
+  const day = 86_400_000;
+  const now = Date.parse("2026-08-09T00:00:00.000Z");
+  const rank = failedAt => rankKeywords({
+    vehicles, posts: [], now,
+    ledger: { posts: [], failures: failedAt ? [{ slug: camry, failedAt }] : [] }
+  });
+
+  // Camry outranks the Accord on evidence depth alone.
+  assert.equal(rank(null)[0].slug, camry, "the richer federal record should lead");
+
+  const afterFailure = rank(new Date(now - 2 * day).toISOString());
+  assert.notEqual(afterFailure[0].slug, camry, "a just-rejected subject must not lead again");
+  const demoted = afterFailure.find(item => item.slug === camry);
+  assert.ok(demoted, "it must stay on the list, not be banned");
+  assert.ok(demoted.reasons.some(reason => /rejected at review/.test(reason)),
+    "the run log has to be able to explain the demotion");
+
+  // Once the window passes it is a normal candidate again.
+  assert.equal(rank(new Date(now - 45 * day).toISOString())[0].slug, camry,
+    "the penalty has to expire");
+});
+
+test("a subject already tried this run is not offered again", () => {
+  const vehicles = [
+    { year: 2018, make: "Toyota", model: "Camry", complaints: 731, recalls: 8 },
+    { year: 2020, make: "Honda", model: "Accord", complaints: 90, recalls: 2 }
+  ];
+  const first = pickKeyword({ vehicles, posts: [], ledger: { posts: [], failures: [] } });
+  const second = pickKeyword({
+    vehicles, posts: [], ledger: { posts: [], failures: [] },
+    excludeSlugs: new Set([first.slug])
+  });
+  assert.notEqual(second.slug, first.slug, "the run would retry the subject it just failed");
 });
 
 /* ── rendered output ──────────────────────────────────────────── */
