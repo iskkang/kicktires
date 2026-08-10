@@ -15,7 +15,10 @@ const NAME = "KickTires";
 const AUTHOR = "KickTires Editorial";
 const AUTHOR_PATH = "/author/kicktires-editorial/";
 const GA = process.env.GA_MEASUREMENT_ID || "G-5NSV1Y7TSJ";
-const ADSENSE = process.env.ADSENSE_CLIENT || "ca-pub-3682195653529318";
+const ADSENSE = (process.env.ADSENSE_CLIENT || "ca-pub-3682195653529318").trim();
+// Same guard build.mjs applies. blog-build.mjs can run on its own via npm run blog:build, and
+// a malformed client would otherwise be emitted into every blog page as a dead script tag.
+if (!/^ca-pub-\d{16}$/.test(ADSENSE)) throw new Error("invalid ADSENSE_CLIENT");
 
 const esc = value => String(value ?? "")
   .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
@@ -89,6 +92,7 @@ ${absolute ? `<meta name="twitter:image" content="${esc(absolute)}">` : ""}
 <style>${CSS}</style>
 <script async src="https://www.googletagmanager.com/gtag/js?id=${GA}"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","${GA}");</script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE}" crossorigin="anonymous"></script>
 ${blocks}
 </head><body>
 <nav><div class="navin"><a class="logo" href="/"><i></i>${NAME}</a>
