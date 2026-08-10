@@ -305,8 +305,13 @@ test("keyword ranking skips what is published and never invents search volume", 
 // worthless. KICKTIRES_OUT keeps the two apart.
 test("a published post is served as static HTML with its metadata", () => {
   const out = fs.mkdtempSync(path.join(os.tmpdir(), "kicktires-blog-"));
-  const run = script => execFileSync(process.execPath, [script],
-    { cwd: ROOT, stdio: "pipe", env: { ...process.env, KICKTIRES_OUT: out } });
+  const run = script => execFileSync(process.execPath, [script], {
+    cwd: ROOT, stdio: "pipe",
+    env: {
+      ...process.env, KICKTIRES_OUT: out,
+      GA_MEASUREMENT_ID: "G-TEST123", ADSENSE_CLIENT: "ca-pub-1234567890123456"
+    }
+  });
   try {
     run("build.mjs");
     run("blog-build.mjs");
@@ -319,6 +324,17 @@ test("a published post is served as static HTML with its metadata", () => {
 function assertBlogOutput(dir) {
   const list = fs.readFileSync(path.join(dir, "blog", "index.html"), "utf8");
   assert.match(list, /Used car research/);
+
+  // blog-build.mjs writes its own <head> rather than reusing build.mjs's, so a tag added to
+  // the rest of the site does not reach these pages. It shipped with the AdSense ownership
+  // meta but no loader, which left the pages the blog exists to attract traffic to serving
+  // no ads. Checked on the list page and on every post.
+  for (const file of [["blog", "index.html"], ["methodology", "index.html"],
+    ["author", "kicktires-editorial", "index.html"]]) {
+    const html = fs.readFileSync(path.join(dir, ...file), "utf8");
+    assert.match(html, /googletagmanager\.com\/gtag\/js\?id=G-TEST123/, `${file.join("/")}: no GA4`);
+    assert.match(html, /adsbygoogle\.js\?client=ca-pub-1234567890123456/, `${file.join("/")}: no AdSense loader`);
+  }
 
   const slugs = fs.readdirSync(path.join(dir, "blog"), { withFileTypes: true })
     .filter(entry => entry.isDirectory()).map(entry => entry.name);
@@ -334,6 +350,8 @@ function assertBlogOutput(dir) {
     // The body has to be in the HTML, not fetched later.
     assert.equal(html.includes('<div class="bl-body">'), true);
     assert.equal(html.length > 4000, true, `${slug} looks empty`);
+    assert.match(html, /googletagmanager\.com\/gtag\/js\?id=G-TEST123/, `${slug}: no GA4`);
+    assert.match(html, /adsbygoogle\.js\?client=ca-pub-1234567890123456/, `${slug}: no AdSense loader`);
   }
   const read = (...parts) => fs.readFileSync(path.join(dir, ...parts), "utf8");
   assert.match(read("methodology", "index.html"), /How we research a used car/);
