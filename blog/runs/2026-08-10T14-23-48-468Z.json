@@ -1,0 +1,75 @@
+{
+  "startedAt": "2026-08-10T14:23:48.468Z",
+  "stages": [
+    {
+      "name": "keyword",
+      "at": "2026-08-10T14:23:48.475Z",
+      "detail": "2019 Toyota RAV4 problems"
+    },
+    {
+      "name": "evidence",
+      "at": "2026-08-10T14:23:51.723Z",
+      "detail": "873 complaints, 7 recalls, resolved as RAV4"
+    },
+    {
+      "name": "image",
+      "at": "2026-08-10T14:23:52.627Z",
+      "detail": "licensed_photo: /blog-images/2019-toyota-rav4-problems/2019-toyota-rav4-problems-hero.jpg"
+    },
+    {
+      "name": "review",
+      "at": "2026-08-10T14:24:09.338Z",
+      "detail": "attempt 1 failed code review (1)"
+    },
+    {
+      "name": "review",
+      "at": "2026-08-10T14:24:28.058Z",
+      "detail": "attempt 2 failed editorial review (3)"
+    },
+    {
+      "name": "review",
+      "at": "2026-08-10T14:24:41.575Z",
+      "detail": "passed on attempt 3 (768 words)"
+    },
+    {
+      "name": "publish",
+      "at": "2026-08-10T14:24:41.576Z",
+      "detail": "wrote blog/posts/2019-toyota-rav4-problems.json"
+    }
+  ],
+  "status": "published",
+  "keyword": {
+    "primaryKeyword": "2019 Toyota RAV4 problems",
+    "intent": "problems",
+    "slug": "2019-toyota-rav4-problems",
+    "score": 145,
+    "reasons": [
+      "intent \"problems\" sits 10/10 on purchase proximity",
+      "federal record: 873 complaints, 7 recall campaigns",
+      "no post covers this vehicle yet"
+    ],
+    "vehicle": {
+      "year": 2019,
+      "make": "Toyota",
+      "model": "RAV4",
+      "slug": "2019-toyota-rav4-problems",
+      "complaints": 873,
+      "recalls": 7
+    }
+  },
+  "slug": "2019-toyota-rav4-problems",
+  "failures": [],
+  "provider": {
+    "provider": "deepseek",
+    "envVar": "DEEPSEEK_API_KEY",
+    "configured": true
+  },
+  "attemptedSlug": "2019-toyota-rav4-problems",
+  "post": {
+    "title": "2019 Toyota RAV4 Used Car Buyer's Guide: Recalls and Complaints",
+    "slug": "2019-toyota-rav4-problems",
+    "words": 768
+  },
+  "finishedAt": "2026-08-10T14:24:41.576Z",
+  "dryRun": false
+}

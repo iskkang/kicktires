@@ -1,0 +1,167 @@
+{
+  "vehicle": {
+    "year": 2019,
+    "make": "Toyota",
+    "model": "RAV4",
+    "resolvedModels": [
+      "RAV4"
+    ]
+  },
+  "retrievedAt": "2026-08-10T14:23:48.476Z",
+  "sources": [
+    {
+      "id": "nhtsa-catalog",
+      "url": "https://api.nhtsa.gov/products/vehicle/models?modelYear=2019&make=Toyota&issueType=c",
+      "retrievedAt": "2026-08-10T14:23:48.476Z",
+      "note": "NHTSA model catalog for this make and model year"
+    },
+    {
+      "id": "nhtsa-complaints-rav4",
+      "url": "https://api.nhtsa.gov/complaints/complaintsByVehicle?make=Toyota&model=RAV4&modelYear=2019",
+      "retrievedAt": "2026-08-10T14:23:48.476Z",
+      "note": "Consumer complaints filed with NHTSA for 2019 Toyota RAV4"
+    },
+    {
+      "id": "nhtsa-recalls-rav4",
+      "url": "https://api.nhtsa.gov/recalls/recallsByVehicle?make=Toyota&model=RAV4&modelYear=2019",
+      "retrievedAt": "2026-08-10T14:23:48.476Z",
+      "note": "Recall campaigns issued for 2019 Toyota RAV4"
+    }
+  ],
+  "complaints": {
+    "kind": "consumer_submitted",
+    "total": 873,
+    "crashes": 25,
+    "fires": 2,
+    "injuries": 21,
+    "topComponents": [
+      {
+        "component": "FUEL/PROPULSION SYSTEM",
+        "count": 254,
+        "examples": [
+          "Vehicle consistently accepts only approximately 9–10 gallons of fuel when the fuel gauge indicates empty, resulting in significantly reduced driving range. Issue has been widely reported by other Toyota RAV4 Hybrid owners and appears related to fuel tank design. Manufacturer declined assistance and referred responsibil",
+          "This is another complaint with the same issue. Got gas on January 1, 2026, the truck did not how any indication that it was going to have any problems. Engine shut down and wouldn’t turn back on. This has happened twice after getting gas, no dealership knows the problem. This is casing me stress and putting myself and "
+        ]
+      },
+      {
+        "component": "ENGINE",
+        "count": 211,
+        "examples": [
+          "The Coolant Bypass Valve on my vehicle failed, leading to a risk of sudden engine overheating and potential coolant leaks into the electrical harness. This is a documented defect (CSP 23TE03) that Toyota has failed to address for vehicles over 100,000 miles, creating a safety hazard for high-mileage owners. This is a m",
+          "The 8-speed automatic on my 2019 RAV4 (2.5L 4 Cyl) has been shifting super rough at lower speeds, to the point to where downshifts can send the revs into redline territory, but the car really doesn't move. No warning lights, passed state inspection, recently serviced. purchaced this car in Janurary with 50k miles on it"
+        ]
+      },
+      {
+        "component": "UNKNOWN OR OTHER",
+        "count": 169,
+        "examples": [
+          "While driving down a county road at approx 40mph, the glass of the sunroof of my 2019 RAV4 suddenly cracked, with shards falling down into the vehicle. There was no apparent cause or impact. After moving to a safe location to further inspect, I noticed the following details; - the rectangular glass of the sunroof is cr",
+          "I am having issues with my 2019 RAV 4 rear hatch. The struts/hinges issue is not allowing my rear hatch to open. I feel like one issue caused the other, but warranty will only cover the struts. There is a potential class action lawsuit right now over this issue. Toyota will not do anything about it."
+        ]
+      },
+      {
+        "component": "ELECTRICAL SYSTEM",
+        "count": 101,
+        "examples": [
+          "Display of RAV4 Hybrid is malfunctioning as it randomly turns on and off at frequent intervals, the screen turns on an off in a similar manner, the display controls are not operative even if displayed. This occurred right after the Dealer (355 Toyota of Rockville, [XXX] ) conducted a recall procedure on a wire harness.",
+          "Door locks failed to lock or unlock via the key fob, intermittent problem"
+        ]
+      },
+      {
+        "component": "STRUCTURE",
+        "count": 89,
+        "examples": [
+          "The rear door (lift gate) hinges are failing and tearing away from the vehicle body, causing misalignment of the rear door, operational failure of the automated lift gate, and water leaking into the interior. This has occurred under normal use conditions. It appears that the hinge design is insufficient to handle the l",
+          "The rear hatch hinges are undersized causing them to fail and undue stress on the motor."
+        ]
+      },
+      {
+        "component": "POWER TRAIN",
+        "count": 80,
+        "examples": [
+          "transmission went out at 109,217 k miles had to pay for it out of pocket Toyota doesn't recommend transmission fluid replacement until 120k miles",
+          "The 8-speed automatic on my 2019 RAV4 (2.5L 4 Cyl) has been shifting super rough at lower speeds, to the point to where downshifts can send the revs into redline territory, but the car really doesn't move. No warning lights, passed state inspection, recently serviced. purchaced this car in Janurary with 50k miles on it"
+        ]
+      },
+      {
+        "component": "AIR BAGS",
+        "count": 45,
+        "examples": [
+          "Was in a front driver side T-bone @ 35 miles and hour accident and no Airbags deployed",
+          "It happened yesterday , November 3rd at 8:45 am Approx. speed was 35mph to 40 •Location: 934 York Road, Towson, MD •Description: Front-right impact at 40 mph, no airbag deployment, two children in back seat, vehicle had recent 50K service and roof-rail repair, CSP 22TE05, at Sheehy Toyota Cockeysville. Vehicle now at C"
+        ]
+      },
+      {
+        "component": "SERVICE BRAKES",
+        "count": 35,
+        "examples": [
+          "Was in a front driver side T-bone @ 35 miles and hour accident and no Airbags deployed",
+          "Braking while pulling into a parking space. Instead of slowing down the car accelerated and went over the curb. Maintained pressure on the break but it did not slow the car. Instead the car kept accelerating down an embankment, across an empty street and towards a telephone pole. Turning the steering wheel to the left "
+        ]
+      }
+    ]
+  },
+  "recalls": {
+    "kind": "official_campaign",
+    "total": 7,
+    "campaigns": [
+      {
+        "campaign": "20V682000",
+        "component": "FUEL SYSTEM, GASOLINE:DELIVERY:FUEL PUMP",
+        "summary": "Toyota Motor Engineering & Manufacturing (Toyota) is recalling certain 2018-2019 4Runner, 2019-2020 Avalon, 2019 Corolla Hatchback, 2017-2019 Highlander, 2018-2020 Camry, 2020 Corolla, 2018-2019 Land Cruiser, 2017-2020 Tacoma, 2019-2020 RAV4, 2019-2020 Sequoia, 2017-2020 Sienna, 2019-2020 Tundra, 2018-2020 Lexus ES350, 2017 Lexus GS200t, 2017-2019 Lexus GS350, 2019 Lexus GS300, 2018-2020 Lexus LC500h, 2019-2020 Lexus LS500, 2018-2019 Lexus GX460, 2017 Lexus IS200t, 2019 Lexus IS300, 2019 Lexus IS350, 2018-2020 Lexus LC500, 2018 Lexus LS500, 2019 Lexus LS500h, 2018-2019 Lexus LX570, 2017 Lexus ",
+        "consequence": "If the fuel pump fails, the engine can stall while driving, increasing the risk of a crash.",
+        "remedy": "Toyota will notify owners, and dealers will replace the fuel pump assembly with an improved one, free of charge. Owners of specific models were notified that remedy parts were available starting January 21, 2021. Owners of other models will be notified as remedy parts become available. Remedy parts should be available for all affected vehicles by late March 2021. Owners may contact Toyota customer service at 1-888-270-9371 or Lexus customer service at 1-800-255-3987. Note: This recall is an expansion of recall 20V-012. Toyota's number for this recall is 20TA02. Lexus' number for this recall is",
+        "reportReceivedDate": "04/11/2020"
+      },
+      {
+        "campaign": "20V064000",
+        "component": "ENGINE AND ENGINE COOLING",
+        "summary": "Toyota Motor Engineering & Manufacturing (Toyota) is recalling certain 2020 Toyota Avalon Hybrid, Camry, Camry Hybrid and Lexus ES300h and 2019-2020 RAV4 and RAV4 Hybrid vehicles equipped with 2.5L 4-Cylinder engines. Porosity in the engine castings may result in cracks than can allow coolant to leak internally and/or externally.",
+        "consequence": "A coolant leak can cause the engine to overheat and cause a vehicle stall in conventional gasoline vehicles, increasing the risk of a crash. Additionally, for all involved vehicles, the engine may get damaged mechanically, possibly resulting in an engine oil leak, increasing the risk of a fire.",
+        "remedy": "Toyota will notify owners, and dealers will inspect and replace the engine including the engine block, as necessary, free of charge. The recall began April 3, 2020. Owners may contact Toyota customer service at 1-888-270-9371 or Lexus at 1-800-255-3987. Toyota's number for this recall is 20TA04. Lexus' number for this recall is 20LA02.",
+        "reportReceivedDate": "06/02/2020"
+      },
+      {
+        "campaign": "20V373000",
+        "component": "STEERING:ELECTRIC POWER ASSIST SYSTEM",
+        "summary": "Toyota Motor Engineering & Manufacturing (Toyota) is recalling certain 2019-2020 RAV4 and 2020 RAV4 Hybrid vehicles equipped with electric power steering (EPS). Water may enter through the steering gear box cover and cause a loss of electric power steering assist.",
+        "consequence": "A loss of power steering assist could increase steering effort at low vehicle speeds, increasing the risk of a crash.",
+        "remedy": "Toyota will notify owners, and dealers will replace the power steering gear box, free of charge. The recall began August 17, 2020. Owners may contact Toyota customer service at 1-888-270-9371. Toyota's number for this recall is 20TB11 / 20TA11.",
+        "reportReceivedDate": "24/06/2020"
+      },
+      {
+        "campaign": "20V286000",
+        "component": "SUSPENSION:FRONT:CONTROL ARM:LOWER ARM",
+        "summary": "Toyota Motor Engineering & Manufacturing (Toyota) is recalling certain 2019-2020 RAV4 and RAV4 Hybrid vehicles. The front lower suspension arms may have cracks, which may result in the suspension arm separating from the front wheel assembly.",
+        "consequence": "If a suspension control arm breaks, it can result in a loss of vehicle control, increasing the risk of a crash.",
+        "remedy": "Toyota will notify owners, and dealers will replace both front lower suspension arms, free of charge. This recall began August 10, 2020. Owners may contact Toyota customer service at 1-888-270-9371. Toyota's interim numbers for this recall are 20TB08 / 20TA08.",
+        "reportReceivedDate": "20/05/2020"
+      },
+      {
+        "campaign": "19V503000",
+        "component": "EQUIPMENT:OTHER:LABELS",
+        "summary": "Southeast Toyota Distributors, LLC (SET) is recalling certain 2017-2019 Toyota Camry, Corolla, Rav4, Sienna, and Yaris iA vehicles equipped with factory-installed floor mats. The load carrying capacity modification label may be incorrect. As such, these vehicles fail to comply with the requirements of Federal Motor Vehicle Safety Standard (FMVSS) number 110, \"Tire Selection and Rims.\"",
+        "consequence": "An incorrect label may lead to unintentionally overloading the vehicle, increasing the risk of a crash.",
+        "remedy": "SET will notify owners and provide a corrected label for placement over the inaccurate label, free of charge. The recall began August 23, 2019. Owners may contact Toyota customer service at 1-888-270-9371. SET's number for this recall is SET19A.",
+        "reportReceivedDate": "28/06/2019"
+      },
+      {
+        "campaign": "19V576000",
+        "component": "BACK OVER PREVENTION: SENSING SYSTEM: CAMERA",
+        "summary": "Toyota Motor Engineering & Manufacturing (Toyota) is recalling certain 2019 RAV4 and RAV4 Hybrid vehicles. Due to a damaged electrical connector, the back-up camera may not activate when the vehicle is in reverse. As such, these vehicles fail to comply to Federal Motor Safety Standard (FMVSS) number 111, \"Rearview Mirrors.\"",
+        "consequence": "If the backup camera system does not activate and the driver does not check his/her surroundings while reversing, there is an increased risk of a crash.",
+        "remedy": "Toyota will notify owners, and dealers will inspect the back-up camera system and replace the audio display unit, if necessary, free of charge. The recall began September 27, 2019. Owners may contact Toyota customer service at 1-888-270-9371. Toyota's number for this recall is K0N.",
+        "reportReceivedDate": "06/08/2019"
+      },
+      {
+        "campaign": "19V244000",
+        "component": "EQUIPMENT:OTHER:LABELS",
+        "summary": "Gulf States Toyota (GST) is recalling certain 2019 C-HR, 4Runner, Avalon, Avalon Hybrid, Camry, Camry Hybrid, Highlander, Land Cruiser, Prius, RAV4, Sequoia, Tacoma, Sienna, Tundra and Yaris vehicles. The text on the load capacity label may become illegible. As such, these vehicles fail to comply with the requirements of Federal Motor Vehicle Safety Standard (FMVSS) number 110, \"Tire Selection and Rims.\"",
+        "consequence": "If the driver cannot read the label, they may unknowingly overload the vehicle, increasing the risk of a crash.",
+        "remedy": "GST will notify owners, and dealers will provide corrected load carrying capacity modification labels, free of charge. The recall began May 24, 2019. Owners may contact GST customer service at 1-800-444-1074. GST's number for this recall is 19R1.",
+        "reportReceivedDate": "27/03/2019"
+      }
+    ]
+  },
+  "snapshotHash": "2b1fa10edc050bc7cb84cd247195eb27"
+}

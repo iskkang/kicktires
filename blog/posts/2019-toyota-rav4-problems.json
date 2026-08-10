@@ -1,0 +1,200 @@
+{
+  "title": "2019 Toyota RAV4 Used Car Buyer's Guide: Recalls and Complaints",
+  "slug": "2019-toyota-rav4-problems",
+  "description": "Review the federal record for the 2019 Toyota RAV4: 7 recalls, 873 complaints, and what to check before buying used.",
+  "datePublished": "2026-08-10T14:24:40.395Z",
+  "dateModified": "2026-08-10T14:24:40.395Z",
+  "author": "KickTires Editorial",
+  "make": "Toyota",
+  "model": "RAV4",
+  "year": 2019,
+  "primaryKeyword": "2019 Toyota RAV4 problems",
+  "secondaryKeywords": [
+    "Toyota RAV4 common issues",
+    "2019 Toyota RAV4 complaints"
+  ],
+  "heroImage": {
+    "src": "/blog-images/2019-toyota-rav4-problems/2019-toyota-rav4-problems-hero.jpg",
+    "alt": "Toyota RAV4 of the same generation as the 2019 car",
+    "ogSrc": "/blog-images/2019-toyota-rav4-problems/2019-toyota-rav4-problems-hero.jpg",
+    "squareSrc": "/blog-images/2019-toyota-rav4-problems/2019-toyota-rav4-problems-hero.jpg",
+    "kind": "licensed_photo"
+  },
+  "imageCredit": "Rutger van der Maar via flickr",
+  "imageLicense": "CC BY 2.0",
+  "imageSourceUrl": "https://www.flickr.com/photos/83468718@N06/51859674323",
+  "imageLicenseUrl": "https://creativecommons.org/licenses/by/2.0/",
+  "sourceIds": [
+    "nhtsa-catalog",
+    "nhtsa-complaints-rav4",
+    "nhtsa-recalls-rav4"
+  ],
+  "sources": [
+    {
+      "id": "nhtsa-catalog",
+      "url": "https://api.nhtsa.gov/products/vehicle/models?modelYear=2019&make=Toyota&issueType=c",
+      "retrievedAt": "2026-08-10T14:23:48.476Z",
+      "note": "NHTSA model catalog for this make and model year"
+    },
+    {
+      "id": "nhtsa-complaints-rav4",
+      "url": "https://api.nhtsa.gov/complaints/complaintsByVehicle?make=Toyota&model=RAV4&modelYear=2019",
+      "retrievedAt": "2026-08-10T14:23:48.476Z",
+      "note": "Consumer complaints filed with NHTSA for 2019 Toyota RAV4"
+    },
+    {
+      "id": "nhtsa-recalls-rav4",
+      "url": "https://api.nhtsa.gov/recalls/recallsByVehicle?make=Toyota&model=RAV4&modelYear=2019",
+      "retrievedAt": "2026-08-10T14:23:48.476Z",
+      "note": "Recall campaigns issued for 2019 Toyota RAV4"
+    }
+  ],
+  "sourceSnapshotHash": "2b1fa10edc050bc7cb84cd247195eb27",
+  "evidenceFigures": {
+    "complaintTotal": 873,
+    "complaintCrashes": 25,
+    "complaintFires": 2,
+    "complaintInjuries": 21,
+    "recallTotal": 7,
+    "componentCounts": {
+      "FUEL/PROPULSION SYSTEM": 254,
+      "ENGINE": 211,
+      "UNKNOWN OR OTHER": 169,
+      "ELECTRICAL SYSTEM": 101,
+      "STRUCTURE": 89,
+      "POWER TRAIN": 80,
+      "AIR BAGS": 45,
+      "SERVICE BRAKES": 35
+    }
+  },
+  "qualityReport": {
+    "status": "passed",
+    "reviewedAt": "2026-08-10T14:24:41.575Z",
+    "attempt": 3,
+    "words": 768,
+    "warnings": [],
+    "editorialNotes": "The article accurately reflects the federal record, clearly distinguishes recalls from complaints, and provides actionable advice without overstating findings.",
+    "checks": {
+      "code": "passed",
+      "editorial": "passed"
+    }
+  },
+  "body": [
+    {
+      "heading": "The short answer",
+      "paragraphs": [
+        "Before buying a 2019 RAV4, check if all recalls are completed, especially the fuel pump and engine coolant recalls."
+      ],
+      "sourceIds": []
+    },
+    {
+      "heading": "What the federal record shows",
+      "paragraphs": [
+        "The federal record for the 2019 Toyota RAV4 includes 7 recall campaigns and 873 consumer complaints filed with NHTSA. These are the official and consumer-reported data we have for this model year. We have not driven or tested this vehicle; our analysis is based solely on this record.",
+        "The recalls cover a range of components, from fuel system to suspension. The complaints are consumer allegations, not confirmed defects, and they do not indicate a failure rate. Without sales data, we cannot compare complaint totals across models."
+      ],
+      "bullets": [
+        "7 recall campaigns",
+        "873 consumer complaints",
+        "25 complaints mention a crash, 2 mention a fire, 21 mention injuries"
+      ],
+      "sourceIds": [
+        "nhtsa-catalog",
+        "nhtsa-recalls-rav4",
+        "nhtsa-complaints-rav4"
+      ]
+    },
+    {
+      "heading": "Recall campaigns",
+      "paragraphs": [
+        "The 2019 RAV4 has 7 recall campaigns on file. These are official actions by Toyota or its distributors to address safety-related defects or noncompliance. Each recall has a specific remedy, and owners should ensure all are completed.",
+        "The recalls include: a fuel pump issue that could cause stalling (20V682000), an engine coolant leak risk (20V064000), a power steering assist loss (20V373000), front lower suspension arm cracks (20V286000), incorrect load capacity labels (19V503000 and 19V244000), and a backup camera malfunction (19V576000)."
+      ],
+      "bullets": [
+        "Fuel pump: 20V682000 – engine stall risk",
+        "Engine coolant: 20V064000 – overheating and fire risk",
+        "Power steering: 20V373000 – loss of assist",
+        "Suspension arms: 20V286000 – loss of control",
+        "Labels: 19V503000 and 19V244000 – incorrect load capacity info",
+        "Backup camera: 19V576000 – may not activate in reverse"
+      ],
+      "sourceIds": [
+        "nhtsa-recalls-rav4"
+      ]
+    },
+    {
+      "heading": "What owners reported",
+      "paragraphs": [
+        "Consumer complaints to NHTSA are allegations, not confirmed defects. They represent what some owners experienced. The most common complaint categories are fuel/propulsion system (254 complaints), engine (211), unknown or other (169), electrical system (101), structure (89), and power train (80).",
+        "Examples from the fuel system complaints describe the fuel tank accepting less fuel than expected when the gauge reads empty, reducing driving range. Some owners reported this issue. Engine complaints include a coolant bypass valve failure that could lead to overheating, as reported by some owners. Other complaints mention sunroof glass cracking, electrical display malfunctions, lift gate hinge failures, and transmission problems."
+      ],
+      "bullets": [
+        "Fuel/propulsion system: 254 complaints",
+        "Engine: 211 complaints",
+        "Unknown or other: 169 complaints",
+        "Electrical system: 101 complaints",
+        "Structure: 89 complaints",
+        "Power train: 80 complaints"
+      ],
+      "sourceIds": [
+        "nhtsa-complaints-rav4"
+      ]
+    },
+    {
+      "heading": "What to check before you buy",
+      "paragraphs": [
+        "Before buying a used 2019 RAV4, verify that all recalls have been performed. You can check by VIN on the NHTSA website or at a Toyota dealer. Pay special attention to the fuel pump and engine coolant recalls, as they address stalling and fire risks.",
+        "Also, consider the complaints as a guide for a pre-purchase inspection. Have a mechanic check the fuel system for proper fuel gauge accuracy, the engine for coolant leaks, and the power steering for assist function. Inspect the sunroof, lift gate hinges, and electrical components for issues."
+      ],
+      "bullets": [
+        "Check recall completion by VIN",
+        "Test fuel gauge accuracy and fill-up behavior",
+        "Inspect engine for coolant leaks or overheating signs",
+        "Verify power steering assist works at low speeds",
+        "Examine sunroof glass and lift gate hinges for cracks or wear",
+        "Test all electrical displays and controls"
+      ],
+      "sourceIds": [
+        "nhtsa-recalls-rav4",
+        "nhtsa-complaints-rav4"
+      ]
+    },
+    {
+      "heading": "How we read this",
+      "paragraphs": [
+        "We base this analysis solely on the federal record: recall campaigns and consumer complaints. Recalls are official, but complaints are allegations. We do not have sales data, so we cannot say how common these issues are. We also cannot estimate repair costs or compare this vehicle to others.",
+        "Our goal is to give you a clear picture of what the record shows so you can make an informed decision. Use this information to guide your inspection and negotiation, but remember that each used car is unique."
+      ],
+      "bullets": [],
+      "sourceIds": [
+        "nhtsa-catalog"
+      ]
+    },
+    {
+      "heading": "Before you make an offer",
+      "paragraphs": [
+        "The 2019 RAV4 has a substantial recall history, but many issues are addressable. Ensure all recalls are done and have a mechanic check the fuel system, engine, and steering. Complaints suggest potential problems, but they are not confirmed defects. With proper inspection, you can mitigate risks and make a sound purchase."
+      ],
+      "bullets": [
+        "Verify recall completion. Ensure all 7 recalls, especially fuel pump and engine coolant, are done to avoid stalling or fire risks.",
+        "Test fuel gauge accuracy. Fill the tank and see if it accepts more than 9-10 gallons when empty; some owners reported low capacity.",
+        "Check for coolant leaks. Inspect engine bay for leaks or signs of overheating, as some owners reported coolant bypass valve failure.",
+        "Test power steering. At low speeds, steering should be easy; if not, the EPS gear box may need replacement.",
+        "Inspect sunroof and lift gate. Look for cracks in sunroof glass and check lift gate hinges for separation or water leaks.",
+        "Test electrical systems. Operate the display, backup camera, and controls to ensure they work consistently."
+      ],
+      "sourceIds": []
+    }
+  ],
+  "relatedArticles": [
+    {
+      "href": "/blog/2018-toyota-camry-problems/",
+      "title": "2018 Toyota Camry Used Car Research: Recalls and Complaints"
+    },
+    {
+      "href": "/cars/",
+      "title": "All model-year research on KickTires"
+    }
+  ],
+  "status": "published"
+}
