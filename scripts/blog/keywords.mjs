@@ -12,6 +12,12 @@ import fs from "node:fs";
 import { readLedger, ledgerHas, normalizeKeyword, slugify, readPosts } from "./schema.mjs";
 import { similarity } from "./review.mjs";
 
+// Bigger than any score rankKeywords can produce, so a recently rejected subject sorts below
+// every untried one without being removed from the list — if nothing else is left it is still
+// picked. The window is generous because a rejection is usually about a draft, not a vehicle.
+export const FAILURE_PENALTY = 1000;
+export const FAILURE_COOLDOWN_DAYS = 30;
+
 // Ordered by how close the searcher is to handing over money.
 export const INTENTS = [
   { id: "problems", weight: 10, slugSuffix: "problems",
@@ -60,7 +66,16 @@ export function candidateVehicles() {
  * be explained afterwards without rerunning anything.
  */
 export function rankKeywords({ vehicles = candidateVehicles(), ledger = readLedger(),
-  posts = readPosts(), limit = 40 } = {}) {
+  posts = readPosts(), limit = 40, now = Date.now(), excludeSlugs = new Set() } = {}) {
+  // A subject rejected at review recently goes to the back rather than off the list. The
+  // penalty is larger than any score this function produces, so anything untried outranks
+  // it, and it expires because a rejection usually says something about one draft rather
+  // than about the vehicle.
+  const failedAt = new Map();
+  for (const entry of ledger.failures || []) {
+    const at = Date.parse(entry.failedAt || "");
+    if (Number.isFinite(at)) failedAt.set(entry.slug, at);
+  }
   const ranked = [];
   for (const vehicle of vehicles) {
     for (const intent of INTENTS) {
@@ -68,6 +83,8 @@ export function rankKeywords({ vehicles = candidateVehicles(), ledger = readLedg
       const slugSuffix = intent.slugSuffix;
       const slug = slugify(`${vehicle.year}-${vehicle.make}-${vehicle.model}-${slugSuffix}`);
       if (ledgerHas(ledger, { slug, primaryKeyword })) continue;
+      // Subjects this run has already tried and had rejected.
+      if (excludeSlugs.has(slug)) continue;
 
       // Cannibalisation: a published post whose subject and intent already cover this.
       const clash = posts.find(post =>
@@ -83,9 +100,14 @@ export function rankKeywords({ vehicles = candidateVehicles(), ledger = readLedg
       const alreadyCoveredVehicle = posts.some(post =>
         post.make.toLowerCase() === vehicle.make.toLowerCase()
         && post.model.toLowerCase() === vehicle.model.toLowerCase());
+      const failedDaysAgo = failedAt.has(slug)
+        ? (now - failedAt.get(slug)) / 86_400_000
+        : null;
+      const recentlyRejected = failedDaysAgo !== null && failedDaysAgo < FAILURE_COOLDOWN_DAYS;
       const score = intent.weight * 10
         + evidenceDepth * 45
-        - (alreadyCoveredVehicle ? 22 : 0);
+        - (alreadyCoveredVehicle ? 22 : 0)
+        - (recentlyRejected ? FAILURE_PENALTY : 0);
 
       ranked.push({
         primaryKeyword,
@@ -98,7 +120,11 @@ export function rankKeywords({ vehicles = candidateVehicles(), ledger = readLedg
           `intent "${intent.id}" sits ${intent.weight}/10 on purchase proximity`,
           `federal record: ${vehicle.complaints} complaints, ${vehicle.recalls} recall campaigns`,
           alreadyCoveredVehicle ? "this vehicle already has a post, so it is deprioritised"
-            : "no post covers this vehicle yet"
+            : "no post covers this vehicle yet",
+          ...(recentlyRejected
+            ? [`a draft for this was rejected at review ${Math.floor(failedDaysAgo)} day(s) ago,`
+              + ` so it waits behind anything untried until ${FAILURE_COOLDOWN_DAYS} days pass`]
+            : [])
         ],
         // Stated as an estimate, never as a number pulled from nowhere.
         searchVolume: null,
