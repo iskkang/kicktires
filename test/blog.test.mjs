@@ -379,6 +379,18 @@ function assertBlogOutput(dir) {
     const html = fs.readFileSync(path.join(dir, ...file), "utf8");
     assert.match(html, /googletagmanager\.com\/gtag\/js\?id=G-TEST123/, `${file.join("/")}: no GA4`);
     assert.match(html, /adsbygoogle\.js\?client=ca-pub-1234567890123456/, `${file.join("/")}: no AdSense loader`);
+
+    // These pages linked /style.css, which nothing writes into dist/. The request 404'd and
+    // the shared header and footer rendered as bare browser defaults, while the blog's own
+    // inline rules kept the article area looking fine — so the page half-worked. Two checks:
+    // the site chrome is actually styled, and no stylesheet points at a file that is not there.
+    assert.match(html, /\.navin/, `${file.join("/")}: site stylesheet is not inlined`);
+    for (const link of html.matchAll(/<link[^>]+rel="stylesheet"[^>]*>/g)) {
+      const href = (link[0].match(/href="([^"]+)"/) || [])[1] || "";
+      if (/^https?:/.test(href)) continue;
+      assert.equal(fs.existsSync(path.join(dir, href.replace(/^\//, ""))), true,
+        `${file.join("/")}: stylesheet ${href} is not in the build`);
+    }
   }
 
   const slugs = fs.readdirSync(path.join(dir, "blog"), { withFileTypes: true })
