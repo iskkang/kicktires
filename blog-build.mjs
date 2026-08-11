@@ -27,6 +27,13 @@ const day = value => String(value || "").slice(0, 10);
 const readable = value => new Date(value).toLocaleDateString("en-US",
   { year: "numeric", month: "long", day: "numeric", timeZone: "UTC" });
 
+// The site stylesheet, inlined exactly as build.mjs and research.mjs do it. These pages used
+// to <link> it at /style.css, which nothing ever writes into dist/ — so the request 404'd and
+// the shared header and footer rendered as bare browser defaults. It is not served as a file
+// on purpose: netlify.toml caches /*.css immutable for a year and the name carries no hash,
+// so a served copy would pin every visitor to one revision of the stylesheet.
+const SITE_CSS = fs.readFileSync("style.css", "utf8");
+
 const CSS = `
 .bl-wrap{width:min(100%,860px);margin:0 auto;padding:32px 20px 64px}
 .bl-list{width:min(100%,1080px)}
@@ -88,7 +95,7 @@ ${modified ? `<meta property="article:modified_time" content="${esc(modified)}">
 ${absolute ? `<meta name="twitter:image" content="${esc(absolute)}">` : ""}
 <meta name="google-adsense-account" content="${ADSENSE}">
 <link rel="alternate" type="application/rss+xml" title="${NAME} blog" href="${SITE}/blog/rss.xml">
-<link rel="stylesheet" href="/style.css">
+<style>${SITE_CSS}</style>
 <style>${CSS}</style>
 <script async src="https://www.googletagmanager.com/gtag/js?id=${GA}"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","${GA}");</script>
