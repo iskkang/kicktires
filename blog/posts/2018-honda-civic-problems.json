@@ -1,0 +1,214 @@
+{
+  "title": "2018 Honda Civic Used Car Research: Recalls & Complaints",
+  "slug": "2018-honda-civic-problems",
+  "description": "Review NHTSA data for the 2018 Honda Civic: 6 recalls, 598 complaints, steering and fuel issues. Get a buyer's checklist.",
+  "datePublished": "2026-08-12T14:24:20.671Z",
+  "dateModified": "2026-08-12T14:24:20.671Z",
+  "author": "KickTires Editorial",
+  "make": "Honda",
+  "model": "Civic",
+  "year": 2018,
+  "primaryKeyword": "2018 Honda Civic problems",
+  "secondaryKeywords": [
+    "Honda Civic common issues",
+    "2018 Honda Civic complaints"
+  ],
+  "heroImage": {
+    "src": "/blog-images/2018-honda-civic-problems/2018-honda-civic-problems-hero.jpg",
+    "alt": "Honda Civic of the same generation as the 2018 car",
+    "ogSrc": "/blog-images/2018-honda-civic-problems/2018-honda-civic-problems-hero.jpg",
+    "squareSrc": "/blog-images/2018-honda-civic-problems/2018-honda-civic-problems-hero.jpg",
+    "kind": "licensed_photo"
+  },
+  "imageCredit": "Rutger van der Maar via flickr",
+  "imageLicense": "CC BY 2.0",
+  "imageSourceUrl": "https://www.flickr.com/photos/83468718@N06/52267236301",
+  "imageLicenseUrl": "https://creativecommons.org/licenses/by/2.0/",
+  "sourceIds": [
+    "nhtsa-catalog",
+    "nhtsa-complaints-civic",
+    "nhtsa-recalls-civic"
+  ],
+  "sources": [
+    {
+      "id": "nhtsa-catalog",
+      "url": "https://api.nhtsa.gov/products/vehicle/models?modelYear=2018&make=Honda&issueType=c",
+      "retrievedAt": "2026-08-12T14:23:54.850Z",
+      "note": "NHTSA model catalog for this make and model year"
+    },
+    {
+      "id": "nhtsa-complaints-civic",
+      "url": "https://api.nhtsa.gov/complaints/complaintsByVehicle?make=Honda&model=CIVIC&modelYear=2018",
+      "retrievedAt": "2026-08-12T14:23:54.850Z",
+      "note": "Consumer complaints filed with NHTSA for 2018 Honda CIVIC"
+    },
+    {
+      "id": "nhtsa-recalls-civic",
+      "url": "https://api.nhtsa.gov/recalls/recallsByVehicle?make=Honda&model=CIVIC&modelYear=2018",
+      "retrievedAt": "2026-08-12T14:23:54.850Z",
+      "note": "Recall campaigns issued for 2018 Honda CIVIC"
+    }
+  ],
+  "sourceSnapshotHash": "e0628b882e483fd004a24f2015d0ea68",
+  "evidenceFigures": {
+    "complaintTotal": 598,
+    "complaintCrashes": 26,
+    "complaintFires": 4,
+    "complaintInjuries": 21,
+    "recallTotal": 6,
+    "componentCounts": {
+      "STEERING": 224,
+      "UNKNOWN OR OTHER": 105,
+      "FUEL SYSTEM, GASOLINE": 89,
+      "FUEL/PROPULSION SYSTEM": 70,
+      "ELECTRICAL SYSTEM": 51,
+      "ENGINE": 50,
+      "SERVICE BRAKES": 21,
+      "AIR BAGS": 20
+    }
+  },
+  "qualityReport": {
+    "status": "passed",
+    "reviewedAt": "2026-08-12T14:24:22.140Z",
+    "attempt": 1,
+    "words": 1134,
+    "warnings": [],
+    "editorialNotes": "The article accurately reflects the evidence, clearly distinguishes recalls from complaints, and provides actionable buyer advice without overstating findings.",
+    "checks": {
+      "code": "passed",
+      "editorial": "passed"
+    }
+  },
+  "body": [
+    {
+      "heading": "The short answer",
+      "paragraphs": [
+        "Before buying a 2018 Honda Civic, verify all open recalls are completed, especially the fuel pump and steering recalls."
+      ],
+      "sourceIds": []
+    },
+    {
+      "heading": "What the federal record shows",
+      "paragraphs": [
+        "The National Highway Traffic Safety Administration (NHTSA) catalog for the 2018 Honda Civic includes 6 recall campaigns and 598 consumer-submitted complaints. These are the official federal records for this model year, and they give a used-car shopper a factual starting point—not a complete reliability picture, but a list of what owners and the manufacturer have formally reported.",
+        "The complaint count is a raw total. It does not tell you how common problems are, because we don't have sales figures for the 2018 Civic. A high number of complaints could reflect a popular car with many on the road. Use the record to know what to look for, not to rank the car against others."
+      ],
+      "bullets": [
+        "6 recall campaigns are on file for the 2018 Honda Civic.",
+        "598 complaints were submitted by owners to NHTSA.",
+        "The most-reported component area is steering, with 224 complaints.",
+        "Fuel system complaints total 89 for gasoline fuel systems and 70 for fuel/propulsion systems.",
+        "The record includes 26 reports of crashes, 4 of fires, and 21 of injuries—these are allegations, not confirmed outcomes."
+      ],
+      "sourceIds": [
+        "nhtsa-catalog",
+        "nhtsa-complaints-civic",
+        "nhtsa-recalls-civic"
+      ]
+    },
+    {
+      "heading": "Recall campaigns",
+      "paragraphs": [
+        "Honda has filed 6 recall campaigns for the 2018 Civic. Recalls are official actions, so if a repair is available, it should be free at a dealer. Two campaigns stand out for their scope and potential safety impact.",
+        "The fuel pump recalls are the most recent and the most serious. Campaign 20V314000, filed in 2020, covers a low-pressure fuel pump that may fail, causing an engine stall. Campaign 23V858000, filed in 2023, expands that recall to more vehicles, including the 2018 Civic. Both involve replacing the fuel pump assembly or module. If a previous owner didn't complete the repair, the car could stall without warning.",
+        "The steering recall, 18V663000, addresses a magnet in the electric power steering system that may come loose. During a full-lock turn, steering assist could apply in the opposite direction, which is a serious control issue. Dealers replace the steering gearbox assembly.",
+        "Other recalls are less mechanical. One fixes a certification label with random characters (18V421000), another replaces a missing or incomplete owner's manual (18V817000), and a 2026 campaign addresses a front passenger seat weight sensor that could crack and cause air bags to deploy unintentionally (26V332000)."
+      ],
+      "bullets": [
+        "20V314000: Fuel pump may fail, causing engine stall. Repair: replace fuel pump assembly.",
+        "23V858000: Expansion of fuel pump recall; replace fuel pump module.",
+        "18V663000: Steering gearbox magnet may dislodge, causing unintended steering input. Repair: replace steering gearbox assembly.",
+        "18V421000: Certification label may have random characters; replace label.",
+        "18V817000: Owner's manual may be missing or incomplete; replace information kit.",
+        "26V332000: Front passenger seat weight sensor may crack; replace sensor."
+      ],
+      "sourceIds": [
+        "nhtsa-recalls-civic"
+      ]
+    },
+    {
+      "heading": "What owners reported",
+      "paragraphs": [
+        "Consumer complaints are allegations, not confirmed defects. They show what owners chose to report to NHTSA. The largest category is steering, with 224 complaints. Many describe the electric power steering becoming 'knotchy' or 'jerky,' sometimes locking up or becoming hard to turn. Some owners mention needing a full rack-and-pinion replacement.",
+        "Fuel system complaints are also common, with 89 for gasoline fuel systems and 70 for fuel/propulsion systems. Several complaints reference the fuel pump recall, saying the car became inoperable or stalled while waiting for parts. Others report the engine not starting despite having power.",
+        "Other reported areas include the electrical system (51 complaints), engine (50), unknown or other (105), service brakes (21), and air bags (20). Paint peeling is mentioned in the 'unknown or other' category, and air conditioning problems appear under engine complaints. These are individual experiences, not a pattern confirmed by Honda."
+      ],
+      "bullets": [
+        "Steering complaints: 224, often describing EPS failure or difficulty turning.",
+        "Fuel system complaints: 89 for gasoline fuel systems, 70 for fuel/propulsion systems.",
+        "Electrical system complaints: 51.",
+        "Engine complaints: 50, including air conditioning issues.",
+        "Unknown or other complaints: 105, including paint peeling.",
+        "Service brake complaints: 21; air bag complaints: 20."
+      ],
+      "sourceIds": [
+        "nhtsa-complaints-civic"
+      ]
+    },
+    {
+      "heading": "What to check before you buy",
+      "paragraphs": [
+        "Before buying a 2018 Civic, get the vehicle identification number (VIN) and check it on NHTSA's recall website. Confirm that all 6 recalls have been completed, especially the fuel pump and steering recalls. If any are open, schedule the free repair with a Honda dealer before you drive the car regularly.",
+        "During a test drive, pay attention to the steering. Try a full-lock turn at low speed and listen for odd noises or feel for jerky movement. Also, start the car cold and let it idle; if it stalls or hesitates, that could point to a fuel pump issue. Ask the seller for service records showing recall work and any major repairs.",
+        "Because complaints mention paint peeling and air conditioning problems, inspect the exterior for peeling clear coat or paint, and test the A/C to ensure it blows cold. These aren't safety recalls, but they could be costly to fix."
+      ],
+      "bullets": [
+        "Check the VIN on NHTSA.gov for open recalls.",
+        "Verify the fuel pump recall (20V314000 or 23V858000) is completed.",
+        "Verify the steering recall (18V663000) is completed.",
+        "Test the steering at full lock for smooth operation.",
+        "Start the engine and listen for stalling or rough idle.",
+        "Inspect paint and test the air conditioning."
+      ],
+      "sourceIds": [
+        "nhtsa-recalls-civic",
+        "nhtsa-complaints-civic"
+      ]
+    },
+    {
+      "heading": "How we read this",
+      "paragraphs": [
+        "KickTires reads the federal record as a list of what has been reported, not as a measure of how likely a problem is. The 6 recalls are official and must be taken seriously—they represent known safety issues that Honda has committed to fixing. The 598 complaints are owner allegations, and they can guide your inspection, but they don't prove a defect rate.",
+        "We don't compare the 2018 Civic to other cars because we lack sales data. We also don't estimate repair costs or predict reliability. Our advice is practical: use the recall list as a mandatory checklist, and use the complaint themes as a reason to test specific systems before you commit."
+      ],
+      "bullets": [
+        "Recalls are official; complaints are allegations.",
+        "Complaint totals don't indicate failure rates without sales data.",
+        "Focus on recall completion and test-drive checks."
+      ],
+      "sourceIds": [
+        "nhtsa-catalog",
+        "nhtsa-complaints-civic",
+        "nhtsa-recalls-civic"
+      ]
+    },
+    {
+      "heading": "Before you make an offer",
+      "paragraphs": [
+        "The 2018 Honda Civic has a substantial federal record, with 6 recalls and 598 complaints. The most critical items are the fuel pump and steering recalls, which address potential stalling and loss of steering control. If you're considering this car, make recall completion your top priority and test the steering and engine carefully. The record doesn't condemn the car, but it demands diligence."
+      ],
+      "bullets": [
+        "Verify all recalls are done. Use the VIN on NHTSA.gov to confirm the fuel pump and steering recalls are completed; open recalls are a safety risk.",
+        "Test steering at full lock. Complaints describe jerky or hard steering; a full-lock turn can reveal issues with the EPS system.",
+        "Listen for engine stalls. Fuel pump failures can cause stalling; start the car and let it idle, then drive at varying speeds.",
+        "Inspect paint and A/C. Owners reported peeling paint and A/C problems; these aren't safety recalls but can be expensive to fix."
+      ],
+      "sourceIds": []
+    }
+  ],
+  "relatedArticles": [
+    {
+      "href": "/blog/2018-toyota-camry-problems/",
+      "title": "2018 Toyota Camry Used Car Research: Recalls and Complaints"
+    },
+    {
+      "href": "/blog/2019-toyota-rav4-problems/",
+      "title": "2019 Toyota RAV4 Used Car Buyer's Guide: Recalls and Complaints"
+    },
+    {
+      "href": "/cars/",
+      "title": "All model-year research on KickTires"
+    }
+  ],
+  "status": "published"
+}

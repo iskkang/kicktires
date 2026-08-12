@@ -1,0 +1,65 @@
+{
+  "startedAt": "2026-08-12T14:23:54.842Z",
+  "stages": [
+    {
+      "name": "keyword",
+      "at": "2026-08-12T14:23:54.850Z",
+      "detail": "2018 Honda Civic problems"
+    },
+    {
+      "name": "evidence",
+      "at": "2026-08-12T14:24:00.544Z",
+      "detail": "598 complaints, 6 recalls, resolved as CIVIC"
+    },
+    {
+      "name": "image",
+      "at": "2026-08-12T14:24:02.366Z",
+      "detail": "licensed_photo: /blog-images/2018-honda-civic-problems/2018-honda-civic-problems-hero.jpg"
+    },
+    {
+      "name": "review",
+      "at": "2026-08-12T14:24:22.140Z",
+      "detail": "passed on attempt 1 (1134 words)"
+    },
+    {
+      "name": "publish",
+      "at": "2026-08-12T14:24:22.140Z",
+      "detail": "wrote blog/posts/2018-honda-civic-problems.json"
+    }
+  ],
+  "status": "published",
+  "keyword": {
+    "primaryKeyword": "2018 Honda Civic problems",
+    "intent": "problems",
+    "slug": "2018-honda-civic-problems",
+    "score": 145,
+    "reasons": [
+      "intent \"problems\" sits 10/10 on purchase proximity",
+      "federal record: 598 complaints, 6 recall campaigns",
+      "no post covers this vehicle yet"
+    ],
+    "vehicle": {
+      "year": 2018,
+      "make": "Honda",
+      "model": "Civic",
+      "slug": "2018-honda-civic-problems",
+      "complaints": 598,
+      "recalls": 6
+    }
+  },
+  "slug": "2018-honda-civic-problems",
+  "failures": [],
+  "provider": {
+    "provider": "deepseek",
+    "envVar": "DEEPSEEK_API_KEY",
+    "configured": true
+  },
+  "attemptedSlug": "2018-honda-civic-problems",
+  "post": {
+    "title": "2018 Honda Civic Used Car Research: Recalls & Complaints",
+    "slug": "2018-honda-civic-problems",
+    "words": 1134
+  },
+  "finishedAt": "2026-08-12T14:24:22.140Z",
+  "dryRun": false
+}
