@@ -30,6 +30,7 @@ test("build emits GA4 and AdSense with privacy-safe analysis events", () => {
     const html = fs.readFileSync(path.join(ROOT, "dist", page), "utf8");
     assert.match(html, /googletagmanager\.com\/gtag\/js\?id=G-TEST123/);
     assert.match(html, /gtag\("config","G-TEST123"\)/);
+    assert.match(html, /gtag\("config","AW-18359962150"\)/);
     assert.match(html, /google-adsense-account" content="ca-pub-1234567890123456/);
     assert.match(html, /adsbygoogle\.js\?client=ca-pub-1234567890123456/);
   }
@@ -38,6 +39,13 @@ test("build emits GA4 and AdSense with privacy-safe analysis events", () => {
   assert.match(home, /listing_check_started/);
   assert.match(home, /listing_analysis_completed/);
   assert.match(home, /listing_analysis_failed/);
+  assert.match(home, /window\.gtag\("event", "conversion", \{send_to:"AW-18359962150\/YICuCKrKxNkcEKaU27JE"\}\)/);
+  const analysisCompleted = home.indexOf('track("listing_analysis_completed"');
+  const adsConversion = home.indexOf('window.gtag("event", "conversion"', analysisCompleted);
+  const renderAnalysis = home.indexOf("render(output)", analysisCompleted);
+  assert.ok(analysisCompleted > -1 && adsConversion > analysisCompleted && renderAnalysis > adsConversion,
+    "Google Ads conversion must fire after a successful analysis and before rendering");
+  assert.match(home.slice(analysisCompleted, renderAnalysis), /window\.gtag\("event", "conversion"/);
   assert.match(home, /Live deal check/);
   assert.match(home, /Most checks finish in 20–40 seconds/);
   assert.match(home, /Still working\. Nothing is stuck\./);
