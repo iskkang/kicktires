@@ -139,4 +139,6 @@ test("the rewritten homepage keeps every element the analyzer script needs", () 
   assert.match(home, /const ANALYZE_ROUTES = \["\/api\/analyze", "\/\.netlify\/functions\/analyze"\]/);
   assert.match(home, /const response = await postListing\(body\);/);
   assert.match(home, /error\.name === "TimeoutError"/);
+  assert.match(home, /gtag\("config","AW-18359962150"\)/);
+  assert.match(home, /window\.gtag\("event", "conversion", \{send_to:"AW-18359962150\/YICuCKrKxNkcEKaU27JE"\}\)/);
 });
