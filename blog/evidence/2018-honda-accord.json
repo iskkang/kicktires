@@ -1,0 +1,159 @@
+{
+  "vehicle": {
+    "year": 2018,
+    "make": "Honda",
+    "model": "Accord",
+    "resolvedModels": [
+      "ACCORD"
+    ]
+  },
+  "retrievedAt": "2026-08-14T14:19:35.499Z",
+  "sources": [
+    {
+      "id": "nhtsa-catalog",
+      "url": "https://api.nhtsa.gov/products/vehicle/models?modelYear=2018&make=Honda&issueType=c",
+      "retrievedAt": "2026-08-14T14:19:35.499Z",
+      "note": "NHTSA model catalog for this make and model year"
+    },
+    {
+      "id": "nhtsa-complaints-accord",
+      "url": "https://api.nhtsa.gov/complaints/complaintsByVehicle?make=Honda&model=ACCORD&modelYear=2018",
+      "retrievedAt": "2026-08-14T14:19:35.499Z",
+      "note": "Consumer complaints filed with NHTSA for 2018 Honda ACCORD"
+    },
+    {
+      "id": "nhtsa-recalls-accord",
+      "url": "https://api.nhtsa.gov/recalls/recallsByVehicle?make=Honda&model=ACCORD&modelYear=2018",
+      "retrievedAt": "2026-08-14T14:19:35.499Z",
+      "note": "Recall campaigns issued for 2018 Honda ACCORD"
+    }
+  ],
+  "complaints": {
+    "kind": "consumer_submitted",
+    "total": 1833,
+    "crashes": 34,
+    "fires": 4,
+    "injuries": 39,
+    "topComponents": [
+      {
+        "component": "ENGINE",
+        "count": 547,
+        "examples": [
+          "I am reporting a safety concern involving my 2018 Honda Accord. I purchased my vehicle used in January 2024 at approximately 90,000 miles and have kept up with the recommended maintenance during my ownership. At approximately 120,000 miles, a Honda dealership diagnosed head-gasket failure with coolant intrusion involvi",
+          "In July 2026, our 2018 Honda Accord required a head gasket replacement. Prior to the diagnosis, the vehicle began experiencing rough starts and engine misfires. While driving, the car suddenly lost power and would not accelerate beyond approximately 10 mph. After returning home and restarting the vehicle, its performan"
+        ]
+      },
+      {
+        "component": "FORWARD COLLISION AVOIDANCE",
+        "count": 327,
+        "examples": [
+          "I am reporting a safety concern involving my 2018 Honda Accord. I purchased my vehicle used in January 2024 at approximately 90,000 miles and have kept up with the recommended maintenance during my ownership. At approximately 120,000 miles, a Honda dealership diagnosed head-gasket failure with coolant intrusion involvi",
+          "The Acoustic Vehicle Alert System (AVAS) stopped emitting sound for no apparent reason. On June 2nd, I took it to Honda service center, they said the speaker behind the front bumper needed to be replaced. I paid $699.56, only to discover that the AVAS still didn't work. I took it back, they said the accoustic unit need"
+        ]
+      },
+      {
+        "component": "FUEL/PROPULSION SYSTEM",
+        "count": 296,
+        "examples": [
+          "Doors lock actuators problem the break so fast , Fuel injector problem head gasket, Break warning sistem problems",
+          "At approximately 44,000 miles, multiple warning lights illuminated on the dashboard of my 2018 Honda Accord (1.5L turbocharged engine), including brake system, electric power steering, and driver-assistance/collision-mitigation warnings, accompanied by a rough start and an engine misfire. I took the vehicle to an autho"
+        ]
+      },
+      {
+        "component": "ELECTRICAL SYSTEM",
+        "count": 281,
+        "examples": [
+          "In the duration of ownership with this vehicle, there is always lights lighting up on the dashboard which trigger my sensors and causes my dashboard to light up like a Christmas tree. I do not feel safe when that happens randomly in the middle of driving on the highway.",
+          "While driving, my vehicle began shaking/rough running and the check-engine light came on. Multiple warning lights and system warnings appeared on the dashboard, including the brake system, steering, traction control, and TPMS warnings. The vehicle experienced noticeable shaking and reduced/abnormal performance. I am co"
+        ]
+      },
+      {
+        "component": "SERVICE BRAKES",
+        "count": 253,
+        "examples": [
+          "Doors lock actuators problem the break so fast , Fuel injector problem head gasket, Break warning sistem problems",
+          "What component or system failed or malfunctioned, and is it available for inspection upon request? I own a 2018 Honda Accord with approximately 132,000 miles. Shortly after my vehicle was serviced for the fuel pump recall, multiple warning lights and system failure messages appeared simultaneously. The affected systems"
+        ]
+      },
+      {
+        "component": "UNKNOWN OR OTHER",
+        "count": 243,
+        "examples": [
+          "The Accord Dashboard lights are coming on for all systems; collison mitigation braking problem, road departure mitigation system propblem, emission system problems avoid heavy acceleration and high speed, tire pressure monitoring system problem, brake system problem brake performance may be reduced, electric power stee",
+          "Vehicle brought to Ocean Honda, Weymouth MA with complaint that HVAC system underperforming. Customer asked to replace condensor under warrany but Honda required full diagnostic ($135). Honda disclosed that 2/3 HVAC system had leaks, and known issues. Honda has a known issue with faulty and leaking AC condensers, heat "
+        ]
+      },
+      {
+        "component": "FUEL SYSTEM, GASOLINE",
+        "count": 165,
+        "examples": [
+          "The contact owns a 2018 Honda Accord. The contact stated that while driving approximately 10 MPH, there was smoke coming from underneath the hood of the vehicle, and a fuel odor was entering the cabin of the vehicle. The contact stated that the vehicle immediately stopped. The contact activated the hazard lights until ",
+          "The contact owns a 2018 Honda Accord. The contact stated that multiple warning lights were illuminated on the dashboard prior to any issues. The contact stated that while driving at an undisclosed speed and entering onto the highway, the vehicle slowed down on the highway and eventually stalled. The vehicle was able to"
+        ]
+      },
+      {
+        "component": "POWER TRAIN",
+        "count": 132,
+        "examples": [
+          "I am reporting a safety concern involving my 2018 Honda Accord. I purchased my vehicle used in January 2024 at approximately 90,000 miles and have kept up with the recommended maintenance during my ownership. At approximately 120,000 miles, a Honda dealership diagnosed head-gasket failure with coolant intrusion involvi",
+          "My fiancé was driving my 2018 Honda Accord when the vehicle suddenly jolted violently while accelerating up a bridge. Immediately afterward, multiple warning lights, including the check engine light, came on and the vehicle lost all power. Thankfully, she was able to coast down the bridge and pull into an empty parking"
+        ]
+      }
+    ]
+  },
+  "recalls": {
+    "kind": "official_campaign",
+    "total": 6,
+    "campaigns": [
+      {
+        "campaign": "20V314000",
+        "component": "FUEL SYSTEM, GASOLINE:DELIVERY:FUEL PUMP",
+        "summary": "Honda (American Honda Motor Co.) is recalling certain 2018-2019 Acura NSX, 2019 Acura RDX, RLX and RLX Sport Hybrid, 2018-2019 Honda Accord, Civic Hatchback, Civic Type R and HR-V, 2019-2020 Insight and 2019 Fit vehicles. The low-pressure fuel pump inside the fuel tank may fail.",
+        "consequence": "If the fuel pump fails, the engine can stall while driving, increasing the risk of a crash.",
+        "remedy": "Honda will notify owners and dealers will replace the fuel pump assembly, free of charge. The recall began July 22, 2020. Owners may contact Honda customer service at 1-888-234-2138.",
+        "reportReceivedDate": "28/05/2020"
+      },
+      {
+        "campaign": "20V771000",
+        "component": "ELECTRICAL SYSTEM:BODY CONTROL MODULE:SOFTWARE",
+        "summary": "Honda (American Honda Motor Co.) is recalling certain 2018-2020 Accord Sedan, Accord Hybrid, and 2019-2020 Insight vehicles. A software error may cause intermittent or continuous disruptions in communication between the Body Control Module (BCM) and other components. This may result in malfunctions of various systems such as the windshield wipers and defroster, rearview camera, exterior lights, audible warning of a stopped vehicle, and power window operation. As such, these vehicles fail to comply with the requirements of Federal Motor Vehicle Safety Standard (FMVSS) number 103, \"Windshield De",
+        "consequence": "Various system malfunctions such as inoperative windshield wipers, defroster, rearview camera, or exterior lighting can increase the risk of a crash.",
+        "remedy": "Honda will notify owners, and dealers will update the BCM software, free of charge. The recall is expected to begin February 22, 2021. Owners may contact Honda customer service at 1-888-234-2138. Honda's number for this recall is X95.",
+        "reportReceivedDate": "10/12/2020"
+      },
+      {
+        "campaign": "18V629000",
+        "component": "BACK OVER PREVENTION: SENSING SYSTEM: CAMERA",
+        "summary": "Honda (American Honda Motor Co.) is recalling certain 2018 Honda Accord and 2019 Honda Insight vehicles. In certain scenarios, the back-up camera center display may not function properly. As such, these vehicles fail to comply with the requirements of Federal Motor Vehicle Safety Standard (FMVSS) number 111, \"Rearview Mirrors.\"",
+        "consequence": "If the rearview camera display does not show what is behind the vehicle, it can increase the risk of a crash.",
+        "remedy": "Honda will notify owners, and dealers will reprogram the display audio unit software, free of charge. The recall began October 30, 2018. Owners may contact Honda customer service at 1-888-234-2138. Honda's numbers for this recall are K2G and V2F.",
+        "reportReceivedDate": "13/09/2018"
+      },
+      {
+        "campaign": "23V158000",
+        "component": "SEAT BELTS:FRONT:BUCKLE ASSEMBLY",
+        "summary": "Honda (American Honda Motor Co.) is recalling certain 2017-2020 CR-V, 2018-2019 Accord and Accord Hybrid, 2018-2020 Odyssey, 2019 Insight, and 2019-2020 Acura RDX vehicles. A manufacturing issue with the front seat belts may cause the seat belt buckle channel to interfere with the release button, preventing the seat belt buckle from latching.",
+        "consequence": "An unlatched seat belt cannot properly restrain the seat occupant during a crash, increasing their risk of injury.",
+        "remedy": "Dealers will replace the driver and front passenger seat belt buckle release buttons or the buckle assemblies as necessary, free of charge. Owner notification letters were mailed April 18, 2023. Owners may contact Honda customer service at 1-888-234-2138. Honda's numbers for this recall are NDA, QDB, BDC, MDD, LD9. TDF, FDG, ODH, YDI, ZDE.",
+        "reportReceivedDate": "09/03/2023"
+      },
+      {
+        "campaign": "23V858000",
+        "component": "FUEL SYSTEM, GASOLINE:DELIVERY:FUEL PUMP",
+        "summary": "Honda (American Honda Motor Co.) is recalling certain 2013-2023 Honda Accord, Civic Coupe, Civic Sedan, Civic Hatchback, Civic Type R, CR-V, HR-V, Ridgeline, Odyssey, Acura ILX, MDX, MDX Hybrid, RDX, RLX, TLX, 2019-2022 Honda Insight, Passport, 2020 Honda CR-V Hybrid, 2018-2019 Honda Clarity PHEV, Fit, and 2015-2020 Honda Accord Hybrid, Pilot, Acura NSX vehicles. The fuel pump inside the fuel tank may fail.",
+        "consequence": "Fuel pump failure can cause an engine stall while driving, increasing the risk of a crash.",
+        "remedy": "Dealers will replace the fuel pump module, free of charge. Owner letters were mailed September 6, 2024. Owners may contact Honda customer service at 1-888-234-2138. Honda's numbers for this recall are KGC and KGD. This recall is an expansion of NHTSA recall numbers 21V-215 and 20V-314.",
+        "reportReceivedDate": "18/12/2023"
+      },
+      {
+        "campaign": "26V332000",
+        "component": "AIR BAGS:SENSOR:OCCUPANT CLASSIFICATION:FRONT PASSENGER",
+        "summary": "Honda (American Honda Motor Co.) is recalling certain 2018-2021, 2023 Acura TLX, 2019-2024 RDX, 2017-2020, 2022-2026 MDX, 2017-2021, 2023, 2025 Honda Ridgeline, 2017-2022 Pilot, 2019-2021 Passport, 2018-2026 Odyssey, 2019-2022 Insight, 2019-2021 HR-V, 2018-2020 Fit, 2020-2022 CR-V Hybrid, 2017-2022 CR-V, 2017-2018, 2021 Civic Type R, 2017-2021 Civic hatchback, 2016-2020 Civic coupe, 2016-2022 Civic, 2017-2022 Accord Hybrid, and 2016-2022 Accord vehicles. The front passenger seat weight sensor may crack and short circuit, which can cause the air bags to deploy unintentionally during a crash.",
+        "consequence": "Air bags that deploy unintentionally during a crash increase the risk of injury.",
+        "remedy": "Dealers will replace the seat weight sensors, free of charge. Owner notification letters were mailed July 7, 2026. Owners may contact Honda's customer service at 1-888-234-2138. Honda's numbers for this recall are BOL, WO9, OOA, WOM, XOH, NOC, POD, BOE, UOF, POB, EOG, AOI, QO8, TOJ, DO7, and SOK. This recall expands previous NHTSA recall number 24V064. Vehicle Identification Numbers (VINs) involved in this recall will be searchable on NHTSA.gov beginning May 29, 2026.",
+        "reportReceivedDate": "21/05/2026"
+      }
+    ]
+  },
+  "snapshotHash": "818a96739261efa5815ecffe004bcdcb"
+}

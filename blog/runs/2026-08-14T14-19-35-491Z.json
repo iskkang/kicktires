@@ -1,0 +1,65 @@
+{
+  "startedAt": "2026-08-14T14:19:35.491Z",
+  "stages": [
+    {
+      "name": "keyword",
+      "at": "2026-08-14T14:19:35.499Z",
+      "detail": "2018 Honda Accord problems"
+    },
+    {
+      "name": "evidence",
+      "at": "2026-08-14T14:19:44.708Z",
+      "detail": "1833 complaints, 6 recalls, resolved as ACCORD"
+    },
+    {
+      "name": "image",
+      "at": "2026-08-14T14:19:45.878Z",
+      "detail": "licensed_photo: /blog-images/2018-honda-accord-problems/2018-honda-accord-problems-hero.jpg"
+    },
+    {
+      "name": "review",
+      "at": "2026-08-14T14:20:01.091Z",
+      "detail": "passed on attempt 1 (801 words)"
+    },
+    {
+      "name": "publish",
+      "at": "2026-08-14T14:20:01.092Z",
+      "detail": "wrote blog/posts/2018-honda-accord-problems.json"
+    }
+  ],
+  "status": "published",
+  "keyword": {
+    "primaryKeyword": "2018 Honda Accord problems",
+    "intent": "problems",
+    "slug": "2018-honda-accord-problems",
+    "score": 145,
+    "reasons": [
+      "intent \"problems\" sits 10/10 on purchase proximity",
+      "federal record: 1827 complaints, 6 recall campaigns",
+      "no post covers this vehicle yet"
+    ],
+    "vehicle": {
+      "year": 2018,
+      "make": "Honda",
+      "model": "Accord",
+      "slug": "2018-honda-accord-problems",
+      "complaints": 1827,
+      "recalls": 6
+    }
+  },
+  "slug": "2018-honda-accord-problems",
+  "failures": [],
+  "provider": {
+    "provider": "deepseek",
+    "envVar": "DEEPSEEK_API_KEY",
+    "configured": true
+  },
+  "attemptedSlug": "2018-honda-accord-problems",
+  "post": {
+    "title": "2018 Honda Accord: What the Federal Record Shows",
+    "slug": "2018-honda-accord-problems",
+    "words": 801
+  },
+  "finishedAt": "2026-08-14T14:20:01.092Z",
+  "dryRun": false
+}

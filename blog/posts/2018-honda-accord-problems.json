@@ -1,0 +1,197 @@
+{
+  "title": "2018 Honda Accord: What the Federal Record Shows",
+  "slug": "2018-honda-accord-problems",
+  "description": "Review NHTSA recall campaigns and consumer complaints for the 2018 Honda Accord, including engine, fuel, and electrical issues, plus a pre-purchase checklist.",
+  "datePublished": "2026-08-14T14:19:59.906Z",
+  "dateModified": "2026-08-14T14:19:59.906Z",
+  "author": "KickTires Editorial",
+  "make": "Honda",
+  "model": "Accord",
+  "year": 2018,
+  "primaryKeyword": "2018 Honda Accord problems",
+  "secondaryKeywords": [
+    "Honda Accord common issues",
+    "2018 Honda Accord complaints"
+  ],
+  "heroImage": {
+    "src": "/blog-images/2018-honda-accord-problems/2018-honda-accord-problems-hero.jpg",
+    "alt": "Honda Accord of the same generation as the 2018 car",
+    "ogSrc": "/blog-images/2018-honda-accord-problems/2018-honda-accord-problems-hero.jpg",
+    "squareSrc": "/blog-images/2018-honda-accord-problems/2018-honda-accord-problems-hero.jpg",
+    "kind": "licensed_photo"
+  },
+  "imageCredit": "SenseiAlan via flickr",
+  "imageLicense": "CC BY 2.0",
+  "imageSourceUrl": "https://www.flickr.com/photos/91591049@N00/51418488347",
+  "imageLicenseUrl": "https://creativecommons.org/licenses/by/2.0/",
+  "sourceIds": [
+    "nhtsa-catalog",
+    "nhtsa-complaints-accord",
+    "nhtsa-recalls-accord"
+  ],
+  "sources": [
+    {
+      "id": "nhtsa-catalog",
+      "url": "https://api.nhtsa.gov/products/vehicle/models?modelYear=2018&make=Honda&issueType=c",
+      "retrievedAt": "2026-08-14T14:19:35.499Z",
+      "note": "NHTSA model catalog for this make and model year"
+    },
+    {
+      "id": "nhtsa-complaints-accord",
+      "url": "https://api.nhtsa.gov/complaints/complaintsByVehicle?make=Honda&model=ACCORD&modelYear=2018",
+      "retrievedAt": "2026-08-14T14:19:35.499Z",
+      "note": "Consumer complaints filed with NHTSA for 2018 Honda ACCORD"
+    },
+    {
+      "id": "nhtsa-recalls-accord",
+      "url": "https://api.nhtsa.gov/recalls/recallsByVehicle?make=Honda&model=ACCORD&modelYear=2018",
+      "retrievedAt": "2026-08-14T14:19:35.499Z",
+      "note": "Recall campaigns issued for 2018 Honda ACCORD"
+    }
+  ],
+  "sourceSnapshotHash": "818a96739261efa5815ecffe004bcdcb",
+  "evidenceFigures": {
+    "complaintTotal": 1833,
+    "complaintCrashes": 34,
+    "complaintFires": 4,
+    "complaintInjuries": 39,
+    "recallTotal": 6,
+    "componentCounts": {
+      "ENGINE": 547,
+      "FORWARD COLLISION AVOIDANCE": 327,
+      "FUEL/PROPULSION SYSTEM": 296,
+      "ELECTRICAL SYSTEM": 281,
+      "SERVICE BRAKES": 253,
+      "UNKNOWN OR OTHER": 243,
+      "FUEL SYSTEM, GASOLINE": 165,
+      "POWER TRAIN": 132
+    }
+  },
+  "qualityReport": {
+    "status": "passed",
+    "reviewedAt": "2026-08-14T14:20:01.091Z",
+    "attempt": 1,
+    "words": 801,
+    "warnings": [],
+    "editorialNotes": "The article accurately reflects the federal record, distinguishes complaints from confirmed defects, and provides actionable buyer advice.",
+    "checks": {
+      "code": "passed",
+      "editorial": "passed"
+    }
+  },
+  "body": [
+    {
+      "heading": "The short answer",
+      "paragraphs": [
+        "Before buying a 2018 Honda Accord, verify all open recalls are completed and have a mechanic inspect the engine, fuel system, and electrical components."
+      ],
+      "sourceIds": []
+    },
+    {
+      "heading": "What the federal record shows",
+      "paragraphs": [
+        "The National Highway Traffic Safety Administration (NHTSA) holds records for the 2018 Honda Accord, including official recall campaigns and consumer-submitted complaints. As of the retrieval date, there are 6 recall campaigns and 1,833 consumer complaints on file. These numbers reflect the federal record, not a measure of failure rate, as sales volume data is not provided.",
+        "The complaints cover a range of components, with the most frequently cited being the engine (547 complaints), forward collision avoidance (327), fuel/propulsion system (296), electrical system (281), and service brakes (253). These are allegations from owners, not confirmed defects.",
+        "The recall campaigns address specific safety issues that Honda has acknowledged and agreed to fix. Buyers should check if any recalls are incomplete on a specific vehicle."
+      ],
+      "bullets": [],
+      "sourceIds": [
+        "nhtsa-catalog",
+        "nhtsa-complaints-accord",
+        "nhtsa-recalls-accord"
+      ]
+    },
+    {
+      "heading": "Recall campaigns",
+      "paragraphs": [
+        "The federal record lists six recall campaigns for the 2018 Honda Accord. These are official actions by Honda to address safety-related defects or noncompliance with federal standards.",
+        "The recalls cover fuel pump failures, body control module software errors, backup camera display issues, seat belt buckle problems, and front passenger seat weight sensor cracks. Each recall has a remedy, typically a free repair or replacement at a dealership.",
+        "Buyers should verify that all recalls have been performed on any used Accord they consider. Dealerships can check the vehicle's recall status using the VIN."
+      ],
+      "bullets": [
+        "Fuel pump failure (20V314000, 23V858000): Engine may stall, increasing crash risk.",
+        "Body control module software error (20V771000): Malfunctions in wipers, defroster, rearview camera, lights, and power windows.",
+        "Backup camera display issue (18V629000): Rearview camera may not function, failing FMVSS 111.",
+        "Seat belt buckle issue (23V158000): Buckle may not latch, increasing injury risk.",
+        "Front passenger seat weight sensor crack (26V332000): Airbags may deploy unintentionally, increasing injury risk."
+      ],
+      "sourceIds": [
+        "nhtsa-recalls-accord"
+      ]
+    },
+    {
+      "heading": "What owners reported",
+      "paragraphs": [
+        "Consumer complaints filed with NHTSA provide insight into issues owners have experienced, but they are not proof of widespread problems. The 1,833 complaints include 34 reported crashes, 4 fires, and 39 injuries.",
+        "The most common complaint category is the engine, with 547 reports. Examples include head-gasket failure and coolant intrusion, as well as fuel injector problems. These are serious allegations that could affect reliability and safety.",
+        "Forward collision avoidance complaints (327) often mention dashboard warning lights and system malfunctions. Electrical system complaints (281) include random dashboard lights and sensor triggers. Service brake complaints (253) mention brake system warnings and performance issues.",
+        "Owners also reported fuel system problems (296) and unknown or other issues (243), such as multiple warning lights for various systems. These reports highlight potential areas of concern for buyers."
+      ],
+      "bullets": [],
+      "sourceIds": [
+        "nhtsa-complaints-accord"
+      ]
+    },
+    {
+      "heading": "What to check before you buy",
+      "paragraphs": [
+        "Before purchasing a 2018 Honda Accord, take steps to ensure the vehicle is safe and reliable. Use the VIN to check for open recalls on NHTSA's website and confirm with a Honda dealer that all recall repairs are completed.",
+        "Have a trusted mechanic perform a thorough inspection, focusing on the engine, fuel system, and electrical components. Look for signs of head-gasket failure, such as coolant leaks or white exhaust smoke, and test all safety systems.",
+        "Review the vehicle's service history and consider a pre-purchase inspection by a Honda specialist. Test drive the car to check for warning lights, brake performance, and the operation of the forward collision avoidance system."
+      ],
+      "bullets": [],
+      "sourceIds": [
+        "nhtsa-recalls-accord",
+        "nhtsa-complaints-accord"
+      ]
+    },
+    {
+      "heading": "How we read this",
+      "paragraphs": [
+        "KickTires analyzes the federal record to help buyers make informed decisions. Recall campaigns are official and indicate known safety issues that Honda must fix. Consumer complaints are allegations and do not necessarily reflect the overall reliability of the vehicle.",
+        "The complaint totals cannot be compared across models without sales-volume data. A high number of complaints may simply reflect a popular vehicle. However, the nature of the complaints, such as engine and electrical issues, warrants attention.",
+        "Our reading is based solely on the NHTSA record; we do not have independent data on failure rates or repair costs. Buyers should use this information as a starting point for their own research and inspections."
+      ],
+      "bullets": [],
+      "sourceIds": [
+        "nhtsa-catalog",
+        "nhtsa-complaints-accord",
+        "nhtsa-recalls-accord"
+      ]
+    },
+    {
+      "heading": "Before you make an offer",
+      "paragraphs": [
+        "The 2018 Honda Accord has a substantial federal record with 6 recalls and 1,833 complaints, including serious engine and electrical issues. While recalls are fixable, the complaint patterns suggest potential reliability concerns. Buyers should prioritize a thorough inspection and ensure all recalls are completed before purchase."
+      ],
+      "bullets": [
+        "Check for open recalls. Use the VIN on NHTSA's website and confirm with a dealer that all recall repairs are done.",
+        "Inspect the engine. Look for signs of head-gasket failure, such as coolant leaks, white smoke, or overheating.",
+        "Test the fuel system. Listen for unusual noises from the fuel pump and check for stalling or hesitation.",
+        "Verify electrical systems. Check that dashboard lights, wipers, rearview camera, and power windows work properly.",
+        "Evaluate the brakes. Test brake response and check for warning messages about brake performance.",
+        "Review service history. Ask for maintenance records to see if the vehicle was regularly serviced."
+      ],
+      "sourceIds": []
+    }
+  ],
+  "relatedArticles": [
+    {
+      "href": "/blog/2018-honda-civic-problems/",
+      "title": "2018 Honda Civic Used Car Research: Recalls & Complaints"
+    },
+    {
+      "href": "/blog/2018-toyota-camry-problems/",
+      "title": "2018 Toyota Camry Used Car Research: Recalls and Complaints"
+    },
+    {
+      "href": "/blog/2019-toyota-rav4-problems/",
+      "title": "2019 Toyota RAV4 Used Car Buyer's Guide: Recalls and Complaints"
+    },
+    {
+      "href": "/cars/",
+      "title": "All model-year research on KickTires"
+    }
+  ],
+  "status": "published"
+}
