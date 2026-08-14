@@ -10,6 +10,9 @@ const GOOGLE_VERIFY = "googlee9c6c5390d444c3c";
 // Public GA4 measurement ID. Netlify may override it for another deployment.
 const GA_MEASUREMENT_ID = (process.env.GA_MEASUREMENT_ID || "G-5NSV1Y7TSJ").trim();
 if (!/^G-[A-Z0-9]+$/i.test(GA_MEASUREMENT_ID)) throw new Error("invalid GA_MEASUREMENT_ID");
+// Public Google Ads conversion destination. Conversion IDs and labels are safe to ship client-side.
+const GOOGLE_ADS_ID = "AW-18359962150";
+const GOOGLE_ADS_CONVERSION = `${GOOGLE_ADS_ID}/YICuCKrKxNkcEKaU27JE`;
 // Public AdSense client ID. Auto Ads placement is controlled in the AdSense account.
 const ADSENSE = (process.env.ADSENSE_CLIENT || "ca-pub-3682195653529318").trim();
 if (!/^ca-pub-\d{16}$/.test(ADSENSE)) throw new Error("invalid ADSENSE_CLIENT");
@@ -130,7 +133,7 @@ function head({title,desc,url,jsonld}){
 <meta name="google-adsense-account" content="${ADSENSE}">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%233987e5'/><rect x='8' y='11' width='16' height='3' rx='1.5' fill='%230a0b0d'/><rect x='8' y='18' width='16' height='3' rx='1.5' fill='%230a0b0d'/></svg>">
 <script async src="https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}"></script>
-<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","${GA_MEASUREMENT_ID}");</script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","${GA_MEASUREMENT_ID}");gtag("config","${GOOGLE_ADS_ID}");</script>
 <style>${css}</style>
 ${ADSENSE ? `<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE}" crossorigin="anonymous"></script>` : ""}
 ${jsonld ? `<script type="application/ld+json">${JSON.stringify(jsonld).replace(/</g, "\\u003c")}</script>` : ""}
@@ -788,6 +791,9 @@ async function runCheck(event, body, buttonId){
         market_status:output.market && output.market.status || "unknown",
         cache_status:output.cached ? "hit" : "miss"
       });
+      if (typeof window.gtag === "function") {
+        window.gtag("event", "conversion", {send_to:"${GOOGLE_ADS_CONVERSION}"});
+      }
       render(output); return false;
     }
     if (output.error === "fetch_failed") {
