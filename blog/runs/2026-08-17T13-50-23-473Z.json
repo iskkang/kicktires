@@ -1,0 +1,72 @@
+{
+  "startedAt": "2026-08-17T13:50:23.473Z",
+  "stages": [
+    {
+      "name": "keyword",
+      "at": "2026-08-17T13:50:23.483Z",
+      "detail": "2018 Honda CR-V problems"
+    },
+    {
+      "name": "evidence",
+      "at": "2026-08-17T13:50:45.651Z",
+      "detail": "2112 complaints, 5 recalls, resolved as CR-V"
+    },
+    {
+      "name": "image",
+      "at": "2026-08-17T13:50:47.523Z",
+      "detail": "licensed_photo: /blog-images/2018-honda-cr-v-problems/2018-honda-cr-v-problems-hero.jpg"
+    },
+    {
+      "name": "review",
+      "at": "2026-08-17T13:50:59.735Z",
+      "detail": "attempt 1 failed code review (2)"
+    },
+    {
+      "name": "review",
+      "at": "2026-08-17T13:51:15.636Z",
+      "detail": "attempt 2 failed code review (1)"
+    },
+    {
+      "name": "review",
+      "at": "2026-08-17T13:51:33.364Z",
+      "detail": "attempt 3 failed code review (1)"
+    },
+    {
+      "name": "publish",
+      "at": "2026-08-17T13:51:33.364Z",
+      "detail": "not published: review failed after all attempts"
+    }
+  ],
+  "status": "review_failed",
+  "keyword": {
+    "primaryKeyword": "2018 Honda CR-V problems",
+    "intent": "problems",
+    "slug": "2018-honda-cr-v-problems",
+    "score": 145,
+    "reasons": [
+      "intent \"problems\" sits 10/10 on purchase proximity",
+      "federal record: 2103 complaints, 5 recall campaigns",
+      "no post covers this vehicle yet"
+    ],
+    "vehicle": {
+      "year": 2018,
+      "make": "Honda",
+      "model": "CR-V",
+      "slug": "2018-honda-cr-v-problems",
+      "complaints": 2103,
+      "recalls": 5
+    }
+  },
+  "slug": null,
+  "failures": [
+    "unsourced_numbers: not in the federal record: 17, 55, 2000"
+  ],
+  "provider": {
+    "provider": "deepseek",
+    "envVar": "DEEPSEEK_API_KEY",
+    "configured": true
+  },
+  "attemptedSlug": "2018-honda-cr-v-problems",
+  "finishedAt": "2026-08-17T13:51:33.364Z",
+  "dryRun": false
+}

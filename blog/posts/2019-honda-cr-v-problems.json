@@ -1,0 +1,200 @@
+{
+  "title": "2019 Honda CR-V Used Car Buyer's Guide: Recalls & Complaints",
+  "slug": "2019-honda-cr-v-problems",
+  "description": "Review the 2019 Honda CR-V's federal record: 8 recalls, 1,078 complaints, and what to inspect before buying a used model.",
+  "datePublished": "2026-08-17T13:51:52.462Z",
+  "dateModified": "2026-08-17T13:51:52.462Z",
+  "author": "KickTires Editorial",
+  "make": "Honda",
+  "model": "CR-V",
+  "year": 2019,
+  "primaryKeyword": "2019 Honda CR-V problems",
+  "secondaryKeywords": [
+    "Honda CR-V common issues",
+    "2019 Honda CR-V complaints"
+  ],
+  "heroImage": {
+    "src": "/blog-images/2019-honda-cr-v-problems/2019-honda-cr-v-problems-hero.jpg",
+    "alt": "Honda CR-V of the same generation as the 2019 car",
+    "ogSrc": "/blog-images/2019-honda-cr-v-problems/2019-honda-cr-v-problems-hero.jpg",
+    "squareSrc": "/blog-images/2019-honda-cr-v-problems/2019-honda-cr-v-problems-hero.jpg",
+    "kind": "licensed_photo"
+  },
+  "imageCredit": "Rutger van der Maar via flickr",
+  "imageLicense": "CC BY 2.0",
+  "imageSourceUrl": "https://www.flickr.com/photos/83468718@N06/51300366721",
+  "imageLicenseUrl": "https://creativecommons.org/licenses/by/2.0/",
+  "sourceIds": [
+    "nhtsa-catalog",
+    "nhtsa-complaints-crv",
+    "nhtsa-recalls-crv"
+  ],
+  "sources": [
+    {
+      "id": "nhtsa-catalog",
+      "url": "https://api.nhtsa.gov/products/vehicle/models?modelYear=2019&make=Honda&issueType=c",
+      "retrievedAt": "2026-08-17T13:51:33.373Z",
+      "note": "NHTSA model catalog for this make and model year"
+    },
+    {
+      "id": "nhtsa-complaints-crv",
+      "url": "https://api.nhtsa.gov/complaints/complaintsByVehicle?make=Honda&model=CR-V&modelYear=2019",
+      "retrievedAt": "2026-08-17T13:51:33.373Z",
+      "note": "Consumer complaints filed with NHTSA for 2019 Honda CR-V"
+    },
+    {
+      "id": "nhtsa-recalls-crv",
+      "url": "https://api.nhtsa.gov/recalls/recallsByVehicle?make=Honda&model=CR-V&modelYear=2019",
+      "retrievedAt": "2026-08-17T13:51:33.373Z",
+      "note": "Recall campaigns issued for 2019 Honda CR-V"
+    }
+  ],
+  "sourceSnapshotHash": "39925a5ab2ed64756d8c150967cbd04c",
+  "evidenceFigures": {
+    "complaintTotal": 1078,
+    "complaintCrashes": 30,
+    "complaintFires": 2,
+    "complaintInjuries": 35,
+    "recallTotal": 8,
+    "componentCounts": {
+      "FORWARD COLLISION AVOIDANCE": 295,
+      "STEERING": 190,
+      "ELECTRICAL SYSTEM": 157,
+      "FUEL/PROPULSION SYSTEM": 132,
+      "FUEL SYSTEM, GASOLINE": 118,
+      "ENGINE": 109,
+      "UNKNOWN OR OTHER": 99,
+      "SERVICE BRAKES": 95
+    }
+  },
+  "qualityReport": {
+    "status": "passed",
+    "reviewedAt": "2026-08-17T13:51:53.823Z",
+    "attempt": 1,
+    "words": 748,
+    "warnings": [],
+    "editorialNotes": "The article accurately reflects the federal record, clearly distinguishes complaints from confirmed defects, and provides actionable buying advice without overstating claims.",
+    "checks": {
+      "code": "passed",
+      "editorial": "passed"
+    }
+  },
+  "body": [
+    {
+      "heading": "The short answer",
+      "paragraphs": [
+        "Before buying a 2019 Honda CR-V, verify all recall repairs were completed, especially fuel pump and seat belt recalls."
+      ],
+      "sourceIds": []
+    },
+    {
+      "heading": "What the federal record shows",
+      "paragraphs": [
+        "The federal record for the 2019 Honda CR-V includes 8 recall campaigns and 1,078 consumer complaints filed with NHTSA. These complaints are allegations from owners, not confirmed defects, and they don't represent a failure rate without sales data. The record also shows 30 reported crashes, 2 fires, and 35 injuries tied to these complaints.",
+        "The most frequently cited components in complaints are forward collision avoidance (295), steering (190), electrical system (157), fuel/propulsion system (132), fuel system gasoline (118), and engine (109). These numbers reflect what owners chose to report, not a measured defect rate."
+      ],
+      "bullets": [],
+      "sourceIds": [
+        "nhtsa-catalog",
+        "nhtsa-complaints-crv",
+        "nhtsa-recalls-crv"
+      ]
+    },
+    {
+      "heading": "Recall campaigns",
+      "paragraphs": [
+        "The 2019 CR-V has 8 official recall campaigns. They cover a range of components, from fuel system to air bags. Each recall has a remedy, and Honda has notified owners. Buyers should confirm these repairs were done.",
+        "Key recalls include: a rear subframe bolt issue (19V865000), a fuel tank weld problem (19V569000), a fuel pump failure (21V215000 and 23V858000), a driver air bag clockspring issue (19V383000), a seat belt buckle problem (23V158000), and a front passenger seat weight sensor issue (26V332000). There's also a recall for an incorrect owner's manual description (19V694000)."
+      ],
+      "bullets": [
+        "19V865000: Rear subframe bolts may loosen, risking separation.",
+        "19V569000: Fuel tank weld may fail, risking fuel leak and fire.",
+        "21V215000: Low-pressure fuel pump may fail, causing engine stall.",
+        "23V858000: Fuel pump may fail, causing engine stall (expansion of 21V215).",
+        "19V383000: Steering wheel core burrs may damage air bag harness.",
+        "23V158000: Front seat belt buckle may not latch.",
+        "26V332000: Front passenger seat weight sensor may crack, causing air bag deployment.",
+        "19V694000: Owner's manual air bag indicator description incorrect."
+      ],
+      "sourceIds": [
+        "nhtsa-recalls-crv"
+      ]
+    },
+    {
+      "heading": "What owners reported",
+      "paragraphs": [
+        "Consumer complaints to NHTSA describe a range of issues. The most common themes involve sudden dashboard warnings, loss of power, and steering problems. For example, one complaint mentions multiple warning lights and a 'very known problem' at Honda service centers, but that's an owner's claim, not a confirmed defect.",
+        "Steering complaints often describe a 'notchy' or 'sticky' feeling, with one owner noting the vehicle 'almost over correct' on the interstate. Electrical system complaints frequently involve multiple warning lights and issues like the car not reversing. Fuel system complaints include stalling and loss of power, sometimes after a recall repair."
+      ],
+      "bullets": [
+        "Forward collision avoidance: 295 complaints, often with multiple dashboard warnings.",
+        "Steering: 190 complaints, including notchy or sticky steering.",
+        "Electrical system: 157 complaints, with multiple warning lights and power loss.",
+        "Fuel/propulsion system: 132 complaints, including sudden loss of power.",
+        "Fuel system gasoline: 118 complaints, including stalling.",
+        "Engine: 109 complaints, with rough idling and hesitation."
+      ],
+      "sourceIds": [
+        "nhtsa-complaints-crv"
+      ]
+    },
+    {
+      "heading": "What to check before you buy",
+      "paragraphs": [
+        "Before buying a used 2019 CR-V, verify that all recall repairs were completed. You can check the VIN on NHTSA's website or ask the seller for service records. Pay special attention to the fuel pump recalls (21V215 and 23V858) and the seat belt buckle recall (23V158).",
+        "During a test drive, listen for unusual steering feel, watch for warning lights, and test the seat belts. Also, check for any signs of fuel leaks, as the fuel tank recall (19V569) addressed a weld issue."
+      ],
+      "bullets": [],
+      "sourceIds": [
+        "nhtsa-recalls-crv",
+        "nhtsa-complaints-crv"
+      ]
+    },
+    {
+      "heading": "How we read this",
+      "paragraphs": [
+        "We rely only on the federal record: recall campaigns and consumer complaints. Complaints are allegations, not proof of defects, and they don't indicate failure rates without sales data. Recalls are official actions by Honda, so they represent confirmed issues that were addressed.",
+        "The 2019 CR-V has a substantial number of complaints, but many relate to components that were also subject to recalls. Buyers should use this record to guide a pre-purchase inspection and verify recall completion, not to assume every car will have problems."
+      ],
+      "bullets": [],
+      "sourceIds": [
+        "nhtsa-catalog",
+        "nhtsa-complaints-crv",
+        "nhtsa-recalls-crv"
+      ]
+    },
+    {
+      "heading": "Before you make an offer",
+      "paragraphs": [
+        "The 2019 Honda CR-V has a significant federal record with 8 recalls and over a thousand complaints. While complaints are not proof of defects, they highlight areas to inspect, such as steering and fuel system. A used example can be a good buy if all recalls are done and the car passes a thorough test drive. Verify recall completion and consider a pre-purchase inspection by a trusted mechanic."
+      ],
+      "bullets": [
+        "Check the VIN for open recalls. Ensure all 8 recalls, especially fuel pump and seat belt, were completed.",
+        "Test the steering feel. Complaints mention notchy or sticky steering; test at highway speeds.",
+        "Watch for warning lights. Many complaints involve multiple dashboard warnings; check for any illuminated lights.",
+        "Inspect for fuel leaks. The fuel tank recall addressed a weld issue; look for signs of leaks.",
+        "Test seat belt latches. The buckle recall could prevent latching; ensure both front belts click securely."
+      ],
+      "sourceIds": []
+    }
+  ],
+  "relatedArticles": [
+    {
+      "href": "/blog/2018-honda-accord-problems/",
+      "title": "2018 Honda Accord: What the Federal Record Shows"
+    },
+    {
+      "href": "/blog/2018-honda-civic-problems/",
+      "title": "2018 Honda Civic Used Car Research: Recalls & Complaints"
+    },
+    {
+      "href": "/blog/2018-toyota-camry-problems/",
+      "title": "2018 Toyota Camry Used Car Research: Recalls and Complaints"
+    },
+    {
+      "href": "/cars/",
+      "title": "All model-year research on KickTires"
+    }
+  ],
+  "status": "published"
+}

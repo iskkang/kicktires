@@ -1,0 +1,151 @@
+{
+  "vehicle": {
+    "year": 2018,
+    "make": "Honda",
+    "model": "CR-V",
+    "resolvedModels": [
+      "CR-V"
+    ]
+  },
+  "retrievedAt": "2026-08-17T13:50:23.483Z",
+  "sources": [
+    {
+      "id": "nhtsa-catalog",
+      "url": "https://api.nhtsa.gov/products/vehicle/models?modelYear=2018&make=Honda&issueType=c",
+      "retrievedAt": "2026-08-17T13:50:23.483Z",
+      "note": "NHTSA model catalog for this make and model year"
+    },
+    {
+      "id": "nhtsa-complaints-crv",
+      "url": "https://api.nhtsa.gov/complaints/complaintsByVehicle?make=Honda&model=CR-V&modelYear=2018",
+      "retrievedAt": "2026-08-17T13:50:23.483Z",
+      "note": "Consumer complaints filed with NHTSA for 2018 Honda CR-V"
+    },
+    {
+      "id": "nhtsa-recalls-crv",
+      "url": "https://api.nhtsa.gov/recalls/recallsByVehicle?make=Honda&model=CR-V&modelYear=2018",
+      "retrievedAt": "2026-08-17T13:50:23.483Z",
+      "note": "Recall campaigns issued for 2018 Honda CR-V"
+    }
+  ],
+  "complaints": {
+    "kind": "consumer_submitted",
+    "total": 2112,
+    "crashes": 46,
+    "fires": 2,
+    "injuries": 47,
+    "topComponents": [
+      {
+        "component": "ENGINE",
+        "count": 534,
+        "examples": [
+          "Before the recall repairs, I did not experience any loss of acceleration, hesitation, jerking, or flashing warning lights. These symptoms began only after the recall service was completed. 1. What component or system failed or malfunctioned, and is it available for inspection upon request? The vehicle experienced a los",
+          "Cylinder head gaskets failure with coolant migrating into the cylinders, available for inspection upon request; Dahl Honda Sheboygan took videos of inspection and liquid in the cylinders. Upon starting the car, the engine sounded strange and sluggish. As I started to drive, engine sounded like it was misfiring. I was a"
+        ]
+      },
+      {
+        "component": "FORWARD COLLISION AVOIDANCE",
+        "count": 389,
+        "examples": [
+          "Second time in the last two months, while traveling on a 55mph roadway, vehicle started auto braking with no vehicles ahead of me or any obstacles. Scared the daylights out of me, I cant imagine what the outcome would have been if this happened on a highway.",
+          "There is an ongoing problem with the electric power steering on my 2018 Honda CR-V that has begun malfunctioning. The steering sticks near the center position and requires additional force before it releases. When it releases, the steering changes from tight to loose, making it easy to overcorrect. It sometimes feels a"
+        ]
+      },
+      {
+        "component": "FUEL/PROPULSION SYSTEM",
+        "count": 365,
+        "examples": [
+          "Before the recall repairs, I did not experience any loss of acceleration, hesitation, jerking, or flashing warning lights. These symptoms began only after the recall service was completed. 1. What component or system failed or malfunctioned, and is it available for inspection upon request? The vehicle experienced a los",
+          "In Feb-2020 While driving on [XXX] just south of Altoona, PA experienced sudden loss of power with multiple warning lights on in the dashboard along with engine light. Safely maneuvered the vehicle to the shoulder. Turned it off, waited some minutes and then tried restarting it. To my surprise vehicle started with norm"
+        ]
+      },
+      {
+        "component": "STEERING",
+        "count": 317,
+        "examples": [
+          "The steering on my 2018 Honda CR-V intermittently sticks around the center position. When making small steering corrections, the steering wheel does not move smoothly and requires additional force to move past the center position. This creates difficulty making precise steering corrections and is a safety concern, part",
+          "Vehicle steering wheel would eventually seize up, then snap out while driving on all types of roads, causing the whole car to jerk left or right. Happens at all speeds on any road type Upon inspection from Schofield Honda in Wichita KS, they determined that it was the electronic power steering module that failed and ne"
+        ]
+      },
+      {
+        "component": "ELECTRICAL SYSTEM",
+        "count": 276,
+        "examples": [
+          "Before the recall repairs, I did not experience any loss of acceleration, hesitation, jerking, or flashing warning lights. These symptoms began only after the recall service was completed. 1. What component or system failed or malfunctioned, and is it available for inspection upon request? The vehicle experienced a los",
+          "Parked car and engaged the push button keyless ignition system to shut the car down, SUV would not shut down, no recourse available to power down vehicle. We immediately drove to the local Honda dealership, Braham Honda 7000 Coral Way, Miami Florida for assistance with the issue. Was advised that even disengaging the b"
+        ]
+      },
+      {
+        "component": "FUEL SYSTEM, GASOLINE",
+        "count": 229,
+        "examples": [
+          "The contact owns a 2018 Honda CR-V. The contact stated that while driving 53 MPH with the cruise control feature engaged, the vehicle started losing motive power with several unknown warning lights illuminated. The contact pulled over to the shoulder of the highway and had the vehicle towed to an independent mechanic. ",
+          "The contact owns a 2018 Honda CR-V. The contact stated that while driving on several occasions at various speeds, the vehicle went into LIMP Mode. The vehicle was taken to the residence while driving approximately 30 MPH. The vehicle was then taken to a dealer where it was diagnosed and determined that there was a misf"
+        ]
+      },
+      {
+        "component": "UNKNOWN OR OTHER",
+        "count": 203,
+        "examples": [
+          "Cylinder head gaskets failure with coolant migrating into the cylinders, available for inspection upon request; Dahl Honda Sheboygan took videos of inspection and liquid in the cylinders. Upon starting the car, the engine sounded strange and sluggish. As I started to drive, engine sounded like it was misfiring. I was a",
+          "Around 68432miles my 2018 Honda CRV EXL AWD has started getting the problem of \"Shutter Grill problem, power reduced\" warning light. It often happens on highway speeds after about 75-100 miles of driving on long trips. Its very dangerous once I encounter it in the middle of the highway with reduced power to operate the"
+        ]
+      },
+      {
+        "component": "SERVICE BRAKES",
+        "count": 193,
+        "examples": [
+          "The contact owns a 2018 Honda CR-V. The contact stated that while his wife was driving approximately 65 MPH, the wheels locked up unintendedly. The BRAKE warning light was occasionally illuminated. The vehicle was taken to a local dealer where it was diagnosed; however, the cause of the failure was not yet determined. ",
+          "The contact owns a 2018 Honda CR-V. The contact stated that while driving 30 MPH, the brakes independently activated. In addition, the contact stated that the brake pedal was firm while depressed and the tires squealed. The vehicle was taken to the dealer; however, the failure was not duplicated. The vehicle was not di"
+        ]
+      }
+    ]
+  },
+  "recalls": {
+    "kind": "official_campaign",
+    "total": 5,
+    "campaigns": [
+      {
+        "campaign": "21V215000",
+        "component": "FUEL SYSTEM, GASOLINE:DELIVERY:FUEL PUMP",
+        "summary": "Honda (American Honda Motor Co.) is recalling certain 2019-2020 Acura MDX, MDX Sport Hybrid, RDX, TLX, Honda Accord, Civic Hatchback, Insight, 2019 Acura ILX, Honda Accord Hybrid, Civic Coupe, Civic Coupe Si, Civic Sedan, Civic Sedan Si, Civic Type R, Fit, HR-V, Odyssey, Passport, Pilot and Ridgeline, and 2018-2019 CR-V vehicles. The low-pressure fuel pump inside the fuel tank may fail.",
+        "consequence": "Fuel pump failure can cause an engine stall while driving, increasing the risk of a crash.",
+        "remedy": "Honda will notify owners, and dealers will replace the fuel pump assembly, free of charge. Owner letters were mailed May 18, 2021. Owners may contact Honda customer service at 1-888-234-2138. Note: This recall is an expansion of recall 20V-314.",
+        "reportReceivedDate": "25/03/2021"
+      },
+      {
+        "campaign": "18V663000",
+        "component": "STEERING:ELECTRIC POWER ASSIST SYSTEM",
+        "summary": "Honda (American Honda Motor Co.) is recalling certain 2017-2018 Honda Civic and CR-V vehicles. The magnet that controls the torque sensor output signal for the electronic power steering system may not be properly secured, allowing the magnet to become dislodged. During a full lock turn, the dislodged magnet may cause steering assist to be applied in the opposite direction.",
+        "consequence": "The unintended steering input reduces vehicle maneuverability and increases the risk of a crash.",
+        "remedy": "Honda will notify owners, and dealers will replace the steering gearbox assembly, free of charge. The recall began November 9, 2018. Owners may contact Honda customer service at 1-888-234-2138. Honda's numbers for this recall are C2N, P2O.",
+        "reportReceivedDate": "27/09/2018"
+      },
+      {
+        "campaign": "23V158000",
+        "component": "SEAT BELTS:FRONT:BUCKLE ASSEMBLY",
+        "summary": "Honda (American Honda Motor Co.) is recalling certain 2017-2020 CR-V, 2018-2019 Accord and Accord Hybrid, 2018-2020 Odyssey, 2019 Insight, and 2019-2020 Acura RDX vehicles. A manufacturing issue with the front seat belts may cause the seat belt buckle channel to interfere with the release button, preventing the seat belt buckle from latching.",
+        "consequence": "An unlatched seat belt cannot properly restrain the seat occupant during a crash, increasing their risk of injury.",
+        "remedy": "Dealers will replace the driver and front passenger seat belt buckle release buttons or the buckle assemblies as necessary, free of charge. Owner notification letters were mailed April 18, 2023. Owners may contact Honda customer service at 1-888-234-2138. Honda's numbers for this recall are NDA, QDB, BDC, MDD, LD9. TDF, FDG, ODH, YDI, ZDE.",
+        "reportReceivedDate": "09/03/2023"
+      },
+      {
+        "campaign": "23V858000",
+        "component": "FUEL SYSTEM, GASOLINE:DELIVERY:FUEL PUMP",
+        "summary": "Honda (American Honda Motor Co.) is recalling certain 2013-2023 Honda Accord, Civic Coupe, Civic Sedan, Civic Hatchback, Civic Type R, CR-V, HR-V, Ridgeline, Odyssey, Acura ILX, MDX, MDX Hybrid, RDX, RLX, TLX, 2019-2022 Honda Insight, Passport, 2020 Honda CR-V Hybrid, 2018-2019 Honda Clarity PHEV, Fit, and 2015-2020 Honda Accord Hybrid, Pilot, Acura NSX vehicles. The fuel pump inside the fuel tank may fail.",
+        "consequence": "Fuel pump failure can cause an engine stall while driving, increasing the risk of a crash.",
+        "remedy": "Dealers will replace the fuel pump module, free of charge. Owner letters were mailed September 6, 2024. Owners may contact Honda customer service at 1-888-234-2138. Honda's numbers for this recall are KGC and KGD. This recall is an expansion of NHTSA recall numbers 21V-215 and 20V-314.",
+        "reportReceivedDate": "18/12/2023"
+      },
+      {
+        "campaign": "26V332000",
+        "component": "AIR BAGS:SENSOR:OCCUPANT CLASSIFICATION:FRONT PASSENGER",
+        "summary": "Honda (American Honda Motor Co.) is recalling certain 2018-2021, 2023 Acura TLX, 2019-2024 RDX, 2017-2020, 2022-2026 MDX, 2017-2021, 2023, 2025 Honda Ridgeline, 2017-2022 Pilot, 2019-2021 Passport, 2018-2026 Odyssey, 2019-2022 Insight, 2019-2021 HR-V, 2018-2020 Fit, 2020-2022 CR-V Hybrid, 2017-2022 CR-V, 2017-2018, 2021 Civic Type R, 2017-2021 Civic hatchback, 2016-2020 Civic coupe, 2016-2022 Civic, 2017-2022 Accord Hybrid, and 2016-2022 Accord vehicles. The front passenger seat weight sensor may crack and short circuit, which can cause the air bags to deploy unintentionally during a crash.",
+        "consequence": "Air bags that deploy unintentionally during a crash increase the risk of injury.",
+        "remedy": "Dealers will replace the seat weight sensors, free of charge. Owner notification letters were mailed July 7, 2026. Owners may contact Honda's customer service at 1-888-234-2138. Honda's numbers for this recall are BOL, WO9, OOA, WOM, XOH, NOC, POD, BOE, UOF, POB, EOG, AOI, QO8, TOJ, DO7, and SOK. This recall expands previous NHTSA recall number 24V064. Vehicle Identification Numbers (VINs) involved in this recall will be searchable on NHTSA.gov beginning May 29, 2026.",
+        "reportReceivedDate": "21/05/2026"
+      }
+    ]
+  },
+  "snapshotHash": "5de523ec981967807210e33fa1b5d9a7"
+}

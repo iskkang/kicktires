@@ -1,0 +1,65 @@
+{
+  "startedAt": "2026-08-17T13:51:33.365Z",
+  "stages": [
+    {
+      "name": "keyword",
+      "at": "2026-08-17T13:51:33.373Z",
+      "detail": "2019 Honda CR-V problems"
+    },
+    {
+      "name": "evidence",
+      "at": "2026-08-17T13:51:38.575Z",
+      "detail": "1078 complaints, 8 recalls, resolved as CR-V"
+    },
+    {
+      "name": "image",
+      "at": "2026-08-17T13:51:38.795Z",
+      "detail": "licensed_photo: /blog-images/2019-honda-cr-v-problems/2019-honda-cr-v-problems-hero.jpg"
+    },
+    {
+      "name": "review",
+      "at": "2026-08-17T13:51:53.823Z",
+      "detail": "passed on attempt 1 (748 words)"
+    },
+    {
+      "name": "publish",
+      "at": "2026-08-17T13:51:53.823Z",
+      "detail": "wrote blog/posts/2019-honda-cr-v-problems.json"
+    }
+  ],
+  "status": "published",
+  "keyword": {
+    "primaryKeyword": "2019 Honda CR-V problems",
+    "intent": "problems",
+    "slug": "2019-honda-cr-v-problems",
+    "score": 145,
+    "reasons": [
+      "intent \"problems\" sits 10/10 on purchase proximity",
+      "federal record: 1075 complaints, 8 recall campaigns",
+      "no post covers this vehicle yet"
+    ],
+    "vehicle": {
+      "year": 2019,
+      "make": "Honda",
+      "model": "CR-V",
+      "slug": "2019-honda-cr-v-problems",
+      "complaints": 1075,
+      "recalls": 8
+    }
+  },
+  "slug": "2019-honda-cr-v-problems",
+  "failures": [],
+  "provider": {
+    "provider": "deepseek",
+    "envVar": "DEEPSEEK_API_KEY",
+    "configured": true
+  },
+  "attemptedSlug": "2019-honda-cr-v-problems",
+  "post": {
+    "title": "2019 Honda CR-V Used Car Buyer's Guide: Recalls & Complaints",
+    "slug": "2019-honda-cr-v-problems",
+    "words": 748
+  },
+  "finishedAt": "2026-08-17T13:51:53.823Z",
+  "dryRun": false
+}

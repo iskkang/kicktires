@@ -35,7 +35,26 @@
       "make": "Honda",
       "model": "Accord",
       "datePublished": "2026-08-14T14:19:59.906Z"
+    },
+    {
+      "slug": "2019-honda-cr-v-problems",
+      "primaryKeyword": "2019 Honda CR-V problems",
+      "title": "2019 Honda CR-V Used Car Buyer's Guide: Recalls & Complaints",
+      "year": 2019,
+      "make": "Honda",
+      "model": "CR-V",
+      "datePublished": "2026-08-17T13:51:52.462Z"
     }
   ],
-  "failures": []
+  "failures": [
+    {
+      "slug": "2018-honda-cr-v-problems",
+      "primaryKeyword": "2018 Honda CR-V problems",
+      "year": 2018,
+      "make": "Honda",
+      "model": "CR-V",
+      "reason": "unsourced_numbers: not in the federal record: 17, 55, 2000",
+      "failedAt": "2026-08-17T13:51:33.364Z"
+    }
+  ]
 }

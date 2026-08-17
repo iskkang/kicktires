@@ -1,0 +1,175 @@
+{
+  "vehicle": {
+    "year": 2019,
+    "make": "Honda",
+    "model": "CR-V",
+    "resolvedModels": [
+      "CR-V"
+    ]
+  },
+  "retrievedAt": "2026-08-17T13:51:33.373Z",
+  "sources": [
+    {
+      "id": "nhtsa-catalog",
+      "url": "https://api.nhtsa.gov/products/vehicle/models?modelYear=2019&make=Honda&issueType=c",
+      "retrievedAt": "2026-08-17T13:51:33.373Z",
+      "note": "NHTSA model catalog for this make and model year"
+    },
+    {
+      "id": "nhtsa-complaints-crv",
+      "url": "https://api.nhtsa.gov/complaints/complaintsByVehicle?make=Honda&model=CR-V&modelYear=2019",
+      "retrievedAt": "2026-08-17T13:51:33.373Z",
+      "note": "Consumer complaints filed with NHTSA for 2019 Honda CR-V"
+    },
+    {
+      "id": "nhtsa-recalls-crv",
+      "url": "https://api.nhtsa.gov/recalls/recallsByVehicle?make=Honda&model=CR-V&modelYear=2019",
+      "retrievedAt": "2026-08-17T13:51:33.373Z",
+      "note": "Recall campaigns issued for 2019 Honda CR-V"
+    }
+  ],
+  "complaints": {
+    "kind": "consumer_submitted",
+    "total": 1078,
+    "crashes": 30,
+    "fires": 2,
+    "injuries": 35,
+    "topComponents": [
+      {
+        "component": "FORWARD COLLISION AVOIDANCE",
+        "count": 295,
+        "examples": [
+          "Multiple lights and warnings on dashboard of 2019 Honda CRV. Warnings were sudden and all at once and included, Emissions system problem, braking problem, power steering problem, collision mitigation system problem, electric parking brake problem and many others. Honda service centers stated this is a very known proble",
+          "While driving at about the speed of 45 miles/hr. the car abruptly braked in the middle of the road without any vehicle or object in front of me. It was a scary situation because if there had been a car behind me, my car would have been rear-ended. This problem has neither been reproduced nor investigated by anyone. I h"
+        ]
+      },
+      {
+        "component": "STEERING",
+        "count": 190,
+        "examples": [
+          "I Have notchy and sticky steering situation with this vehicle since approximately 60000 miles, vehicle has now approximately 96000 miles.The vehicle will almost over correct in a curve on interstate, almost feels like steering is stuck and you -must add to much pressure to turn it. I have been to dealership and they sa",
+          "Steering wheel sticks while driving left, right or straight constantly."
+        ]
+      },
+      {
+        "component": "ELECTRICAL SYSTEM",
+        "count": 157,
+        "examples": [
+          "Multiple lights and warnings on dashboard of 2019 Honda CRV. Car would not reverse. Warnings were all at once and included, Emissions system problem, braking problem, power steering problem, collision mitigation system problem, electric parking brake problem and many others. Honda mechanic stated this is a very known p",
+          "Body control Module failed, resulting the abrupt starting of car draining the battery .... engine starts but doesn't stop. Keyfobs doesn't work. Honda Dealer Diagnosed the issue with the Body control module failure, reached out to Honda for good will assistance ... after 10 days they were able to cover 50% of the repai"
+        ]
+      },
+      {
+        "component": "FUEL/PROPULSION SYSTEM",
+        "count": 132,
+        "examples": [
+          "While driving, multiple dashboard warning lights suddenly illuminated simultaneously (including the Check Engine light, Emissions system warning, and various safety sensor alerts). The vehicle experienced a sudden loss of engine power, rough idling, and hesitation upon acceleration, which created an immediate traffic h",
+          "Fuel pump failure 2019 Honda CRV. Confirmed at a shop to be the problem but unsure if it's the high or low pressure pump. The car stalled out in an intersection and we had to roll out of the road to safety."
+        ]
+      },
+      {
+        "component": "FUEL SYSTEM, GASOLINE",
+        "count": 118,
+        "examples": [
+          "The contact owns a 2019 Honda CR-V. The contact stated that the vehicle was repaired under NHTSA Campaign Number: 23V858000 (Fuel System, Gasoline) at 10,000 in 2021. The contact stated that the vehicle stalled while driving out of a car wash. There were no warning lights illuminated. The vehicle was towed to the local",
+          "The contact owns a 2019 Honda CR-V. The contact stated that while driving at an undisclosed speed, several unknown warning lights illuminated and started flashing. The vehicle started to decelerate, and the accelerator pedal was depressed; however, the vehicle lost motive power and stalled. The vehicle was towed to a d"
+        ]
+      },
+      {
+        "component": "ENGINE",
+        "count": 109,
+        "examples": [
+          "While driving, multiple dashboard warning lights suddenly illuminated simultaneously (including the Check Engine light, Emissions system warning, and various safety sensor alerts). The vehicle experienced a sudden loss of engine power, rough idling, and hesitation upon acceleration, which created an immediate traffic h",
+          "Multiple lights and warnings on dashboard of 2019 Honda CRV. Warnings were sudden and all at once and included, Emissions system problem, braking problem, power steering problem, collision mitigation system problem, electric parking brake problem and many others. Honda service centers stated this is a very known proble"
+        ]
+      },
+      {
+        "component": "UNKNOWN OR OTHER",
+        "count": 99,
+        "examples": [
+          "Vehicle is a 2019 Honda CR-V (1.5L Turbo) experiencing an active internal mechanical failure—suspected collapsing/sticking piston rings bypassing the combustion chamber, resulting in severe, unmeasured oil consumption. The dealership (Wesley Chapel Honda) filled the engine with new oil and refuses to perform an interna",
+          "The car gave a \"Emissions System Problem\" warning while on a roadtrip on June 4, 2026. The code was P219F. Subsequently (a week or so later), every warning on the car came up for every system (too many to list here). My mechanic has gone through the Honda protocol for this code (checking spark plugs, compression tests,"
+        ]
+      },
+      {
+        "component": "SERVICE BRAKES",
+        "count": 95,
+        "examples": [
+          "While driving at about the speed of 45 miles/hr. the car abruptly braked in the middle of the road without any vehicle or object in front of me. It was a scary situation because if there had been a car behind me, my car would have been rear-ended. This problem has neither been reproduced nor investigated by anyone. I h",
+          "While driving on a straight, flat road with no other vehicles close in the front or to my rear the brakes came on without warning. I pulled over to the side of the road because it was really scary. Once I calmed down I continued driving without further incident. When I got to my grandsons school parking lot I called th"
+        ]
+      }
+    ]
+  },
+  "recalls": {
+    "kind": "official_campaign",
+    "total": 8,
+    "campaigns": [
+      {
+        "campaign": "19V865000",
+        "component": "STRUCTURE:FRAME AND MEMBERS",
+        "summary": "Honda (American Honda Motor Co.) is recalling certain 2019-2020 CR-V vehicles. The rear subframe bolts were improperly manufactured and may loosen, allowing the rear subframe to separate.",
+        "consequence": "A separated rear subframe reduces vehicle handling and can suddenly disable the vehicle, increasing the risk of a crash.",
+        "remedy": "Honda will notify owners, and dealers will inspect the rear subframe bolts and retorque them or replace them, as necessary, free of charge. The recall began January 27, 2020. Owners may contact Honda customer service at 1-888-234-2138. Honda's number for this recall is R6M.",
+        "reportReceivedDate": "05/12/2019"
+      },
+      {
+        "campaign": "21V215000",
+        "component": "FUEL SYSTEM, GASOLINE:DELIVERY:FUEL PUMP",
+        "summary": "Honda (American Honda Motor Co.) is recalling certain 2019-2020 Acura MDX, MDX Sport Hybrid, RDX, TLX, Honda Accord, Civic Hatchback, Insight, 2019 Acura ILX, Honda Accord Hybrid, Civic Coupe, Civic Coupe Si, Civic Sedan, Civic Sedan Si, Civic Type R, Fit, HR-V, Odyssey, Passport, Pilot and Ridgeline, and 2018-2019 CR-V vehicles. The low-pressure fuel pump inside the fuel tank may fail.",
+        "consequence": "Fuel pump failure can cause an engine stall while driving, increasing the risk of a crash.",
+        "remedy": "Honda will notify owners, and dealers will replace the fuel pump assembly, free of charge. Owner letters were mailed May 18, 2021. Owners may contact Honda customer service at 1-888-234-2138. Note: This recall is an expansion of recall 20V-314.",
+        "reportReceivedDate": "25/03/2021"
+      },
+      {
+        "campaign": "19V569000",
+        "component": "FUEL SYSTEM, GASOLINE:STORAGE:TANK ASSEMBLY",
+        "summary": "Honda (American Honda Motor Co.) is recalling certain 2019 CR-V vehicles. The joint weld between the fuel tank and the vapor return line may have been insufficiently welded, causing the weld to fail.",
+        "consequence": "The failed weld may allow fuel to leak, increasing the risk of a fire in the presence of an ignition source.",
+        "remedy": "Honda will notify owners, and dealers will replace the fuel tank, free of charge. The recall began September 16, 2019. Owners may contact Honda customer service at 1-888-234-2138. Honda's number for this recall is A5I.",
+        "reportReceivedDate": "01/08/2019"
+      },
+      {
+        "campaign": "19V694000",
+        "component": "EQUIPMENT:OTHER:OWNERS/SERVICE/OTHER MANUAL",
+        "summary": "Honda (American Honda Motor Co.) is recalling certain 2019 CR-V vehicles. The owner's guide incorrectly describes when the \"Passenger Airbag Off\" indicator should illuminate. As such, these vehicles fail to comply with the requirements of Federal Motor Vehicle Safety Standard (FMVSS) number 208, \"Occupant Crash Protection.\"",
+        "consequence": "If the front passenger does not correctly understand how the airbag functions, they may be at an increased risk of personal injury in the event of a crash.",
+        "remedy": "Honda will notify owners and provide a sticker with the correct information to be added to the owner's guide, free of charge. The recall began November 14, 2019. Owner's may contact Honda customer service at 1-888-234-2138. Honda's number for this recall is X6G.",
+        "reportReceivedDate": "26/09/2019"
+      },
+      {
+        "campaign": "19V383000",
+        "component": "AIR BAGS:FRONTAL:DRIVER CLOCKSPRING/SPIRAL CASSETTE",
+        "summary": "Honda (American Honda Motor Co.) is recalling certain 2019 CR-V vehicles. The metal core of the steering wheel may have burrs which can damage the harnesses routed within, potentially disabling the driver's air bag or causing it to deploy without warning.",
+        "consequence": "In the event of a crash, a disabled air bag would increase the risk of injury. An uncommanded deployment of the driver's air bag also increases the risk of injury and a crash.",
+        "remedy": "Honda will notify owners, and dealers will install a protective cover on the steering wheel core and replace clockspring and the harnesses within, free of charge. The recall began July 8, 2019. Owners may contact Honda customer service at 1-888-234-2138. Honda's number for this recall is R4S.",
+        "reportReceivedDate": "21/05/2019"
+      },
+      {
+        "campaign": "23V158000",
+        "component": "SEAT BELTS:FRONT:BUCKLE ASSEMBLY",
+        "summary": "Honda (American Honda Motor Co.) is recalling certain 2017-2020 CR-V, 2018-2019 Accord and Accord Hybrid, 2018-2020 Odyssey, 2019 Insight, and 2019-2020 Acura RDX vehicles. A manufacturing issue with the front seat belts may cause the seat belt buckle channel to interfere with the release button, preventing the seat belt buckle from latching.",
+        "consequence": "An unlatched seat belt cannot properly restrain the seat occupant during a crash, increasing their risk of injury.",
+        "remedy": "Dealers will replace the driver and front passenger seat belt buckle release buttons or the buckle assemblies as necessary, free of charge. Owner notification letters were mailed April 18, 2023. Owners may contact Honda customer service at 1-888-234-2138. Honda's numbers for this recall are NDA, QDB, BDC, MDD, LD9. TDF, FDG, ODH, YDI, ZDE.",
+        "reportReceivedDate": "09/03/2023"
+      },
+      {
+        "campaign": "23V858000",
+        "component": "FUEL SYSTEM, GASOLINE:DELIVERY:FUEL PUMP",
+        "summary": "Honda (American Honda Motor Co.) is recalling certain 2013-2023 Honda Accord, Civic Coupe, Civic Sedan, Civic Hatchback, Civic Type R, CR-V, HR-V, Ridgeline, Odyssey, Acura ILX, MDX, MDX Hybrid, RDX, RLX, TLX, 2019-2022 Honda Insight, Passport, 2020 Honda CR-V Hybrid, 2018-2019 Honda Clarity PHEV, Fit, and 2015-2020 Honda Accord Hybrid, Pilot, Acura NSX vehicles. The fuel pump inside the fuel tank may fail.",
+        "consequence": "Fuel pump failure can cause an engine stall while driving, increasing the risk of a crash.",
+        "remedy": "Dealers will replace the fuel pump module, free of charge. Owner letters were mailed September 6, 2024. Owners may contact Honda customer service at 1-888-234-2138. Honda's numbers for this recall are KGC and KGD. This recall is an expansion of NHTSA recall numbers 21V-215 and 20V-314.",
+        "reportReceivedDate": "18/12/2023"
+      },
+      {
+        "campaign": "26V332000",
+        "component": "AIR BAGS:SENSOR:OCCUPANT CLASSIFICATION:FRONT PASSENGER",
+        "summary": "Honda (American Honda Motor Co.) is recalling certain 2018-2021, 2023 Acura TLX, 2019-2024 RDX, 2017-2020, 2022-2026 MDX, 2017-2021, 2023, 2025 Honda Ridgeline, 2017-2022 Pilot, 2019-2021 Passport, 2018-2026 Odyssey, 2019-2022 Insight, 2019-2021 HR-V, 2018-2020 Fit, 2020-2022 CR-V Hybrid, 2017-2022 CR-V, 2017-2018, 2021 Civic Type R, 2017-2021 Civic hatchback, 2016-2020 Civic coupe, 2016-2022 Civic, 2017-2022 Accord Hybrid, and 2016-2022 Accord vehicles. The front passenger seat weight sensor may crack and short circuit, which can cause the air bags to deploy unintentionally during a crash.",
+        "consequence": "Air bags that deploy unintentionally during a crash increase the risk of injury.",
+        "remedy": "Dealers will replace the seat weight sensors, free of charge. Owner notification letters were mailed July 7, 2026. Owners may contact Honda's customer service at 1-888-234-2138. Honda's numbers for this recall are BOL, WO9, OOA, WOM, XOH, NOC, POD, BOE, UOF, POB, EOG, AOI, QO8, TOJ, DO7, and SOK. This recall expands previous NHTSA recall number 24V064. Vehicle Identification Numbers (VINs) involved in this recall will be searchable on NHTSA.gov beginning May 29, 2026.",
+        "reportReceivedDate": "21/05/2026"
+      }
+    ]
+  },
+  "snapshotHash": "39925a5ab2ed64756d8c150967cbd04c"
+}
