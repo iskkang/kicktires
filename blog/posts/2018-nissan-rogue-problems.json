@@ -1,0 +1,204 @@
+{
+  "title": "2018 Nissan Rogue: What the Federal Record Shows",
+  "slug": "2018-nissan-rogue-problems",
+  "description": "Review NHTSA complaints and recalls for the 2018 Nissan Rogue, including brake, camera, and key issues, to guide your used-car purchase.",
+  "datePublished": "2026-08-19T13:54:49.050Z",
+  "dateModified": "2026-08-19T13:54:49.050Z",
+  "author": "KickTires Editorial",
+  "make": "Nissan",
+  "model": "Rogue",
+  "year": 2018,
+  "primaryKeyword": "2018 Nissan Rogue problems",
+  "secondaryKeywords": [
+    "Nissan Rogue common issues",
+    "2018 Nissan Rogue complaints"
+  ],
+  "heroImage": {
+    "src": "/blog-images/2018-nissan-rogue-problems/2018-nissan-rogue-problems-hero.jpg",
+    "alt": "Nissan Rogue of the same generation as the 2018 car",
+    "ogSrc": "/blog-images/2018-nissan-rogue-problems/2018-nissan-rogue-problems-hero.jpg",
+    "squareSrc": "/blog-images/2018-nissan-rogue-problems/2018-nissan-rogue-problems-hero.jpg",
+    "kind": "licensed_photo"
+  },
+  "imageCredit": "Rutger van der Maar via flickr",
+  "imageLicense": "CC BY 2.0",
+  "imageSourceUrl": "https://www.flickr.com/photos/83468718@N06/52533728717",
+  "imageLicenseUrl": "https://creativecommons.org/licenses/by/2.0/",
+  "sourceIds": [
+    "nhtsa-catalog",
+    "nhtsa-complaints-rogue",
+    "nhtsa-recalls-rogue"
+  ],
+  "sources": [
+    {
+      "id": "nhtsa-catalog",
+      "url": "https://api.nhtsa.gov/products/vehicle/models?modelYear=2018&make=Nissan&issueType=c",
+      "retrievedAt": "2026-08-19T13:54:11.927Z",
+      "note": "NHTSA model catalog for this make and model year"
+    },
+    {
+      "id": "nhtsa-complaints-rogue",
+      "url": "https://api.nhtsa.gov/complaints/complaintsByVehicle?make=Nissan&model=ROGUE&modelYear=2018",
+      "retrievedAt": "2026-08-19T13:54:11.927Z",
+      "note": "Consumer complaints filed with NHTSA for 2018 Nissan ROGUE"
+    },
+    {
+      "id": "nhtsa-recalls-rogue",
+      "url": "https://api.nhtsa.gov/recalls/recallsByVehicle?make=Nissan&model=ROGUE&modelYear=2018",
+      "retrievedAt": "2026-08-19T13:54:11.927Z",
+      "note": "Recall campaigns issued for 2018 Nissan ROGUE"
+    }
+  ],
+  "sourceSnapshotHash": "ed7e9b8c08dcd94f2b12aace67b50a30",
+  "evidenceFigures": {
+    "complaintTotal": 609,
+    "complaintCrashes": 32,
+    "complaintFires": 1,
+    "complaintInjuries": 45,
+    "recallTotal": 3,
+    "componentCounts": {
+      "SERVICE BRAKES": 253,
+      "FORWARD COLLISION AVOIDANCE": 161,
+      "UNKNOWN OR OTHER": 127,
+      "ELECTRICAL SYSTEM": 81,
+      "ENGINE": 53,
+      "VEHICLE SPEED CONTROL": 34,
+      "POWER TRAIN": 33,
+      "AIR BAGS": 27
+    }
+  },
+  "qualityReport": {
+    "status": "passed",
+    "reviewedAt": "2026-08-19T13:54:50.534Z",
+    "attempt": 2,
+    "words": 886,
+    "warnings": [],
+    "editorialNotes": "The article accurately reflects the federal record, clearly distinguishes complaints from recalls, and provides actionable advice for buyers.",
+    "checks": {
+      "code": "passed",
+      "editorial": "passed"
+    }
+  },
+  "body": [
+    {
+      "heading": "The short answer",
+      "paragraphs": [
+        "Before buying a 2018 Nissan Rogue, check that all three recalls have been completed and inspect the backup camera, brakes, and door handles."
+      ],
+      "sourceIds": []
+    },
+    {
+      "heading": "What the federal record shows",
+      "paragraphs": [
+        "The National Highway Traffic Safety Administration (NHTSA) holds a catalog of complaints and recall campaigns for the 2018 Nissan Rogue. As of the retrieval date, the record includes 609 consumer complaints, 32 of which mention a crash, 1 mentions a fire, and 45 mention injuries. These are allegations from owners, not confirmed defects, and they do not indicate a failure rate without sales data.",
+        "The record also lists three official recall campaigns filed by Nissan. Recalls are manufacturer-initiated actions to address safety-related defects. For a used 2018 Rogue, it's important to verify that all recall work has been done."
+      ],
+      "bullets": [],
+      "sourceIds": [
+        "nhtsa-catalog",
+        "nhtsa-complaints-rogue",
+        "nhtsa-recalls-rogue"
+      ]
+    },
+    {
+      "heading": "Recall campaigns",
+      "paragraphs": [
+        "Three recalls appear in the federal record for the 2018 Nissan Rogue. Each has a specific remedy and owner notification process.",
+        "The first recall, campaign 19V654000, concerns the backup camera system. The camera and display settings can be adjusted so the rear view image is no longer visible, and the system retains that setting the next time the vehicle is placed in reverse. This increases the risk of a crash. The remedy is a software update, free of charge, which began in November 2019.",
+        "The second recall, campaign 21V839000, applies to 2017-2019 Rogue Hybrid vehicles. Contact with the Electronic Control Module (ECM) bracket may damage the engine harness, causing a blown fuse. A blown fuse may cause an engine stall, increasing the risk of a crash. The remedy is installation of a harness protector cover, free of charge. Owner notification letters were mailed December 16, 2021.",
+        "The third recall, campaign 23V093000, involves the jackknife style ignition key. The key may collapse into a folded position while driving, which could inadvertently shut off the vehicle. If the vehicle shuts off while driving, the air bags may not deploy in a crash as intended. The remedy is insertion of a spacer into the key slot, free of charge. Interim notification letters were mailed March 29, 2023, and owner notification letters were expected to be mailed August 30, 2023."
+      ],
+      "bullets": [
+        "19V654000: Backup camera software update",
+        "21V839000: Engine harness protector for Hybrid models",
+        "23V093000: Jackknife key spacer"
+      ],
+      "sourceIds": [
+        "nhtsa-recalls-rogue"
+      ]
+    },
+    {
+      "heading": "What owners reported",
+      "paragraphs": [
+        "Consumer complaints to NHTSA are allegations, not confirmed defects. They can point to areas to inspect on a specific vehicle. The most frequently cited component in the record is the service brakes, with 253 complaints. Examples include the backup camera cutting out while backing up, which relates to the recall, and issues with emergency braking.",
+        "The forward collision avoidance system is the second most cited, with 161 complaints. One owner reported the engine feeling weak and jerking during acceleration or braking. The unknown or other category has 127 complaints, including a driver door that would not open from inside or outside, which the owner attributed to an actuator issue. Electrical system complaints number 81, with similar door handle issues. Engine complaints total 53, including lack of power. Vehicle speed control complaints total 34, with one owner reporting sudden deceleration on the highway.",
+        "These complaints are not evidence of a widespread problem, but they do suggest areas to check during a pre-purchase inspection."
+      ],
+      "bullets": [
+        "Service brakes: 253 complaints",
+        "Forward collision avoidance: 161 complaints",
+        "Unknown or other: 127 complaints",
+        "Electrical system: 81 complaints",
+        "Engine: 53 complaints",
+        "Vehicle speed control: 34 complaints"
+      ],
+      "sourceIds": [
+        "nhtsa-complaints-rogue"
+      ]
+    },
+    {
+      "heading": "What to check before you buy",
+      "paragraphs": [
+        "Before buying a 2018 Nissan Rogue, verify that all recall repairs have been performed. You can check with a Nissan dealer using the vehicle identification number (VIN) to confirm the status of each recall. The backup camera recall is especially important because it affects rear visibility.",
+        "Test the backup camera in various lighting conditions and ensure the image stays visible. Also test the forward collision warning and emergency braking systems, if equipped, in a safe area. Check the brakes for any unusual noises or pulsation. Inspect the door handles from inside and outside to ensure they operate smoothly. If the vehicle has a jackknife key, check that it does not fold unexpectedly."
+      ],
+      "bullets": [
+        "Confirm all three recalls are completed",
+        "Test backup camera operation",
+        "Check brakes for responsiveness",
+        "Operate door handles from both sides",
+        "Inspect the ignition key for folding"
+      ],
+      "sourceIds": [
+        "nhtsa-recalls-rogue",
+        "nhtsa-complaints-rogue"
+      ]
+    },
+    {
+      "heading": "How we read this",
+      "paragraphs": [
+        "KickTires bases this analysis solely on the federal record. We do not have sales data, so we cannot compare complaint counts across models or determine failure rates. The complaints are owner-reported and may not reflect the experience of all owners. The recalls are official and should be taken seriously.",
+        "Our advice is to use this information as a starting point for a thorough inspection and to verify recall completion before purchase."
+      ],
+      "bullets": [],
+      "sourceIds": [
+        "nhtsa-catalog",
+        "nhtsa-complaints-rogue",
+        "nhtsa-recalls-rogue"
+      ]
+    },
+    {
+      "heading": "Before you make an offer",
+      "paragraphs": [
+        "The 2018 Nissan Rogue has three recalls that address safety concerns, so confirming they are done is essential. Owner complaints highlight brakes, camera, and door handle issues, but these are not confirmed defects. A thorough inspection and recall check will help you decide if this used Rogue is right for you."
+      ],
+      "bullets": [
+        "Verify recall completion. All three recalls must be done; check with a dealer using the VIN.",
+        "Test backup camera. Ensure the rear view image stays visible; the recall addresses this.",
+        "Check brakes. Listen for noises and feel for pulsation; brakes are the top complaint area.",
+        "Operate door handles. Try both inside and outside handles; some owners reported failure.",
+        "Inspect the ignition key. Make sure the jackknife key does not fold while driving; recall 23V093000."
+      ],
+      "sourceIds": []
+    }
+  ],
+  "relatedArticles": [
+    {
+      "href": "/blog/2018-honda-accord-problems/",
+      "title": "2018 Honda Accord: What the Federal Record Shows"
+    },
+    {
+      "href": "/blog/2018-honda-civic-problems/",
+      "title": "2018 Honda Civic Used Car Research: Recalls & Complaints"
+    },
+    {
+      "href": "/blog/2018-toyota-camry-problems/",
+      "title": "2018 Toyota Camry Used Car Research: Recalls and Complaints"
+    },
+    {
+      "href": "/cars/",
+      "title": "All model-year research on KickTires"
+    }
+  ],
+  "status": "published"
+}

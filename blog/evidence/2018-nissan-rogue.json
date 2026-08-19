@@ -1,0 +1,135 @@
+{
+  "vehicle": {
+    "year": 2018,
+    "make": "Nissan",
+    "model": "Rogue",
+    "resolvedModels": [
+      "ROGUE"
+    ]
+  },
+  "retrievedAt": "2026-08-19T13:54:11.927Z",
+  "sources": [
+    {
+      "id": "nhtsa-catalog",
+      "url": "https://api.nhtsa.gov/products/vehicle/models?modelYear=2018&make=Nissan&issueType=c",
+      "retrievedAt": "2026-08-19T13:54:11.927Z",
+      "note": "NHTSA model catalog for this make and model year"
+    },
+    {
+      "id": "nhtsa-complaints-rogue",
+      "url": "https://api.nhtsa.gov/complaints/complaintsByVehicle?make=Nissan&model=ROGUE&modelYear=2018",
+      "retrievedAt": "2026-08-19T13:54:11.927Z",
+      "note": "Consumer complaints filed with NHTSA for 2018 Nissan ROGUE"
+    },
+    {
+      "id": "nhtsa-recalls-rogue",
+      "url": "https://api.nhtsa.gov/recalls/recallsByVehicle?make=Nissan&model=ROGUE&modelYear=2018",
+      "retrievedAt": "2026-08-19T13:54:11.927Z",
+      "note": "Recall campaigns issued for 2018 Nissan ROGUE"
+    }
+  ],
+  "complaints": {
+    "kind": "consumer_submitted",
+    "total": 609,
+    "crashes": 32,
+    "fires": 1,
+    "injuries": 45,
+    "topComponents": [
+      {
+        "component": "SERVICE BRAKES",
+        "count": 253,
+        "examples": [
+          "The backup camera picture/screen has randomly cut out while backing up putting myself and whatever is behind me at risk for collision. In the section where it asks for the date, it's happens randomly since I bought it. Whenever I've taken it to my mechanic they have not been able to reproduce it. The emergency braking ",
+          "Since I purchased my car in September of 2022, a 2018 Nissan Rogue SL AWD, whenever I drive down to Houston, TX, my AEB symbol (2 cars crashing symbol) flashes. This is consistent with me going to Houston about once a month, and I've driven elsewhere fine. I've driven throughout North TX, and to Louisiana, but every ti"
+        ]
+      },
+      {
+        "component": "FORWARD COLLISION AVOIDANCE",
+        "count": 161,
+        "examples": [
+          "Engine seems very weak. Not enough power to safely pass on a highway. Absolutely gutless and sometimes upon acceleration and/or braking it jerks.",
+          "The backup camera picture/screen has randomly cut out while backing up putting myself and whatever is behind me at risk for collision. In the section where it asks for the date, it's happens randomly since I bought it. Whenever I've taken it to my mechanic they have not been able to reproduce it. The emergency braking "
+        ]
+      },
+      {
+        "component": "UNKNOWN OR OTHER",
+        "count": 127,
+        "examples": [
+          "Driver door will not open from outside or inside vehicle. Based on research this is an acuator issue that Nissan has known about since 2014 & failed to issue a recall. I am in the process of costly repair @ personal expense for a clear safety issue the know about & have failed to address, & would like reimbursement for",
+          "I was driving my car and out of no where for the first time I feel it shaking and making a noise, it did it for a min then it would stop, and it would continue this way every couple of mins. I had a feeling I should pull over yet there was no where I could pull over to on a busy road, so I kept driving, eventually I co"
+        ]
+      },
+      {
+        "component": "ELECTRICAL SYSTEM",
+        "count": 81,
+        "examples": [
+          "Driver door will not open from outside or inside vehicle. Based on research this is an acuator issue that Nissan has known about since 2014 & failed to issue a recall. I am in the process of costly repair @ personal expense for a clear safety issue the know about & have failed to address, & would like reimbursement for",
+          "The A/C does not work on the driver side making it impossible to defrost the windshield. The passenger side of the windshield defrosted, but not the drivers side making the vehicle impossible to drive as there was no vision for the driver. My mechanic had to disassemble the entire dashboard and found that the small pla"
+        ]
+      },
+      {
+        "component": "ENGINE",
+        "count": 53,
+        "examples": [
+          "Engine seems very weak. Not enough power to safely pass on a highway. Absolutely gutless and sometimes upon acceleration and/or braking it jerks.",
+          "After driving for awhile it will take a minute once putting foot on the gas for car to take off at a traffic light. Also malfunction error comes up on dashboard and car starts to slow down and try’s to cut off. Have to pull over and turn off the car, wait for a few minutes then restart the car."
+        ]
+      },
+      {
+        "component": "VEHICLE SPEED CONTROL",
+        "count": 34,
+        "examples": [
+          "The contact owns a 2018 Nissan Rogue. The contact stated while driving 60 MPH on the highway, the vehicle suddenly decelerated to 40 MPH. The contact stated that the vehicle was jumping while accelerating. The check engine warning light was illuminated. The contact pulled over safely and restarted the vehicle. The vehi",
+          "The car has never been in an accident or flooded. Mechanics have been unable to computer diagnose the problem. Warning lights depend on what is happening at the time. However the rear camera light remains on as that feature ceased to function within days of the warranty expiring. Vehicle has begun to intermittently sha"
+        ]
+      },
+      {
+        "component": "POWER TRAIN",
+        "count": 33,
+        "examples": [
+          "Transmission",
+          "The CVT transmission in my 2018 Nissan Rogue failed catastrophically at 92,000 miles, far below industry standards for drivetrain reliability. This failure, tied to known defects and past class-action litigation, caused severe safety risks and financial hardship. Despite these issues being well-documented and covered i"
+        ]
+      },
+      {
+        "component": "AIR BAGS",
+        "count": 27,
+        "examples": [
+          "On 03/06/2025 my car got into an accident with another vehicle the whole pumper was damaged yet the air bags didn’t go off, and my child in the back seat with his booster, that the seat belt was supposed to hold the seat, the whole booster seat came off",
+          "When driving the seatbelt light indicator comes on, has been doing this for sometime and usually only happens when there is no passenger. When the passenger seatbelt is clicked the light (seatbelt indicator) goes off."
+        ]
+      }
+    ]
+  },
+  "recalls": {
+    "kind": "official_campaign",
+    "total": 3,
+    "campaigns": [
+      {
+        "campaign": "19V654000",
+        "component": "BACK OVER PREVENTION: SENSING SYSTEM: CAMERA",
+        "summary": "Nissan North America, Inc. (Nissan) is recalling certain 2018-2019 Nissan Altima, Armada, Frontier, Kicks, Leaf, Maxima, Murano, NV, NV200, Pathfinder, Rogue, Rogue Sport, Sentra, Titan, Titan Diesel, Versa Note and Versa Sedan vehicles, as well as Infiniti Q50, Q60, QX30 and QX80 vehicles. Additionally included are 2019 Nissan GT-R and Taxi and Infiniti QX50, QX60, Q70, Q70L vehicles. The back-up camera and display settings can be adjusted such that the rear view image is no longer visible and the system will retain that setting the next time the vehicle is placed in reverse. As such, these v",
+        "consequence": "The lack of an image in the back-up camera display increases the risk of a crash.",
+        "remedy": "Nissan will notify owners in phases, having dealers update the back-up camera settings software, free of charge. The recall began November 11, 2019 and all affected VINs should be activated. Owners may contact Nissan customer service at 1-800-867-7669 or INFINITI customer service at 1-800-662-6200.",
+        "reportReceivedDate": "12/09/2019"
+      },
+      {
+        "campaign": "21V839000",
+        "component": "ENGINE AND ENGINE COOLING:ENGINE:ENGINE CONTROL MODULE (ECU/ECM)",
+        "summary": "Nissan North America, Inc. (Nissan) is recalling certain 2017-2019 Rogue Hybrid vehicles. Contact with the Electronic Control Module (ECM) bracket may damage the engine harness, causing a blown fuse.",
+        "consequence": "A blown fuse may cause an engine stall, increasing the risk of a crash.",
+        "remedy": "Dealers will install a harness protector cover, free of charge. Owner notification letters were mailed December 16, 2021. Owners may contact Nissan customer service at 1-800-867-7669. Nissan's number for this recall is R21B6.",
+        "reportReceivedDate": "26/10/2021"
+      },
+      {
+        "campaign": "23V093000",
+        "component": "ELECTRICAL SYSTEM:IGNITION:ANTI-THEFT:IMMOBILIZER/PROXIMITY:KEY/SENDER",
+        "summary": "Nissan North America, Inc. (Nissan) is recalling certain 2014-2020 Rogue and 2017-2022 Rogue Sport vehicles equipped with a jackknife style ignition key. The jackknife key may collapse into a folded position while driving.",
+        "consequence": "Driver contact with a key in the collapsed position could inadvertently shut off the vehicle while driving, increasing the risk of a crash. Additionally, if the vehicle shuts off while driving, the air bags may not deploy in a crash as intended, increasing the risk of injury.",
+        "remedy": "Dealers will insert a spacer into the key slot of the jackknife key, free of charge. Interim notification letters notifying owners of the safety risk were mailed March 29, 2023. Owner notification letters are expected to be mailed August 30, 2023. Owners may contact Nissan's customer service at 1-800-867-7669. Nissan's number for this recall is R22C5.",
+        "reportReceivedDate": "16/02/2023"
+      }
+    ]
+  },
+  "snapshotHash": "ed7e9b8c08dcd94f2b12aace67b50a30"
+}

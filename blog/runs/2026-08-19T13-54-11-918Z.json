@@ -1,0 +1,70 @@
+{
+  "startedAt": "2026-08-19T13:54:11.918Z",
+  "stages": [
+    {
+      "name": "keyword",
+      "at": "2026-08-19T13:54:11.927Z",
+      "detail": "2018 Nissan Rogue problems"
+    },
+    {
+      "name": "evidence",
+      "at": "2026-08-19T13:54:18.921Z",
+      "detail": "609 complaints, 3 recalls, resolved as ROGUE"
+    },
+    {
+      "name": "image",
+      "at": "2026-08-19T13:54:19.820Z",
+      "detail": "licensed_photo: /blog-images/2018-nissan-rogue-problems/2018-nissan-rogue-problems-hero.jpg"
+    },
+    {
+      "name": "review",
+      "at": "2026-08-19T13:54:34.454Z",
+      "detail": "attempt 1 failed code review (1)"
+    },
+    {
+      "name": "review",
+      "at": "2026-08-19T13:54:50.534Z",
+      "detail": "passed on attempt 2 (886 words)"
+    },
+    {
+      "name": "publish",
+      "at": "2026-08-19T13:54:50.535Z",
+      "detail": "wrote blog/posts/2018-nissan-rogue-problems.json"
+    }
+  ],
+  "status": "published",
+  "keyword": {
+    "primaryKeyword": "2018 Nissan Rogue problems",
+    "intent": "problems",
+    "slug": "2018-nissan-rogue-problems",
+    "score": 145,
+    "reasons": [
+      "intent \"problems\" sits 10/10 on purchase proximity",
+      "federal record: 609 complaints, 3 recall campaigns",
+      "no post covers this vehicle yet"
+    ],
+    "vehicle": {
+      "year": 2018,
+      "make": "Nissan",
+      "model": "Rogue",
+      "slug": "2018-nissan-rogue-problems",
+      "complaints": 609,
+      "recalls": 3
+    }
+  },
+  "slug": "2018-nissan-rogue-problems",
+  "failures": [],
+  "provider": {
+    "provider": "deepseek",
+    "envVar": "DEEPSEEK_API_KEY",
+    "configured": true
+  },
+  "attemptedSlug": "2018-nissan-rogue-problems",
+  "post": {
+    "title": "2018 Nissan Rogue: What the Federal Record Shows",
+    "slug": "2018-nissan-rogue-problems",
+    "words": 886
+  },
+  "finishedAt": "2026-08-19T13:54:50.535Z",
+  "dryRun": false
+}
