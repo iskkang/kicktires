@@ -1,12 +1,11 @@
-// Places the AdSense display unit into the built pages.
+// Places the AdSense display unit only into published editorial articles.
 //
 // This runs at the end of the chain, after every script that rewrites HTML, because earlier
 // generators get overwritten by later ones — the same trap that left the blog out of the
 // header until the built output was checked rather than the source.
 //
-// The loader script is NOT emitted here. build.mjs and blog-build.mjs already put it in every
-// <head>; a second copy is what AdSense's own snippet would give you if pasted verbatim, and
-// duplicating it is a documented way to get requests dropped.
+// The loader script is NOT emitted here. blog-build.mjs puts it only on eligible published
+// posts; a second copy is what AdSense's own snippet would give you if pasted verbatim.
 
 import fs from "node:fs";
 import path from "node:path";
@@ -40,10 +39,17 @@ let placed = 0;
 let skipped = 0;
 for (const file of walk(OUT)) {
   let html = fs.readFileSync(file, "utf8");
+  const relative = path.relative(OUT, file).split(path.sep).join("/");
+  const editorialArticle = /^blog\/[^/]+\/index\.html$/.test(relative)
+    && html.includes('class="bl-body"')
+    && !html.includes('<meta name="robots" content="noindex');
 
-  // Already carries a unit, or has no main content to sit under — the Search Console
-  // ownership token is a bare string, not a page, and must stay exactly as Google wrote it.
-  if (html.includes('class="adsbygoogle"') || !html.includes("</main>")) { skipped++; continue; }
+  // Do not put display inventory on the analyzer, navigation hubs, thin redirects, policy
+  // pages, author/methodology pages or drafts. The ownership meta remains site-wide.
+  if (!editorialArticle || html.includes('class="adsbygoogle"') || !html.includes("</main>")) {
+    skipped++;
+    continue;
+  }
   // A unit without the loader never fills, and a page without the loader is a page this
   // build did not generate. Leave it alone rather than emit a slot that cannot request.
   if (!html.includes("adsbygoogle.js")) { skipped++; continue; }
@@ -54,4 +60,4 @@ for (const file of walk(OUT)) {
   placed++;
 }
 
-console.log(`[ads-units] placed 1 unit on ${placed} pages (slot ${SLOT}); skipped ${skipped}`);
+console.log(`[ads-units] placed 1 unit on ${placed} published editorial articles (slot ${SLOT}); skipped ${skipped}`);

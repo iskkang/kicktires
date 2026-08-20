@@ -27,7 +27,7 @@ const build = () => {
   return out;
 };
 
-test("every content page carries one ad unit, below the content and above the footer", () => {
+test("only published editorial articles carry an ad unit", () => {
   const out = build();
   try {
     const walk = dir => fs.readdirSync(dir, { withFileTypes: true }).flatMap(entry =>
@@ -39,30 +39,36 @@ test("every content page carries one ad unit, below the content and above the fo
     let placed = 0;
     for (const file of pages) {
       const html = fs.readFileSync(file, "utf8");
+      const relative = path.relative(out, file).split(path.sep).join("/");
       const units = (html.match(/class="adsbygoogle"/g) || []).length;
-      // The Search Console ownership token is a bare string, not a page.
-      if (!html.includes("</main>")) {
-        assert.equal(units, 0, `${file}: unit on a page with no main content`);
+      const eligible = /^blog\/[^/]+\/index\.html$/.test(relative)
+        && html.includes('class="bl-body"')
+        && !html.includes('<meta name="robots" content="noindex');
+
+      if (!eligible) {
+        assert.equal(units, 0, `${relative}: ad unit on a non-article screen`);
+        assert.equal((html.match(/adsbygoogle\.js/g) || []).length, 0,
+          `${relative}: AdSense loader on a non-article screen`);
         continue;
       }
-      assert.equal(units, 1, `${file}: expected exactly one unit, found ${units}`);
+      assert.equal(units, 1, `${relative}: expected exactly one unit, found ${units}`);
       placed++;
 
       // One loader, not two. Pasting AdSense's snippet verbatim would add a second copy
       // alongside the one build.mjs already puts in the head.
-      assert.equal((html.match(/adsbygoogle\.js/g) || []).length, 1, `${file}: loader is not unique`);
+      assert.equal((html.match(/adsbygoogle\.js/g) || []).length, 1, `${relative}: loader is not unique`);
       assert.equal((html.match(/adsbygoogle=window\.adsbygoogle/g) || []).length, 1,
-        `${file}: expected exactly one push()`);
-      assert.match(html, new RegExp(`data-ad-client="${CLIENT}"`), `${file}: wrong client`);
-      assert.match(html, new RegExp(`data-ad-slot="${SLOT}"`), `${file}: wrong slot`);
+        `${relative}: expected exactly one push()`);
+      assert.match(html, new RegExp(`data-ad-client="${CLIENT}"`), `${relative}: wrong client`);
+      assert.match(html, new RegExp(`data-ad-slot="${SLOT}"`), `${relative}: wrong slot`);
 
       const unit = html.indexOf('<div class="kt-ad"');
       const main = html.indexOf("</main>");
       const footer = html.indexOf("<footer");
       assert.ok(unit > 0 && unit < main && main < footer,
-        `${file}: unit is not between the content and the footer`);
+        `${relative}: unit is not between the content and the footer`);
     }
-    assert.ok(placed > 40, `only ${placed} pages got a unit`);
+    assert.ok(placed >= 5, `only ${placed} published articles got a unit`);
   } finally {
     fs.rmSync(out, { recursive: true, force: true });
   }
@@ -77,7 +83,9 @@ test("running the placement twice does not stack units", () => {
       cwd: ROOT, stdio: "pipe",
       env: { ...process.env, KICKTIRES_OUT: out, ADSENSE_CLIENT: CLIENT, ADSENSE_SLOT: SLOT }
     });
-    const html = fs.readFileSync(path.join(out, "index.html"), "utf8");
+    const slug = fs.readdirSync(path.join(out, "blog"), { withFileTypes: true })
+      .find(entry => entry.isDirectory()).name;
+    const html = fs.readFileSync(path.join(out, "blog", slug, "index.html"), "utf8");
     assert.equal((html.match(/class="adsbygoogle"/g) || []).length, 1);
     assert.equal((html.match(/\.kt-ad\{/g) || []).length, 1, "the style block was added twice");
   } finally {

@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { actionableComponents, riskForComponent } from "./component-risk.mjs";
 
 const OUT = "dist";
 const editorial = JSON.parse(fs.readFileSync("data.json", "utf8"));
@@ -30,10 +31,10 @@ const css = `
 `;
 
 function problemCards(p){
-  const top = topComponents(p).slice(0,3);
+  const top = actionableComponents(topComponents(p), 3);
   return [0,1,2].map((i)=>{
-    const risk = p.risks?.[i];
     const comp = top[i];
+    const risk = comp ? riskForComponent(p.risks, comp.component) : null;
     const title = comp?.component ? human(comp.component) : (risk?.t || `Inspection area ${i+1}`);
     const count = comp?.count != null ? `${fmt(comp.count)} complaint tags` : (risk?.cl || "Inspection signal");
     const body = risk?.b || (comp ? `${fmt(comp.count)} NHTSA complaint records in this snapshot carry the ${human(comp.component)} tag. Treat this as a screening signal, not a failure rate.` : "Review service history and inspect this system before buying.");

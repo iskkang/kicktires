@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
-test("build emits GA4 and AdSense with privacy-safe analysis events", () => {
+test("build emits GA4 and AdSense ownership without ad inventory on product screens", () => {
   execFileSync(process.execPath, ["build.mjs"], {
     cwd: ROOT,
     env: {
@@ -32,7 +32,7 @@ test("build emits GA4 and AdSense with privacy-safe analysis events", () => {
     assert.match(html, /gtag\("config","G-TEST123"\)/);
     assert.match(html, /gtag\("config","AW-18359962150"\)/);
     assert.match(html, /google-adsense-account" content="ca-pub-1234567890123456/);
-    assert.match(html, /adsbygoogle\.js\?client=ca-pub-1234567890123456/);
+    assert.doesNotMatch(html, /adsbygoogle\.js/, `${page}: ad loader on a product or trust page`);
   }
 
   const home = fs.readFileSync(path.join(ROOT, "dist/index.html"), "utf8");
@@ -69,6 +69,15 @@ test("build emits GA4 and AdSense with privacy-safe analysis events", () => {
   const privacy = fs.readFileSync(path.join(ROOT, "dist/privacy/index.html"), "utf8");
   assert.match(privacy, /We do not send the listing text/);
   assert.match(privacy, /configured to show ads served by Google AdSense/);
+  assert.match(privacy, /correction form asks for the affected page/);
+
+  const about = fs.readFileSync(path.join(ROOT, "dist/about/index.html"), "utf8");
+  assert.match(about, /name="corrections"/);
+  assert.match(about, /data-netlify="true"/);
+  assert.match(about, /automated editorial pipeline/);
+
+  const thanks = fs.readFileSync(path.join(ROOT, "dist/thanks/index.html"), "utf8");
+  assert.match(thanks, /noindex,nofollow/);
 
   const ads = fs.readFileSync(path.join(ROOT, "dist/ads.txt"), "utf8");
   assert.equal(ads, "google.com, pub-1234567890123456, DIRECT, f08c47fec0942fa0\n");

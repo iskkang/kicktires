@@ -118,13 +118,14 @@ function tco(d, s){
 }
 
 /* ── shared chrome ─────────────────────────────────────────────── */
-function head({title,desc,url,jsonld}){
+function head({title,desc,url,jsonld,noindex=false}){
   const metaDesc = shortDesc(desc);
   return `<!DOCTYPE html><html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${esc(title)}</title>
 <meta name="description" content="${esc(metaDesc)}">
 <link rel="canonical" href="${url}">
+${noindex ? '<meta name="robots" content="noindex,nofollow">' : ""}
 <meta property="og:type" content="article"><meta property="og:title" content="${esc(title)}">
 <meta property="og:description" content="${esc(metaDesc)}"><meta property="og:url" content="${url}">
 <meta property="og:site_name" content="${NAME}">
@@ -135,7 +136,6 @@ function head({title,desc,url,jsonld}){
 <script async src="https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","${GA_MEASUREMENT_ID}");gtag("config","${GOOGLE_ADS_ID}");</script>
 <style>${css}</style>
-${ADSENSE ? `<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE}" crossorigin="anonymous"></script>` : ""}
 ${jsonld ? `<script type="application/ld+json">${JSON.stringify(jsonld).replace(/</g, "\\u003c")}</script>` : ""}
 </head><body>
 <nav><div class="navin">
@@ -151,7 +151,7 @@ const foot = `<footer class="site"><div class="shell">
 <p>Sources: NHTSA recall, complaint and investigation records · EPA fuel economy data · owner forums · our own reading of them.</p>
 <p class="fine"><b>Kick the tires.</b> It is what someone older told you to do before you bought a used car, and they were right — you just needed better things to look at. That is all this is.</p>
 <p class="fine">We take no money from dealers, sellers or marketplaces. Cost figures are estimates, not quotes. Always get an independent inspection before buying.</p>
-<p class="fine"><a href="/privacy/">Privacy &amp; cookies</a> · <a href="/about/">About</a></p>
+<p class="fine"><a href="/methodology/">Methodology</a> · <a href="/author/kicktires-editorial/">Editorial process</a> · <a href="/privacy/">Privacy &amp; cookies</a> · <a href="/about/">About &amp; corrections</a></p>
 </div></footer></body></html>`;
 
 /* ── model page ────────────────────────────────────────────────── */
@@ -900,7 +900,7 @@ function privacyPage(){
   <h2>What we never do</h2>
   <p class="lede">We take no money from car dealers, private sellers or listing marketplaces, and we accept no payment to change or soften what a page says about a vehicle. If that ever changes, it will be stated on this page before it happens anywhere else.</p>
   <h2>Contact</h2>
-  <p class="lede">Corrections and complaints are welcome — especially corrections. If a page here is wrong about a car, we want to know.</p>
+  <p class="lede">Corrections and complaints are welcome — especially corrections. The correction form asks for the affected page, the suspected error and an optional reply address. Netlify processes that submission for us; we use it only to investigate and respond to the correction.</p>
 </main>` + foot;
 }
 function aboutPage(){
@@ -916,6 +916,31 @@ function aboutPage(){
   <h2>What we get wrong</h2>
   <p class="lede">Plenty, probably. Repair costs are estimates and vary by region and shop. Insurance figures are published averages, not quotes. And a car's reputation is not the same thing as a car's record — we have already found several cases where the famous problem with a model belongs to a different model year than everyone assumes.</p>
   <p class="lede">Nothing here replaces a pre-purchase inspection by someone who can put the car on a lift. Use these pages to know what to have them look at.</p>
+  <h2>How the research is produced</h2>
+  <p class="lede">KickTires uses an automated editorial pipeline, and says so instead of inventing a human author. Federal figures are recomputed against stored NHTSA snapshots before publication; unsupported claims and duplicate drafts are rejected. Read the complete <a href="/methodology/">methodology</a> and <a href="/author/kicktires-editorial/">editorial disclosure</a>.</p>
+  <section id="correction-form" class="correction-panel">
+    <h2>Report a correction</h2>
+    <p>If a number, label or source looks wrong, send the exact page and what you believe should change. Submissions are reviewed against the stored source snapshot.</p>
+    <form name="corrections" method="POST" action="/thanks/" data-netlify="true" netlify-honeypot="company">
+      <input type="hidden" name="form-name" value="corrections">
+      <p class="form-trap"><label>Leave this blank <input name="company" autocomplete="off"></label></p>
+      <label>Page URL <input type="url" name="page_url" required placeholder="https://kicktires.netlify.app/cars/…"></label>
+      <label>What appears wrong? <textarea name="correction" rows="6" required placeholder="Include the number, label or sentence and the source you checked."></textarea></label>
+      <label>Email for a reply <span>(optional)</span><input type="email" name="email" autocomplete="email"></label>
+      <button type="submit">Send correction</button>
+    </form>
+  </section>
+</main>` + foot;
+}
+
+function thanksPage(){
+  return head({title:`Correction received — ${NAME}`,
+    desc:"KickTires correction submission received.",url:SITE+"/thanks/",noindex:true}) + `
+<main class="shell">
+  <div class="crumb"><a href="/">Home</a> › Correction received</div>
+  <h1>Thank you.</h1>
+  <p class="lede">The correction was submitted. We will compare it with the stored source snapshot and update the affected page if the evidence supports the change.</p>
+  <p><a class="btn" href="/cars/">Return to used-car research</a></p>
 </main>` + foot;
 }
 
@@ -927,6 +952,7 @@ write(`${OUT}/index.html`, home());
 write(`${OUT}/cars/index.html`, indexPage());
 write(`${OUT}/privacy/index.html`, privacyPage());
 write(`${OUT}/about/index.html`, aboutPage());
+write(`${OUT}/thanks/index.html`, thanksPage());
 for (const [k,d] of Object.entries(D)) write(`${OUT}/cars/${d.meta.slug}/index.html`, modelPage(k,d));
 
 const urls = [ [SITE+"/",1.0,TODAY], [SITE+"/cars/",0.8,TODAY], [SITE+"/about/",0.5,TODAY], [SITE+"/privacy/",0.3,TODAY],

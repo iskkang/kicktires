@@ -71,12 +71,12 @@ if(fs.existsSync(carsFile)){
   const targetCivic=targets.find(t=>norm(t.make)==="honda"&&norm(t.model)==="civic");
   const topic = (icon,title,text,href)=>`<a class="hub-topic" href="${href}"><span>${icon}</span><h3>${title}</h3><p>${text}</p><b>Explore →</b></a>`;
   const topicHtml = [
-    topic("!","Common Problems","See complaint patterns and the systems owners report most often.",targetCivic?`/cars/${targetCivic.slug}/problems-recalls/`:"/cars/"),
-    topic("Y","Years to Avoid","Compare model years that deserve more inspection attention.",targetCamry?`/cars/${targetCamry.slug}/best-years/`:"/cars/"),
-    topic("✓","Best Used Years","Find quieter model years before you start shopping.",targetCivic?`/cars/${targetCivic.slug}/best-years/`:"/cars/"),
-    topic("R","Recalls","Review federal recall campaigns and then check the VIN.",targetCamry?`/cars/${targetCamry.slug}/problems-recalls/`:"/cars/"),
+    topic("!","Common Problems","See complaint patterns and the systems owners report most often.",targetCivic?`/cars/${targetCivic.slug}/#problems`:"/cars/"),
+    topic("Y","Model Years","Compare model years that deserve more inspection attention.",targetCamry?`/cars/${targetCamry.slug}/#years`:"/cars/"),
+    topic("✓","Lower-report Years","Find quieter model years before you start shopping.",targetCivic?`/cars/${targetCivic.slug}/#years`:"/cars/"),
+    topic("R","Recalls","Review federal recall campaigns and then check the VIN.",targetCamry?`/cars/${targetCamry.slug}/#problems`:"/cars/"),
     topic("?","Reliability","Use complaint patterns without invented reliability scores.",targetCivic?`/cars/${targetCivic.slug}/`:"/cars/"),
-    topic("$","Ownership Cost","Plan repairs, insurance and fuel before buying.",targetCamry?`/cars/${targetCamry.slug}/ownership-cost/`:"/cars/")
+    topic("$","Ownership Cost","Plan repairs, insurance and fuel before buying.",targetCamry?`/cars/${targetCamry.slug}/#costs`:"/cars/")
   ].join("");
 
   const newMain = `<main class="cars-hub" style="--hub-sprite:url('${CAR_SPRITE}')">

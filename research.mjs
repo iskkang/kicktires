@@ -9,6 +9,7 @@ const OUT = "dist";
 const TODAY = process.env.BUILD_DATE || new Date().toISOString().slice(0, 10);
 const GA_MEASUREMENT_ID = (process.env.GA_MEASUREMENT_ID || "G-5NSV1Y7TSJ").trim();
 const ADSENSE = (process.env.ADSENSE_CLIENT || "ca-pub-3682195653529318").trim();
+const ALLOW_LIVE_RESEARCH_BUILD = process.env.ALLOW_LIVE_RESEARCH_BUILD === "true";
 const TARGETS = JSON.parse(fs.readFileSync("research-models.json", "utf8")).models;
 const EDITORIAL = JSON.parse(fs.readFileSync("data.json", "utf8"));
 const GENERATED = JSON.parse(fs.readFileSync("generated.json", "utf8"));
@@ -88,6 +89,8 @@ function existingSnapshot(target, year){
     epa: profile.epa || null,
     tco: profile.tco || null,
     retrievedAt: federal.retrievedAt || profile.meta.retrievedAt || null,
+    publishedAt: profile.meta.published || profile.meta.retrievedAt || federal.retrievedAt || null,
+    updatedAt: profile.meta.updated || profile.meta.retrievedAt || federal.retrievedAt || null,
     source: profile.generated ? "federal snapshot" : "reviewed profile"
   };
 }
@@ -108,6 +111,8 @@ async function liveSnapshot(target, year){
       epa,
       tco: null,
       retrievedAt: federal.retrievedAt,
+      publishedAt: federal.retrievedAt,
+      updatedAt: federal.retrievedAt,
       source: "live NHTSA build lookup"
     };
   } catch (error) {
@@ -118,7 +123,10 @@ async function liveSnapshot(target, year){
 
 async function buildModel(target){
   const years = [];
-  for (const year of target.years) years.push(existingSnapshot(target,year) || await liveSnapshot(target,year));
+  for (const year of target.years) {
+    const stored = existingSnapshot(target,year);
+    years.push(stored || (ALLOW_LIVE_RESEARCH_BUILD ? await liveSnapshot(target,year) : null));
+  }
   const valid = years.filter(Boolean).sort((a,b)=>a.year-b.year);
   const components = aggregateComponents(valid).slice(0,8);
   const signals = classifyYears(valid);
@@ -126,7 +134,9 @@ async function buildModel(target){
     && valid.every(item => Number.isInteger(item.complaintTotal) && Number.isInteger(item.recallTotal))
     && components.length >= 2;
   const retrieved = valid.map(item=>item.retrievedAt).filter(Boolean).sort().at(-1) || TODAY;
-  return { target, years:valid, components, signals, quality, retrieved };
+  const published = valid.map(item=>item.publishedAt || item.retrievedAt).filter(Boolean).sort().at(0) || retrieved;
+  const updated = valid.map(item=>item.updatedAt || item.retrievedAt).filter(Boolean).sort().at(-1) || retrieved;
+  return { target, years:valid, components, signals, quality, retrieved, published, updated };
 }
 
 function head({title,desc,url,noindex=false,jsonld=null}){
@@ -136,16 +146,16 @@ function head({title,desc,url,noindex=false,jsonld=null}){
 ${noindex?'<meta name="robots" content="noindex,follow">':''}<meta property="og:type" content="article"><meta property="og:title" content="${esc(title)}"><meta property="og:description" content="${esc(description)}"><meta property="og:url" content="${url}"><meta property="og:site_name" content="${NAME}">
 <meta name="twitter:card" content="summary_large_image"><meta name="google-adsense-account" content="${ADSENSE}">
 <script async src="https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag("js",new Date());gtag("config","${GA_MEASUREMENT_ID}");</script>
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE}" crossorigin="anonymous"></script>
 <style>${css}${extraCss}</style>${jsonld?`<script type="application/ld+json">${JSON.stringify(jsonld).replace(/</g,"\\u003c")}</script>`:""}</head><body>
 <nav><div class="navin"><a class="logo" href="/"><i></i>${NAME}</a><div class="navlinks"><a class="navlink navcheck" href="/#check">Check a listing</a><a class="navlink" href="/cars/">Research</a><a class="navlink" href="/blog/">Blog</a></div></div></nav>`;
 }
 
-const foot = `<footer class="site"><div class="shell"><p>Sources: NHTSA complaint and recall records · EPA fuel economy data where available · KickTires cost estimates.</p><p class="fine"><b>Raw complaint totals are screening signals, not failure rates.</b> Sales volume, vehicle age and reporting behavior differ by model year. Always run the VIN and get an independent pre-purchase inspection.</p><p class="fine"><a href="/privacy/">Privacy &amp; cookies</a> · <a href="/about/">About</a></p></div></footer></body></html>`;
+const foot = `<footer class="site"><div class="shell"><p>Sources: NHTSA complaint and recall records · EPA fuel economy data where available · KickTires cost estimates.</p><p class="fine"><b>Raw complaint totals are screening signals, not failure rates.</b> Sales volume, vehicle age and reporting behavior differ by model year. Always run the VIN and get an independent pre-purchase inspection.</p><p class="fine"><a href="/methodology/">Methodology</a> · <a href="/author/kicktires-editorial/">Editorial process</a> · <a href="/privacy/">Privacy &amp; cookies</a> · <a href="/about/">About &amp; corrections</a></p></div></footer></body></html>`;
 
-function structured(target,title,desc,url){
+function structured(model,title,desc,url){
+  const target = model.target;
   return {"@context":"https://schema.org","@graph":[
-    {"@type":"Article",headline:title,description:desc,datePublished:TODAY,dateModified:TODAY,
+    {"@type":"Article",headline:title,description:desc,datePublished:model.published,dateModified:model.updated,
       author:{"@type":"Organization",name:NAME},publisher:{"@type":"Organization",name:NAME},mainEntityOfPage:url,
       about:{"@type":"Car",name:`${target.make} ${target.model}`,manufacturer:{"@type":"Organization",name:target.make}}},
     {"@type":"BreadcrumbList",itemListElement:[
@@ -158,7 +168,7 @@ function structured(target,title,desc,url){
 
 function tabs(model,active){
   const u = pageUrls(model.target);
-  return `<div class="research-tabs"><a class="${active==='guide'?'on':''}" href="${u.guide}">Buying guide</a><a class="${active==='best'?'on':''}" href="${u.best}">Best years</a><a class="${active==='problems'?'on':''}" href="${u.problems}">Problems &amp; recalls</a><a class="${active==='cost'?'on':''}" href="${u.cost}">Ownership cost</a></div>`;
+  return `<div class="research-tabs"><a class="${active==='guide'?'on':''}" href="${u.guide}">Buying guide</a><a href="${u.guide}#years">Model years</a><a href="${u.guide}#problems">Problems &amp; recalls</a><a href="${u.guide}#costs">Ownership cost</a></div>`;
 }
 
 function qualityBadge(model){
@@ -182,16 +192,26 @@ function cta(target){
 }
 
 function intro(model,active,title,desc){
-  const url = `${SITE}${pageUrls(model.target)[active]}`;
-  return head({title,desc,url,noindex:!model.quality,jsonld:structured(model.target,title,desc,url)}) + `<main class="shell"><div class="crumb"><a href="/">Home</a> › <a href="/cars/">Research</a> › ${esc(model.target.make)} ${esc(model.target.model)}</div><section class="research-hero"><span class="research-kicker">${esc(model.target.segment)} · used-car research</span><h1>${esc(title.replace(` | ${NAME}`,""))}</h1><p class="lede">${esc(desc)}</p>${qualityBadge(model)}</section>${tabs(model,active)}`;
+  const guideUrl = `${SITE}${pageUrls(model.target).guide}`;
+  const indexable = model.quality && active === "guide";
+  return head({title,desc,url:guideUrl,noindex:!indexable,
+    jsonld:indexable?structured(model,title,desc,guideUrl):null}) + `<main class="shell"><div class="crumb"><a href="/">Home</a> › <a href="/cars/">Research</a> › ${esc(model.target.make)} ${esc(model.target.model)}</div><section class="research-hero"><span class="research-kicker">${esc(model.target.segment)} · used-car research</span><h1>${esc(title.replace(` | ${NAME}`,""))}</h1><p class="lede">${esc(desc)}</p>${qualityBadge(model)}</section>${tabs(model,active)}`;
 }
 
 function buyingGuide(model){
   const t=model.target;
   const title=`${t.make} ${t.model} Used Buying Guide | ${NAME}`;
   const desc=`A buyer-side guide to the ${t.make} ${t.model}, built from NHTSA complaint and recall records across ${t.years.join(", ")}. See what to inspect before buying.`;
-  const checks = model.components.slice(0,3).map(item=>`<li><b>${esc(item.component)}:</b> make the inspection reproduce or rule out the symptoms behind this federal report category.</li>`).join("");
-  return intro(model,"guide",title,desc)+stats(model)+`<h2>What the federal record says</h2><p class="lede">We compare the same model across multiple years instead of turning one scary complaint into a verdict. The table below is the evidence layer; the buying advice comes after it.</p>${yearTable(model)}<h2>What to inspect before money changes hands</h2><ol class="lede">${checks||"<li>Run the VIN, scan every module and put the car on a lift.</li>"}<li><b>VIN recall check:</b> a model-year recall count does not prove this specific vehicle still has an open remedy.</li><li><b>Cold and warm test drive:</b> intermittent faults often disappear during a short seller-controlled loop.</li></ol><p class="research-note">KickTires does not label a model reliable or unreliable from raw complaint totals alone. Those counts are useful for deciding where to look, not for estimating a failure probability.</p>${cta(t)}</main>${foot}`;
+  const checks = model.components.filter(item=>item.component!=="UNKNOWN OR OTHER").slice(0,3)
+    .map(item=>`<li><b>${esc(item.component)}:</b> make the inspection reproduce or rule out the symptoms behind this federal report category.</li>`).join("");
+  const {lower,higher}=model.signals;
+  const yearSignal = lower ? `<div class="research-snapshot"><div class="research-stat"><span class="research-kicker">Lower-report signal</span><b>${lower.year}</b><small>${format(lower.complaintTotal)} complaints · ${format(lower.recallTotal)} recall campaigns among the years compared</small></div><div class="research-stat"><span class="research-kicker">Inspect more carefully</span><b>${higher.year}</b><small>${format(higher.complaintTotal)} complaints · ${format(higher.recallTotal)} recall campaigns among the years compared</small></div></div>` : "";
+  return intro(model,"guide",title,desc)+stats(model)
+    + `<p class="research-note"><b>Evidence updated ${esc(String(model.updated).slice(0,10))}.</b> This page consolidates the model-year comparison, complaint categories and cost framework so each model has one canonical research page. <a href="/methodology/">See how the data is checked.</a></p>`
+    + `<section id="years"><h2>What the federal record says</h2><p class="lede">We compare the same model across multiple years instead of turning one scary complaint into a verdict. Raw complaint totals are not normalized for sales volume, miles driven or vehicle age.</p>${yearSignal}${yearTable(model)}</section>`
+    + `<section id="problems"><h2>Most frequently tagged complaint areas</h2><p class="sub">Aggregated across the model years on this page. One complaint can carry multiple component tags, so these bars should not be added together as a vehicle count.</p>${problemBars(model)}<h2>What to inspect before money changes hands</h2><ol class="lede">${checks||"<li>Run the VIN, scan every module and put the car on a lift.</li>"}<li><b>VIN recall check:</b> a model-year recall count does not prove this specific vehicle still has an open remedy.</li><li><b>Cold and warm test drive:</b> intermittent faults often disappear during a short seller-controlled loop.</li></ol></section>`
+    + `<section id="costs"><h2>Ownership-cost framework</h2>${ownershipSnapshot(model)}<p class="research-note">We deliberately do not publish a fake five-year total without an asking price and state. Sales tax, registration, insurance and depreciation can move the answer more than a generic model average.</p></section>`
+    + `<p class="research-note">KickTires does not label a model reliable or unreliable from raw complaint totals alone. Those counts are useful for deciding where to look, not for estimating a failure probability.</p>${cta(t)}</main>${foot}`;
 }
 
 function bestYears(model){
@@ -206,6 +226,14 @@ function problemBars(model){
   return `<div class="problem-bars">${model.components.slice(0,6).map(item=>`<div class="problem-row"><span>${esc(item.component)}</span><div class="problem-track"><i style="width:${(item.count/max*100).toFixed(1)}%"></i></div><b>${format(item.count)}</b></div>`).join("")}</div>`;
 }
 
+function ownershipSnapshot(model){
+  const t=model.target;
+  const mpgs=model.years.map(item=>Number(item.epa?.mpg)).filter(value=>value>0);
+  const mpg=median(mpgs);
+  const annualFuel=mpg ? 12000/mpg*(t.fuelPrice||3.20) : null;
+  return `<div class="research-snapshot"><div class="research-stat"><span class="research-kicker">Insurance baseline</span><b>$${format(t.annualInsurance)}</b><small>Annual planning estimate before driver, ZIP and coverage factors</small></div><div class="research-stat"><span class="research-kicker">Repair reserve</span><b>$${format(t.annualRepairs)}</b><small>Annual planning reserve, not a quote or predicted bill</small></div><div class="research-stat"><span class="research-kicker">EPA median</span><b>${mpg?Math.round(mpg)+" mpg":"Varies"}</b><small>Median across available compared-year EPA snapshots</small></div><div class="research-stat"><span class="research-kicker">Fuel framework</span><b>${annualFuel?"$"+format(annualFuel)+"/yr":"Listing needed"}</b><small>${annualFuel?"12,000 mi/year at $"+(t.fuelPrice||3.20).toFixed(2)+"/gal":"Powertrain and efficiency determine this"}</small></div></div>`;
+}
+
 function problemsPage(model){
   const t=model.target;
   const title=`${t.make} ${t.model} Common Problems & Recalls | ${NAME}`;
@@ -217,16 +245,13 @@ function ownershipPage(model){
   const t=model.target;
   const title=`${t.make} ${t.model} Ownership Cost Guide | ${NAME}`;
   const desc=`Estimate the cost framework for owning a used ${t.make} ${t.model}: insurance, repairs, fuel and the listing-specific items KickTires needs before calculating a five-year total.`;
-  const mpgs=model.years.map(item=>Number(item.epa?.mpg)).filter(value=>value>0);
-  const mpg=median(mpgs);
-  const annualFuel=mpg ? 12000/mpg*(t.fuelPrice||3.20) : null;
-  return intro(model,"cost",title,desc)+`<h2>Start with recurring costs</h2><div class="research-snapshot"><div class="research-stat"><span class="research-kicker">Insurance baseline</span><b>$${format(t.annualInsurance)}</b><small>Annual planning estimate before driver, ZIP and coverage factors</small></div><div class="research-stat"><span class="research-kicker">Repair reserve</span><b>$${format(t.annualRepairs)}</b><small>Annual planning reserve, not a quote or predicted bill</small></div><div class="research-stat"><span class="research-kicker">EPA median</span><b>${mpg?Math.round(mpg)+" mpg":"Varies"}</b><small>Median across available compared-year EPA snapshots</small></div><div class="research-stat"><span class="research-kicker">Fuel framework</span><b>${annualFuel?"$"+format(annualFuel)+"/yr":"Listing needed"}</b><small>${annualFuel?"12,000 mi/year at $"+(t.fuelPrice||3.20).toFixed(2)+"/gal":"Powertrain and efficiency determine this"}</small></div></div><p class="research-note">We deliberately do not publish a fake five-year total without an asking price and state. Sales tax, registration, insurance and depreciation can move the answer more than a generic model average.</p><h2>What the listing analyzer adds</h2><p class="lede">Paste a real listing and KickTires adds the asking price, mileage, location, federal model-year evidence and available comparable-market data. That is the point where a cost guide becomes a transaction decision.</p>${cta(t)}</main>${foot}`;
+  return intro(model,"cost",title,desc)+`<h2>Start with recurring costs</h2>${ownershipSnapshot(model)}<p class="research-note">We deliberately do not publish a fake five-year total without an asking price and state. Sales tax, registration, insurance and depreciation can move the answer more than a generic model average.</p><h2>What the listing analyzer adds</h2><p class="lede">Paste a real listing and KickTires adds the asking price, mileage, location, federal model-year evidence and available comparable-market data. That is the point where a cost guide becomes a transaction decision.</p>${cta(t)}</main>${foot}`;
 }
 
 function center(models){
   const researchCards=models.map(model=>{
     const t=model.target,u=pageUrls(t),lead=model.components[0];
-    return `<article class="research-card"><span class="research-kicker">${esc(t.segment)}</span><h2>${esc(t.make)} ${esc(t.model)}</h2><p>${model.quality?`${model.years.length} model years checked · leading reported area: ${esc(lead?.component||"federal records")}.`:"Federal data refresh will complete during a healthy build; pages remain noindex until the quality gate passes."}</p><div class="research-links"><a href="${u.guide}">Buying guide</a><a href="${u.best}">Best years</a><a href="${u.problems}">Problems</a><a href="${u.cost}">Ownership cost</a></div></article>`;
+    return `<article class="research-card"><span class="research-kicker">${esc(t.segment)}</span><h2>${esc(t.make)} ${esc(t.model)}</h2><p>${model.quality?`${model.years.length} model years checked · leading reported area: ${esc(lead?.component||"federal records")}.`:"Federal data refresh will complete during a healthy build; pages remain noindex until the quality gate passes."}</p><div class="research-links"><a href="${u.guide}">Buying guide</a><a href="${u.guide}#years">Model years</a><a href="${u.guide}#problems">Problems</a><a href="${u.guide}#costs">Ownership cost</a></div></article>`;
   }).join("");
 
   const groups=new Map();
@@ -245,11 +270,20 @@ function addToSitemap(models){
   const file=path.join(OUT,"sitemap.xml");
   if(!fs.existsSync(file))return;
   let xml=fs.readFileSync(file,"utf8");
-  const urls=[];
-  for(const model of models){if(!model.quality)continue;const u=pageUrls(model.target);for(const pathname of Object.values(u))urls.push(`${SITE}${pathname}`)}
-  const entries=urls.filter(url=>!xml.includes(`<loc>${url}</loc>`)).map(url=>`  <url><loc>${url}</loc><lastmod>${TODAY}</lastmod><priority>0.85</priority></url>`).join("\n");
+  const urls=models.filter(model=>model.quality).map(model=>({
+    url:`${SITE}${pageUrls(model.target).guide}`,
+    lastmod:String(model.updated).slice(0,10)
+  }));
+  const entries=urls.filter(item=>!xml.includes(`<loc>${item.url}</loc>`)).map(item=>`  <url><loc>${item.url}</loc><lastmod>${item.lastmod}</lastmod><priority>0.85</priority></url>`).join("\n");
   if(entries)xml=xml.replace("</urlset>",`${entries}\n</urlset>`);
   fs.writeFileSync(file,xml);
+}
+
+function appendRedirects(lines){
+  const file=path.join(OUT,"_redirects");
+  const existing=fs.existsSync(file)?fs.readFileSync(file,"utf8").split("\n").filter(Boolean):[];
+  const merged=[...new Set([...existing,...lines])];
+  fs.writeFileSync(file,merged.join("\n")+"\n");
 }
 
 async function main(){
@@ -263,13 +297,18 @@ async function main(){
     const base=path.join(OUT,"cars",model.target.slug);
     fs.mkdirSync(base,{recursive:true});
     fs.writeFileSync(path.join(base,"index.html"),buyingGuide(model));
-    for(const [dir,render] of [["best-years",bestYears],["problems-recalls",problemsPage],["ownership-cost",ownershipPage]]){
-      const targetDir=path.join(base,dir);fs.mkdirSync(targetDir,{recursive:true});fs.writeFileSync(path.join(targetDir,"index.html"),render(model));
-    }
   }
+  appendRedirects(models.flatMap(model=>{
+    const u=pageUrls(model.target);
+    return [
+      `${u.best} ${u.guide}#years 301`,
+      `${u.problems} ${u.guide}#problems 301`,
+      `${u.cost} ${u.guide}#costs 301`
+    ];
+  }));
   addToSitemap(models);
   fs.writeFileSync(path.join(OUT,"research-status.json"),JSON.stringify({builtAt:new Date().toISOString(),models:models.map(model=>({slug:model.target.slug,quality:model.quality,years:model.years.map(item=>item.year)}))},null,2));
-  console.log(`[research] built ${models.length*4} research pages; ${models.filter(model=>model.quality).length}/${models.length} models passed the federal-data gate`);
+  console.log(`[research] built ${models.length} consolidated research pages from ${ALLOW_LIVE_RESEARCH_BUILD?"stored + live":"stored"} evidence; redirected ${models.length*3} legacy tab URLs; ${models.filter(model=>model.quality).length}/${models.length} models passed the federal-data gate`);
 }
 
 const invoked = process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href;

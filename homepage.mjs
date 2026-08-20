@@ -95,9 +95,9 @@ function compareTable(items) {
 const heroStats = [[`${profiles.length}`, "model-year guides"], ["Live", "NHTSA signals"], ["5-year", "cost framework"], ["$0", "seller payments"]];
 const targetCamry = targets.find(t => norm(t.make)==="toyota" && norm(t.model)==="camry");
 const targetCivic = targets.find(t => norm(t.make)==="honda" && norm(t.model)==="civic");
-const bestHref = targetCamry ? `/cars/${targetCamry.slug}/best-years/` : "/cars/";
-const problemsHref = targetCivic ? `/cars/${targetCivic.slug}/problems-recalls/` : "/cars/";
-const costHref = targetCamry ? `/cars/${targetCamry.slug}/ownership-cost/` : "/cars/";
+const bestHref = targetCamry ? `/cars/${targetCamry.slug}/#years` : "/cars/";
+const problemsHref = targetCivic ? `/cars/${targetCivic.slug}/#problems` : "/cars/";
+const costHref = targetCamry ? `/cars/${targetCamry.slug}/#costs` : "/cars/";
 const reliabilityHref = targetCivic ? `/cars/${targetCivic.slug}/` : "/cars/";
 
 const homepageCss = `
