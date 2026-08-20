@@ -132,6 +132,7 @@ function buildProfile(target, facts, epa, oldProfile) {
     ? top.map(item => `${friendly(item.component)} (${item.count.toLocaleString("en-US")})`).join(", ")
     : "no complaint component pattern";
   const risks = signal.map(item => ({
+    component: item.component,
     s: item.guide.severity,
     lbl: item.guide.badge,
     t: `${item.guide.label} complaint pattern`,

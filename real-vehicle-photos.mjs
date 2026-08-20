@@ -4,6 +4,8 @@ import path from "node:path";
 const OUT = "dist";
 const MODELS = JSON.parse(fs.readFileSync("research-models.json", "utf8")).models || [];
 const UA = "KickTires/1.0 (used-car research; https://kicktires.netlify.app/)";
+const ALLOW_LIVE_PHOTO_BUILD = process.env.ALLOW_LIVE_PHOTO_BUILD === "true";
+const FETCH_TIMEOUT_MS = 10_000;
 
 const TITLE_OVERRIDES = new Map(Object.entries({
   "bmw|330i":"BMW 3 Series (G20)",
@@ -49,7 +51,10 @@ const esc = value => String(value ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt
 const keyFor = t => `${t.make}|${t.model}`.toLowerCase();
 
 async function getJson(url) {
-  const res = await fetch(url, { headers: { "user-agent": UA, accept: "application/json" } });
+  const res = await fetch(url, {
+    headers: { "user-agent": UA, accept: "application/json" },
+    signal: AbortSignal.timeout(FETCH_TIMEOUT_MS)
+  });
   if (!res.ok) throw new Error(`${res.status} ${url}`);
   return res.json();
 }
@@ -70,7 +75,10 @@ const PHOTO_DIR = path.join(OUT, "vehicle-photos");
 // read time whether our pages have pictures. The bytes are downloaded once here instead and
 // served from our own origin, so a page render depends on nothing but this deploy.
 async function storeLocally(slug, imageUrl) {
-  const response = await fetch(imageUrl, { headers: { "user-agent": UA } });
+  const response = await fetch(imageUrl, {
+    headers: { "user-agent": UA },
+    signal: AbortSignal.timeout(FETCH_TIMEOUT_MS)
+  });
   if (!response.ok) throw new Error(`image ${response.status} ${imageUrl}`);
   const type = (response.headers.get("content-type") || "").toLowerCase();
   const extension = type.includes("png") ? "png" : type.includes("webp") ? "webp"
@@ -174,9 +182,11 @@ function patchYearPages(photoBySlug) {
 }
 
 const photos=new Map(), failures=[];
-for(const target of MODELS){
-  try { photos.set(target.slug,await resolvePhoto(target)); }
-  catch(error){ failures.push({slug:target.slug,error:error.message}); console.error(`[real-vehicle-photos] ${target.slug}: ${error.message}`); }
+if(ALLOW_LIVE_PHOTO_BUILD){
+  for(const target of MODELS){
+    try { photos.set(target.slug,await resolvePhoto(target)); }
+    catch(error){ failures.push({slug:target.slug,error:error.message}); console.error(`[real-vehicle-photos] ${target.slug}: ${error.message}`); }
+  }
 }
 const cards=patchCarsIndex(photos);
 const modelPages=patchModelPages(photos);
@@ -184,3 +194,4 @@ const yearPages=patchYearPages(photos);
 fs.writeFileSync(path.join(OUT,"vehicle-photo-status.json"),JSON.stringify({resolved:[...photos.entries()].map(([slug,p])=>({slug,...p})),failures},null,2));
 console.log(`[real-vehicle-photos] resolved ${photos.size}/${MODELS.length} model photos; cards ${cards}; model pages ${modelPages}; year pages ${yearPages}`);
 if(failures.length) console.warn(`[real-vehicle-photos] ${failures.length} models still need curated photo mapping`);
+if(!ALLOW_LIVE_PHOTO_BUILD) console.log("[real-vehicle-photos] live Wikipedia fetching disabled for production builds; using local assets and branded fallbacks");

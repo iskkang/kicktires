@@ -370,15 +370,15 @@ function assertBlogOutput(dir) {
   const list = fs.readFileSync(path.join(dir, "blog", "index.html"), "utf8");
   assert.match(list, /Used car research/);
 
-  // blog-build.mjs writes its own <head> rather than reusing build.mjs's, so a tag added to
-  // the rest of the site does not reach these pages. It shipped with the AdSense ownership
-  // meta but no loader, which left the pages the blog exists to attract traffic to serving
-  // no ads. Checked on the list page and on every post.
+  // Navigation and trust pages keep the account-ownership meta, but they are not ad
+  // inventory. Only the long-form published articles load AdSense.
   for (const file of [["blog", "index.html"], ["methodology", "index.html"],
     ["author", "kicktires-editorial", "index.html"]]) {
     const html = fs.readFileSync(path.join(dir, ...file), "utf8");
     assert.match(html, /googletagmanager\.com\/gtag\/js\?id=G-TEST123/, `${file.join("/")}: no GA4`);
-    assert.match(html, /adsbygoogle\.js\?client=ca-pub-1234567890123456/, `${file.join("/")}: no AdSense loader`);
+    assert.match(html, /google-adsense-account" content="ca-pub-1234567890123456/,
+      `${file.join("/")}: no AdSense ownership meta`);
+    assert.doesNotMatch(html, /adsbygoogle\.js/, `${file.join("/")}: ad loader on a non-article page`);
 
     // These pages linked /style.css, which nothing writes into dist/. The request 404'd and
     // the shared header and footer rendered as bare browser defaults, while the blog's own
@@ -408,7 +408,11 @@ function assertBlogOutput(dir) {
     assert.equal(html.includes('<div class="bl-body">'), true);
     assert.equal(html.length > 4000, true, `${slug} looks empty`);
     assert.match(html, /googletagmanager\.com\/gtag\/js\?id=G-TEST123/, `${slug}: no GA4`);
-    assert.match(html, /adsbygoogle\.js\?client=ca-pub-1234567890123456/, `${slug}: no AdSense loader`);
+    if (html.includes('<meta name="robots" content="noindex')) {
+      assert.doesNotMatch(html, /adsbygoogle\.js/, `${slug}: draft loaded AdSense`);
+    } else {
+      assert.match(html, /adsbygoogle\.js\?client=ca-pub-1234567890123456/, `${slug}: no AdSense loader`);
+    }
   }
   const read = (...parts) => fs.readFileSync(path.join(dir, ...parts), "utf8");
   assert.match(read("methodology", "index.html"), /How we research a used car/);

@@ -58,9 +58,18 @@ publication gate also rejects missing EPA/TCO evidence, mismatched totals, missi
 provenance, and unverified owner-forum evidence. The build repeats the structural checks
 and rejects duplicate titles, slugs, and search queries.
 
+Production builds publish research pages from committed snapshots only. A target without
+enough stored evidence remains `noindex` and is omitted from the public model directory and
+sitemap; the build never turns a transient live lookup into an indexable page. For a local
+diagnostic build only, `ALLOW_LIVE_RESEARCH_BUILD=true npm run build` enables the old live
+fallback. Commit reviewed snapshots with `npm run sync:models` before publishing them.
+Production builds also skip live Wikipedia photo downloads and use repository assets or a
+branded fallback. `ALLOW_LIVE_PHOTO_BUILD=true npm run build` is available only for a
+curation run; review any downloaded image and its attribution before retaining it.
+
 ## Netlify deployment
 
-The repository is connected to Netlify. `netlify.toml` runs `node build.mjs`,
+The repository is connected to Netlify. `netlify.toml` runs `npm run build`,
 publishes `dist/`, bundles the analysis function, and applies a per-IP rate limit.
 
 Set these environment variables in Netlify:
@@ -80,8 +89,12 @@ Set these environment variables in Netlify:
 
 Never place keys in `build.mjs`, `style.css`, `data.json`, or `dist/`.
 
-The build emits the AdSense Auto Ads loader and a root `ads.txt` entry. Auto Ads must
-also be enabled for the site in AdSense; no manual ad-slot IDs are emitted.
+The build emits the AdSense ownership meta and a root `ads.txt` entry on the site. The
+AdSense loader and one manual display unit are limited to published long-form blog articles;
+the analyzer, directories, policy pages, methodology/author pages and drafts carry no ad
+inventory. Set `ADSENSE_SLOT` to the approved display-unit slot. Keep site-wide Auto Ads off,
+or exclude every non-article URL in AdSense, so an interactive or low-content screen cannot
+receive an automatic placement.
 
 ## Adding a model-year page
 

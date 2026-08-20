@@ -74,7 +74,7 @@ const CSS = `
 .bl-empty{padding:40px;border:1px dashed #cfd9e4;border-radius:14px;text-align:center;color:#6b7f93}
 `;
 
-function head({ title, description, url, jsonld = [], image, noindex = false, modified }) {
+function head({ title, description, url, jsonld = [], image, noindex = false, modified, ads = false }) {
   const blocks = (Array.isArray(jsonld) ? jsonld : [jsonld]).filter(Boolean)
     .map(node => `<script type="application/ld+json">${JSON.stringify(node).replace(/</g, "\\u003c")}</script>`)
     .join("");
@@ -99,7 +99,7 @@ ${absolute ? `<meta name="twitter:image" content="${esc(absolute)}">` : ""}
 <style>${CSS}</style>
 <script async src="https://www.googletagmanager.com/gtag/js?id=${GA}"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","${GA}");</script>
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE}" crossorigin="anonymous"></script>
+${ads ? `<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE}" crossorigin="anonymous"></script>` : ""}
 ${blocks}
 </head><body>
 <nav><div class="navin"><a class="logo" href="/"><i></i>${NAME}</a>
@@ -174,7 +174,8 @@ function postPage(post) {
 
   return head({
     title: `${post.title} | ${NAME}`, description: post.description, url,
-    jsonld, image: hero.ogSrc || hero.src, noindex: isDraft, modified: post.dateModified
+    jsonld, image: hero.ogSrc || hero.src, noindex: isDraft, modified: post.dateModified,
+    ads: !isDraft
   }) + `
 <main class="bl-wrap">
 <div class="bl-crumb"><a href="/">Home</a> › <a href="/blog/">Research</a> › ${esc(post.year)} ${esc(post.make)} ${esc(post.model)}</div>

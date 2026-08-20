@@ -56,12 +56,12 @@ const topic = (icon,title,text,href) => `<a class="hp-topic" href="${href}"><spa
 const camryTarget=targets.find(t=>norm(t.make)==="toyota"&&norm(t.model)==="camry");
 const civicTarget=targets.find(t=>norm(t.make)==="honda"&&norm(t.model)==="civic");
 const topics=[
-  topic("!","Common Problems","See the systems owners report most often.",civicTarget?`/cars/${civicTarget.slug}/problems-recalls/`:"/cars/"),
-  topic("Y","Years to Avoid","Compare model years before you start shopping.",camryTarget?`/cars/${camryTarget.slug}/best-years/`:"/cars/"),
-  topic("✓","Best Used Years","Find stronger model-year candidates quickly.",civicTarget?`/cars/${civicTarget.slug}/best-years/`:"/cars/"),
-  topic("R","Recalls","Review federal recall campaigns and VIN applicability.",camryTarget?`/cars/${camryTarget.slug}/problems-recalls/`:"/cars/"),
+  topic("!","Common Problems","See the systems owners report most often.",civicTarget?`/cars/${civicTarget.slug}/#problems`:"/cars/"),
+  topic("Y","Model Years","Compare model years before you start shopping.",camryTarget?`/cars/${camryTarget.slug}/#years`:"/cars/"),
+  topic("✓","Lower-report Years","Find stronger model-year candidates quickly.",civicTarget?`/cars/${civicTarget.slug}/#years`:"/cars/"),
+  topic("R","Recalls","Review federal recall campaigns and VIN applicability.",camryTarget?`/cars/${camryTarget.slug}/#problems`:"/cars/"),
   topic("?","Reliability","Use real complaint patterns instead of invented scores.",civicTarget?`/cars/${civicTarget.slug}/`:"/cars/"),
-  topic("$","Ownership Cost","Plan fuel, insurance and repair reserve.",camryTarget?`/cars/${camryTarget.slug}/ownership-cost/`:"/cars/")
+  topic("$","Ownership Cost","Plan fuel, insurance and repair reserve.",camryTarget?`/cars/${camryTarget.slug}/#costs`:"/cars/")
 ].join("");
 
 const css=`
